@@ -14,7 +14,7 @@ INC += vmedefs.h
 #---------------------
 # Install DBD files
 #
-DBD += vmecsr.dbd
+DBD += epicsvme.dbd
 
 #---------------------
 # Build the VME Common Library

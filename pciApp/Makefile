@@ -12,7 +12,7 @@ LIBRARY_IOC = epicspci
 
 USR_INCLUDES += -I../os/$(OS_CLASS)
 
-DBD += devlibpci.dbd
+DBD += epicspci.dbd
 
 INC += devLibPCI.h
 INC += devLibPCIImpl.h
