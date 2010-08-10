@@ -1,0 +1,8 @@
+O.*
+^bin$
+^db$
+^dbd$
+^include$
+^lib$
+^envPaths$
+^html$
