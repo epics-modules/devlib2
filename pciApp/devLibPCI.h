@@ -72,7 +72,6 @@ typedef struct {
   unsigned int function;
   struct PCIBar bar[6];
   epicsUInt8 irq;
-  void *devpvt; /* For devLib clients */
 } epicsPCIDevice;
 
 #define PCIBARCOUNT NELEMENTS( ((epicsPCIDevice*)0)->bar )
