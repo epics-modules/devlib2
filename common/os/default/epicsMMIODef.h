@@ -1,6 +1,6 @@
 
-#ifndef MRFIOOPSDEF_H
-#define MRFIOOPSDEF_H
+#ifndef EPICSMMIODEF_H
+#define EPICSMMIODEF_H
 
 #include <epicsTypes.h>
 #include <epicsEndian.h>
@@ -108,4 +108,4 @@ nat_iowrite32(volatile void* addr, epicsUInt32 val)
 #define rwbarr() do{}while(0)
 
 
-#endif /* MRFIOOPSDEF_H */
+#endif /* EPICSMMIODEF_H */

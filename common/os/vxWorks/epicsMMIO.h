@@ -1,5 +1,5 @@
-#ifndef MRFIOOPS_H
-#define MRFIOOPS_H
+#ifndef EPICSMMIO_H
+#define EPICSMMIO_H
 
 /**************************************************************************************************/
 /*  Required Header Files                                                                         */
@@ -81,4 +81,4 @@ void        sysOut32   (volatile void*, epicsUInt32);    /* Synchronous 32 bit w
 #define wbarr()  VX_MEM_BARRIER_W()
 #define rwbarr() VX_MEM_BARRIER_RW()
 
-#endif /* MRFIOOPS_H */
+#endif /* EPICSMMIO_H */

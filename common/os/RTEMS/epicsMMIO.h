@@ -1,6 +1,6 @@
 
-#ifndef MRFIOOPS_H
-#define MRFIOOPS_H
+#ifndef EPICSMMIO_H
+#define EPICSMMIO_H
 
 #include <epicsEndian.h>
 
@@ -46,4 +46,4 @@
 
 #endif /* if defined PPC */
 
-#endif /* MRFIOOPS_H */
+#endif /* EPICSMMIO_H */
