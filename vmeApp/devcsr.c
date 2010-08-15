@@ -47,7 +47,7 @@ volatile unsigned char* devCSRProbeSlot(int slot)
   return addr;
 }
 
-/**
+/*
  * @return 0 Not match
  * @return 1 Match
  */

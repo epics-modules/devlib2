@@ -7,13 +7,39 @@
 #include <devLib.h>
 #include <shareLib.h>
 
+/**
+ * @defgroup pci PCI Bus Access
+ *
+ * Library to support PCI bus access
+ * @{
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* PCI device identifier
+/** @brief PCI device identifier
+ *
+ * This structure is used to hold identifying information for a PCI
+ * device.  When used for searching each field can hold
+ * a specific value or a wildcard.
+ *
+ * Fields are oversized to allow a
+ * distinct wildcard value.
+ *
+ * There is a DEVPCI_ANY_* wildcard macro for each field.
+ * Most will use the convienence macros defined below.
+ *
+ * PCI identifer lists should be defined like:
+ *
+ @code
+ static const epicsPCIID mydevs[] = {
+     DEVPCI_SUBDEVICE_SUBVENDOR( 0x1234, 0x1030, 0x0001, 0x4321 ),
+     DEVPCI_SUBDEVICE_SUBVENDOR( 0x1234, 0x1030, 0x0002, 0x4321 ),
+     DEVPCI_END
+ };
+ @endcode
  */
-
 typedef struct {
   epicsUInt32 device, vendor;
   epicsUInt32 sub_device, sub_vendor;
@@ -21,9 +47,6 @@ typedef struct {
   epicsUInt16 revision;
 } epicsPCIID;
 
-/* sub*, class, and revision are oversized to allow a
- * distinct wildcard match value.
- */
 #define DEVPCI_ANY_DEVICE 0x10000
 #define DEVPCI_ANY_VENDOR 0x10000
 #define DEVPCI_ANY_SUBDEVICE 0x10000
@@ -31,16 +54,7 @@ typedef struct {
 #define DEVPCI_ANY_CLASS 0x1000000
 #define DEVPCI_ANY_REVISION 0x100
 
-/* Use the following macros when defining ID search lists.
- *
- * ie.
- * static const epicsPCIID mydevs[] = {
- *    DEVPCI_SUBDEVICE_SUBVENDOR( 0x1234, 0x1030, 0x0001, 0x4321 ),
- *    DEVPCI_SUBDEVICE_SUBVENDOR( 0x1234, 0x1030, 0x0002, 0x4321 ),
- *    DEVPCI_END
- * };
- */
-
+/** @brief The last item in a list of PCI IDS */
 #define DEVPCI_END {0,0,0,0,0,0}
 
 #define DEVPCI_DEVICE_VENDOR(dev,vend) \
@@ -60,13 +74,22 @@ DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 pclass, revision }
 
 struct PCIBar {
-  unsigned int ioport:1; /* 0 memory, 1 I/O */
-  unsigned int addr64:1; /* 0 32 bit, 1 64 bit */
-  unsigned int below1M:1; /* 0 Normal, 1 Must be mapped below 1M */
+  unsigned int ioport:1; /** 0 memory, 1 I/O */
+  unsigned int addr64:1; /** 0 32 bit, 1 64 bit */
+  unsigned int below1M:1; /** 0 Normal, 1 Must be mapped below 1M */
 };
 
+/** @brief Device token
+ *
+ * When a PCI device is found with one of the search functions
+ * a pointer to ::epicsPCIDevice instance is returned.
+ * It will be passed to all subsequent API calls.
+ *
+ * @warning This instance must not be modified since it is shared by all callers.
+ */
+
 typedef struct {
-  epicsPCIID   id;
+  epicsPCIID   id; /**< @brief Exact ID of device */
   unsigned int bus;
   unsigned int device;
   unsigned int function;
@@ -74,12 +97,28 @@ typedef struct {
   epicsUInt8 irq;
 } epicsPCIDevice;
 
+/** @brief The maximum number of base address registers (BARs). */
 #define PCIBARCOUNT NELEMENTS( ((epicsPCIDevice*)0)->bar )
 
-typedef int (*devPCISearchFn)(void*,epicsPCIDevice*);
+/** @brief PCI search callback prototype
+ *
+ @param ptr User pointer
+ @param dev PCI device pointer
+ */
+typedef int (*devPCISearchFn)(void* ptr,epicsPCIDevice* dev);
 
-/*
- * Expects a NULL terminated list of identifiers
+/** @brief PCI bus search w/ callback
+ *
+ * Iterate through all devices in the system and invoke
+ * the provided callback for all those matching the
+ * provided ID list.
+ *
+ @param idlist List of PCI identifiers
+ @param searchfn User callback
+ @param arg User pointer
+ @param opt Modifiers.  Currently unused
+ @retval 0 Success
+ @retval !0 Failure
  */
 epicsShareFunc
 int devPCIFindCB(
@@ -89,6 +128,21 @@ int devPCIFindCB(
      unsigned int opt /* always 0 */
 );
 
+/** @brief PCI bus probe
+ *
+ * Probe and test a single address.  It it matches
+ * the corresponding ::epicsPCIDevice instance is
+ * stored in 'found'
+ *
+ @param idlist List of PCI identifiers
+ @param b bus
+ @param d device
+ @param f function
+ @param[out] found On success the results is stored here
+ @param opt Modifiers.  Currently unused
+ @retval 0 Success
+ @retval !0 Failure
+ */
 epicsShareFunc
 int devPCIFindBDF(
      const epicsPCIID *idlist,
@@ -99,6 +153,17 @@ int devPCIFindBDF(
      unsigned int opt /* always 0 */
 );
 
+/** @brief Get pointer to PCI BAR
+ *
+ * Map a PCI BAR into the local process address space.
+ *
+ @param id PCI device pointer
+ @param bar BAR number
+ @param[out] ppLocalAddr Pointer to start of BAR
+ @param opt Modifiers.  Currently unused
+ @retval 0 Success
+ @retval !0 Failure
+ */
 epicsShareFunc
 int
 devPCIToLocalAddr(
@@ -108,6 +173,19 @@ devPCIToLocalAddr(
            unsigned int opt /* always 0 */
 );
 
+/** @brief Find the size of a BAR
+ *
+ * Returns the size (in bytes) of the region visible through
+ * the given BAR.
+ *
+ @warning On RTEMS and vxWorks this is a destructive operations.
+          When calling it ensure that nothing access the device.
+         \b "Don't call this on a device used by another driver."
+ *
+ @param id PCI device pointer
+ @param bar BAR number
+ @returns The BAR length or 0.
+ */
 epicsShareFunc
 epicsUInt32
 devPCIBarLen(
@@ -115,6 +193,23 @@ devPCIBarLen(
           unsigned int  bar
 );
 
+/** @brief Request interrupts for device
+ *
+ * Request that the provided callback be
+ * invoked whenever the device asserts
+ * an interrupt.
+ *
+ @note Always connect the interrupt handler before allowing
+       the device to send.
+ *
+ @note All drivers should be prepared for the device to share an interrupt
+       with other devices.
+ *
+ @param id PCI device pointer
+ @param pFunction User ISR
+ @param parameter User pointer
+ @param opt Modifiers.  Currently unused
+ */
 epicsShareFunc
 int devPCIConnectInterrupt(
         epicsPCIDevice *id,
@@ -123,6 +218,13 @@ int devPCIConnectInterrupt(
   unsigned int opt /* always 0 */
 );
 
+/** @brief Stop receiving interrupts
+ *
+ * Use the same arguments passed to devPCIConnectInterrupt()
+ @param id PCI device pointer
+ @param pFunction User ISR
+ @param parameter User pointer
+ */
 epicsShareFunc
 int devPCIDisconnectInterrupt(
         epicsPCIDevice *id,
@@ -151,5 +253,7 @@ const char* devLibPCIDriverName();
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+/** @} */
 
 #endif /* DEVLIBPCI_H_INC */
