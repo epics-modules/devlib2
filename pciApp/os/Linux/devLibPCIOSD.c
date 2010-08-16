@@ -18,6 +18,7 @@
 #include <epicsString.h>
 #include <epicsThread.h>
 #include <epicsMutex.h>
+#include <epicsInterrupt.h>
 #include <compilerDependencies.h>
 
 
@@ -722,6 +723,7 @@ void isrThread(void* arg)
     epicsInt32 event;
     const char* name;
     sigset_t allow;
+    int isrflag;
 
     sigemptyset(&allow);
     sigaddset(&allow, SIGHUP);
@@ -752,7 +754,9 @@ void isrThread(void* arg)
          */
         if (interrupted) {
             interrupted=0;
+            isrflag=epicsInterruptLock();
             (isr->fptr)(isr->param);
+            epicsInterruptUnlock(isrflag);
         }
 
         ret=read(osd->fd, &event, sizeof(event));
