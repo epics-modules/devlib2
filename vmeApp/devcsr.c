@@ -52,7 +52,7 @@ volatile unsigned char* devCSRProbeSlot(int slot)
  * @return 1 Match
  */
 static
-int csrMatch(const struct VMECSRDevice* A, const struct VMECSRDevice* B)
+int csrMatch(const struct VMECSRID* A, const struct VMECSRID* B)
 {
 	if( A->vendor!=B->vendor &&
 		A->vendor!=VMECSRANY &&
@@ -77,12 +77,12 @@ int csrMatch(const struct VMECSRDevice* A, const struct VMECSRDevice* B)
 
 epicsShareFunc
 volatile unsigned char* devCSRTestSlot(
-	const struct VMECSRDevice* devs,
+	const struct VMECSRID* devs,
 	int slot,
-	struct VMECSRDevice* info
+	struct VMECSRID* info
 )
 {
-  struct VMECSRDevice test;
+  struct VMECSRID test;
   volatile unsigned char* addr=devCSRProbeSlot(slot);
 
   if(!addr) return addr;

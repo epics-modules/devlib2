@@ -96,7 +96,7 @@ this is the only piece of information required to access the card.
 Below is an example implementation of myPCICardSetup().
 
 @code
-static const struct VMECSRDevice mydevids[] = {...}
+static const struct VMECSRID mydevids[] = {...}
 
 int
 myVMECardSetup(const char* port,
@@ -180,7 +180,7 @@ and set to generate interrupt vector 0x60 at level 4.
 Below is an example implementation of myVMECardSetup().
 
 @code
-static const struct VMECSRDevice mydevids[] = {...}
+static const struct VMECSRID mydevids[] = {...}
 
 int
 myVMECardSetup(const char* port,

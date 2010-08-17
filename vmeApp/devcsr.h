@@ -28,14 +28,14 @@ extern "C" {
  * compatible device.  When used for searching each field can hold
  * a specific value of the 'VMECSRANY' wildcard.
  */
-struct VMECSRDevice {
+struct VMECSRID {
 	epicsUInt32 vendor,board,revision;
 };
 
 /** @brief Must be the last entry in a device list */
 #define VMECSR_END {0,0,0}
 
-/** @brief Match any value.  May be used in any field of ::VMECSRDevice */
+/** @brief Match any value.  May be used in any field of ::VMECSRID */
 #define VMECSRANY 0xFfffFfff
 
 /** @brief The highest slot number. */
@@ -62,7 +62,7 @@ volatile unsigned char* devCSRProbeSlot(int slot);
 /** @brief Probe a VME slot then check its ID
   *
   * Calls devCSRProbeSlot().  If a card is found the PCI ID
-  * fields are compared against the given VMECSRDevice list.
+  * fields are compared against the given VMECSRID list.
   * The base address is returned if the card matches and NULL
   * otherwise.
   *
@@ -71,7 +71,7 @@ volatile unsigned char* devCSRProbeSlot(int slot);
   *
   * An identifier list should be defined like:
   @code
-    static const struct VMECSRDevice vmedevices[] = {
+    static const struct VMECSRID vmedevices[] = {
         {0x123456, 0x87654321, 0x15}
        ,{0x123456, 0x87654321, 0x16}
        ,{0x123456, 0x87655678, VMECSRANY}
@@ -88,9 +88,9 @@ volatile unsigned char* devCSRProbeSlot(int slot);
   */
 epicsShareFunc
 volatile unsigned char* devCSRTestSlot(
-	const struct VMECSRDevice* devs,
+	const struct VMECSRID* devs,
 	int slot,
-	struct VMECSRDevice* info
+	struct VMECSRID* info
 );
 
 /** @brief Derives the CSR space base address for a slot.
