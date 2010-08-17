@@ -21,13 +21,15 @@
  * Most devlib function go through an indirection table with a null
  * implimentation provided for systems which doen't impliment some
  * functionality.  However, the functions below don't use this table.
- * Provide a null implimentation so that devLib applications will
- * still link on these systems.
+ *
+ * For most functions we can use the deprecated API, but before 3.14.12
+ * no wrapper for devInterruptInUseVME() was provided so can't implement
+ * that one
  */
 
 epicsShareFunc long devEnableInterruptLevelVME (unsigned vectorNumber)
 {
-  return -1;
+    return devEnableInterruptLevel(intVME, vectorNumber);
 }
 
 epicsShareFunc long devConnectInterruptVME (
@@ -35,19 +37,19 @@ epicsShareFunc long devConnectInterruptVME (
                         void (*pFunction)(void *),
                         void  *parameter)
 {
-  return -1;
+    return devConnectInterrupt(intVME,vectorNumber, pFunction, parameter);
 }
 
 epicsShareFunc long devDisconnectInterruptVME (
 			unsigned vectorNumber,
 			void (*pFunction)(void *))
 {
-  return -1;
+  return devDisconnectInterrupt(intVME, vectorNumber, pFunction);
 }
 
 epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
 {
-   return -1;
+   return -1; /* Not implemented in Base <= 3.14.11 */
 }
 
 #endif /* NEED_IFACE */
