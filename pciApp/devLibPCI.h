@@ -105,7 +105,7 @@ typedef struct {
  @param ptr User pointer
  @param dev PCI device pointer
  */
-typedef int (*devPCISearchFn)(void* ptr,epicsPCIDevice* dev);
+typedef int (*devPCISearchFn)(void* ptr,const epicsPCIDevice* dev);
 
 /** @brief PCI bus search w/ callback
  *
@@ -149,7 +149,7 @@ int devPCIFindBDF(
      unsigned int      b,
      unsigned int      d,
      unsigned int      f,
-      epicsPCIDevice **found,
+const epicsPCIDevice **found,
      unsigned int opt /* always 0 */
 );
 
@@ -167,7 +167,7 @@ int devPCIFindBDF(
 epicsShareFunc
 int
 devPCIToLocalAddr(
-        epicsPCIDevice *id,
+  const epicsPCIDevice *id,
           unsigned int  bar,
         volatile void **ppLocalAddr,
            unsigned int opt /* always 0 */
@@ -184,13 +184,14 @@ devPCIToLocalAddr(
  *
  @param id PCI device pointer
  @param bar BAR number
- @returns The BAR length or 0.
+ @returns 0 on success or an error code.
  */
 epicsShareFunc
-epicsUInt32
+int
 devPCIBarLen(
-        epicsPCIDevice *id,
-          unsigned int  bar
+  const epicsPCIDevice *id,
+          unsigned int  bar,
+           epicsUInt32 *len
 );
 
 /** @brief Request interrupts for device
@@ -212,7 +213,7 @@ devPCIBarLen(
  */
 epicsShareFunc
 int devPCIConnectInterrupt(
-        epicsPCIDevice *id,
+  const epicsPCIDevice *id,
   void (*pFunction)(void *),
   void  *parameter,
   unsigned int opt /* always 0 */
@@ -227,7 +228,7 @@ int devPCIConnectInterrupt(
  */
 epicsShareFunc
 int devPCIDisconnectInterrupt(
-        epicsPCIDevice *id,
+  const epicsPCIDevice *id,
   void (*pFunction)(void *),
   void  *parameter
 );
@@ -238,7 +239,7 @@ devPCIShow(int lvl, int vendor, int device, int exact);
 
 epicsShareFunc
 void
-devPCIShowDevice(int lvl, epicsPCIDevice *dev);
+devPCIShowDevice(int lvl, const epicsPCIDevice *dev);
 
 /** @brief Select driver implementation.
  * Pick driver implementation by name, or NULL to use default.

@@ -24,16 +24,16 @@ typedef struct {
 
   int (*pDevPCIFind)(const epicsPCIID *ids, devPCISearchFn searchfn, void *arg, unsigned int o);
 
-  int (*pDevPCIToLocalAddr)(epicsPCIDevice* dev,unsigned int bar,volatile void **a,unsigned int o);
+  int (*pDevPCIToLocalAddr)(const epicsPCIDevice* dev,unsigned int bar,volatile void **a,unsigned int o);
 
-  epicsUInt32 (*pDevPCIBarLen)(epicsPCIDevice* dev,unsigned int bar);
+  int (*pDevPCIBarLen)(const epicsPCIDevice* dev,unsigned int bar,epicsUInt32 *len);
 
-  int (*pDevPCIConnectInterrupt)(epicsPCIDevice *id,
+  int (*pDevPCIConnectInterrupt)(const epicsPCIDevice *id,
                                  void (*pFunction)(void *),
                                  void  *parameter,
                                  unsigned int opt);
 
-  int (*pDevPCIDisconnectInterrupt)(epicsPCIDevice *id,
+  int (*pDevPCIDisconnectInterrupt)(const epicsPCIDevice *id,
                                     void (*pFunction)(void *),
                                     void  *parameter);
 
