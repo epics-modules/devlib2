@@ -74,15 +74,15 @@ DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 pclass, revision }
 
 struct PCIBar {
-  unsigned int ioport:1; /** 0 memory, 1 I/O */
-  unsigned int addr64:1; /** 0 32 bit, 1 64 bit */
-  unsigned int below1M:1; /** 0 Normal, 1 Must be mapped below 1M */
+  unsigned int ioport:1; /**< 0 memory, 1 I/O */
+  unsigned int addr64:1; /**< 0 32 bit, 1 64 bit */
+  unsigned int below1M:1; /**< 0 Normal, 1 Must be mapped below 1M */
 };
 
 /** @brief Device token
  *
  * When a PCI device is found with one of the search functions
- * a pointer to ::epicsPCIDevice instance is returned.
+ * a pointer to an ::epicsPCIDevice instance is returned.
  * It will be passed to all subsequent API calls.
  *
  * @warning This instance must not be modified since it is shared by all callers.
@@ -240,7 +240,8 @@ epicsShareFunc
 void
 devPCIShowDevice(int lvl, epicsPCIDevice *dev);
 
-/* Select driver implementation by name, or NULL to use default.
+/** @brief Select driver implementation.
+ * Pick driver implementation by name, or NULL to use default.
  * If no selection is made then the default will be used if available.
  */
 epicsShareFunc
