@@ -50,6 +50,8 @@ devLibPCIRegisterDriver(devLibPCI* drv)
     ELLNODE *cur;
     devLibPCI *other;
 
+    if (!drv->name) return 1;
+
     epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
 
     epicsMutexMustLock(pciDriversLock);
