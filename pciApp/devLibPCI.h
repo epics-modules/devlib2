@@ -18,6 +18,9 @@
 extern "C" {
 #endif
 
+#define DEVLIBPCI_MAJOR 1
+#define DEVLIBPCI_MINOR 0
+
 /** @brief PCI device identifier
  *
  * This structure is used to hold identifying information for a PCI
