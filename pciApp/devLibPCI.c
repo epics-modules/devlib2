@@ -163,11 +163,11 @@ int devPCIFindCB(
 struct bdfmatch
 {
   unsigned int b,d,f;
-  epicsPCIDevice* found;
+  const epicsPCIDevice* found;
 };
 
 static
-int bdfsearch(void* ptr, epicsPCIDevice* cur)
+int bdfsearch(void* ptr, const epicsPCIDevice* cur)
 {
   struct bdfmatch *mt=ptr;
 
@@ -190,7 +190,7 @@ int devPCIFindBDF(
      unsigned int      b,
      unsigned int      d,
      unsigned int      f,
-      epicsPCIDevice **found,
+const epicsPCIDevice **found,
      unsigned int      opt
 )
 {
@@ -224,7 +224,7 @@ int devPCIFindBDF(
 
 int
 devPCIToLocalAddr(
-  epicsPCIDevice *curdev,
+  const epicsPCIDevice *curdev,
   unsigned int bar,
   volatile void **ppLocalAddr,
   unsigned int opt
@@ -241,10 +241,11 @@ devPCIToLocalAddr(
 
 
 epicsShareFunc
-epicsUInt32
+int
 devPCIBarLen(
-  epicsPCIDevice *curdev,
-          unsigned int  bar
+  const epicsPCIDevice *curdev,
+          unsigned int  bar,
+          epicsUInt32 *len
 )
 {
   PCIINIT;
@@ -252,12 +253,12 @@ devPCIBarLen(
   if(bar>=PCIBARCOUNT)
     return S_dev_badArgument;
 
-  return (*pdevLibPCI->pDevPCIBarLen)(curdev,bar);
+  return (*pdevLibPCI->pDevPCIBarLen)(curdev,bar,len);
 }
 
 epicsShareFunc
 int devPCIConnectInterrupt(
-  epicsPCIDevice *curdev,
+  const epicsPCIDevice *curdev,
   void (*pFunction)(void *),
   void  *parameter,
   unsigned int opt
@@ -271,7 +272,7 @@ int devPCIConnectInterrupt(
 
 epicsShareFunc
 int devPCIDisconnectInterrupt(
-  epicsPCIDevice *curdev,
+  const epicsPCIDevice *curdev,
   void (*pFunction)(void *),
   void  *parameter
 )
@@ -284,7 +285,7 @@ int devPCIDisconnectInterrupt(
 
 static
 int
-searchandprint(void* plvl,epicsPCIDevice* dev)
+searchandprint(void* plvl,const epicsPCIDevice* dev)
 {
     int *lvl=plvl;
     devPCIShowDevice(*lvl,dev);
@@ -306,7 +307,7 @@ devPCIShow(int lvl, int vendor, int device, int exact)
 }
 
 void
-devPCIShowDevice(int lvl, epicsPCIDevice *dev)
+devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
     printf("PCI %u:%u.%u IRQ %u\n"

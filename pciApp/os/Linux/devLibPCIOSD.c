@@ -606,13 +606,13 @@ done:
 static
 int
 linuxDevPCIToLocalAddr(
-  epicsPCIDevice* dev,
+  const epicsPCIDevice* dev,
   unsigned int bar,
   volatile void **ppLocalAddr,
   unsigned int opt
 )
 {
-    osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
+    osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     epicsMutexMustLock(osd->devLock);
 
@@ -641,22 +641,24 @@ linuxDevPCIToLocalAddr(
 }
 
 static
-epicsUInt32
+int
 linuxDevPCIBarLen(
-  epicsPCIDevice* dev,
-  unsigned int bar
+  const epicsPCIDevice* dev,
+  unsigned int bar,
+  epicsUInt32 *len
 )
 {
     osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
 
     epicsMutexMustLock(osd->devLock);
-    return osd->len[bar];
+    *len=osd->len[bar];
     epicsMutexUnlock(osd->devLock);
+    return 0;
 }
 
 static
 int linuxDevPCIConnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter,
   unsigned int opt
@@ -664,7 +666,7 @@ int linuxDevPCIConnectInterrupt(
 {
     char name[10]; /* RTEMS native names are only 4 chars long */
     ELLNODE *cur;
-    osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
+    osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
 
     if (!isr) return S_dev_noMemory;
@@ -806,7 +808,7 @@ stopIsrThread(osdISR *isr)
 
 static
 int linuxDevPCIDisconnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter
 )
@@ -814,7 +816,7 @@ int linuxDevPCIDisconnectInterrupt(
     int ret=S_dev_intDisconnect;
     ELLNODE *cur;
     osdISR *isr;
-    osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
+    osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     epicsMutexMustLock(osd->devLock);
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))

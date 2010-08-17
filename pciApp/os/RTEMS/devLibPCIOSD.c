@@ -14,7 +14,7 @@
 
 static
 int rtemsDevPCIConnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter,
   unsigned int opt
@@ -47,7 +47,7 @@ int rtemsDevPCIConnectInterrupt(
 
 static
 int rtemsDevPCIDisconnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter
 )

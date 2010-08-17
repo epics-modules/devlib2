@@ -115,7 +115,7 @@ sharedDevPCIFindCB(
 
 int
 sharedDevPCIToLocalAddr(
-  epicsPCIDevice* dev,
+  const epicsPCIDevice* dev,
   unsigned int bar,
   volatile void **ppLocalAddr,
   unsigned int opt
@@ -130,10 +130,11 @@ sharedDevPCIToLocalAddr(
   return 0;
 }
 
-epicsUInt32
+int
 sharedDevPCIBarLen(
-  epicsPCIDevice* dev,
-  unsigned int bar
+  const epicsPCIDevice* dev,
+  unsigned int bar,
+  epicsUInt32 *len
 )
 {
   struct osdPCIDevice *osd=pcidev2osd(dev);
@@ -141,7 +142,7 @@ sharedDevPCIBarLen(
   UINT32 start, max, mask;
 
   if(!osd->base[bar])
-    return 0;
+    return S_dev_badSignalNumber;
 
   if(osd->len[bar])
     return osd->len[bar];
@@ -166,7 +167,7 @@ sharedDevPCIBarLen(
 
   /* If the BIOS didn't set this BAR then don't mess with it */
   if((start&mask)==0)
-    return 0;
+    return S_dev_badRequest;
 
   pci_write_config_dword(b,d,f,PCI_BASE_ADDRESS(bar), mask);
   pci_read_config_dword(b,d,f,PCI_BASE_ADDRESS(bar), &max);
@@ -178,7 +179,8 @@ sharedDevPCIBarLen(
   /* Find lsb */
   osd->len[bar] = max & ~(max-1);
 
-  return osd->len[bar];
+  *len=osd->len[bar];
+  return 0;
 }
 
 

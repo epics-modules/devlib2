@@ -4,6 +4,9 @@
 
 #include "devLibPCIOSD.h"
 
+#include <dbDefs.h>
+#include <shareLib.h>
+
 /* Subtract member byte offset, returning pointer to parent object
  *
  * Added in Base 3.14.11
@@ -34,7 +37,12 @@ struct osdPCIDevice {
 };
 typedef struct osdPCIDevice osdPCIDevice;
 
-#define pcidev2osd(devptr) CONTAINER(devptr,osdPCIDevice,dev)
+INLINE
+osdPCIDevice*
+pcidev2osd(const epicsPCIDevice *devptr)
+{
+    return CONTAINER((epicsPCIDevice*)devptr,osdPCIDevice,dev);
+}
 
 int
 sharedDevPCIFindCB(
@@ -46,16 +54,17 @@ sharedDevPCIFindCB(
 
 int
 sharedDevPCIToLocalAddr(
-  epicsPCIDevice* dev,
+  const epicsPCIDevice* dev,
   unsigned int bar,
   volatile void **ppLocalAddr,
   unsigned int opt
 );
 
-epicsUInt32
+int
 sharedDevPCIBarLen(
-  epicsPCIDevice* dev,
-  unsigned int bar
+  const epicsPCIDevice* dev,
+  unsigned int bar,
+  epicsUInt32 *len
 );
 
 #endif /* OSDPCISHARED_H_INC */

@@ -31,7 +31,7 @@
 
 static
 int vxworksDevPCIConnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter,
   unsigned int opt
@@ -51,7 +51,7 @@ int vxworksDevPCIConnectInterrupt(
 
 static
 int vxworksDevPCIDisconnectInterrupt(
-  epicsPCIDevice *dev,
+  const epicsPCIDevice *dev,
   void (*pFunction)(void *),
   void  *parameter
 )
