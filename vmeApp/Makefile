@@ -29,11 +29,17 @@ epicsvme_LIBS += Com
 
 
 ifeq ($(EPICS_VERSION)$(EPICS_REVISION),314)
+
 ifneq ($(findstring $(EPICS_MODIFICATION),1 2 3 4 5 6 7 8 9),)
 epicsvme_SRCS += devLibVMEOSD.c
 epicsvme_SRCS += devLibVME.c
 INC += devLibVME.h
 endif
+
+ifneq ($(findstring $(EPICS_MODIFICATION),1 2 3 4 5 6 7 8),)
+epicsvme_SRCS_Linux += devlib_dummy.c
+endif
+
 endif
 
 #---------------------
