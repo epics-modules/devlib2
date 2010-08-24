@@ -10,7 +10,14 @@
  * @{
  */
 
-#include "devLib.h"
+#include <epicsVersion.h>
+
+#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10
+#  include "devLibVME.h"
+#else
+#  include "devLib.h"
+#endif
+
 #include <epicsTypes.h>
 #include "epicsMMIO.h"
 #include "vmedefs.h"
