@@ -10,8 +10,8 @@
 
 #include <stdlib.h>
 
-#include "devLibVME.h"
+#include "devLib.h"
 
 /* This file must contain no definitions other than the following: */
 
-devLibVME *pdevLibVME;
+devLibVirtualOS *pdevLibVME2=NULL;

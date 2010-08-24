@@ -34,7 +34,6 @@ static const char sccsID[] = "@(#) $Id$";
 
 #define NO_DEVLIB_COMPAT
 #include "devLibVME.h"
-#include "devLibVMEImpl.h"
 
 static ELLLIST addrAlloc[atLast];
 static ELLLIST addrFree[atLast];
@@ -59,14 +58,14 @@ static long  addrFail[atLast] = {
             S_dev_badA16,
             S_dev_badA24,
             S_dev_badA32,
-            S_dev_badISA,
-            S_dev_badCRCSR
+            S_dev_badA24,
+            S_dev_badA24
             };
 
 static epicsMutexId addrListLock;
 static char devLibInitFlag;
 
-const char *epicsAddressTypeName[]
+const char *epicsAddressTypeName2[]
         = {
         "VME A16",
         "VME A24",
@@ -143,7 +142,7 @@ static long devInstallAddr(
 /*
  * devBusToLocalAddr()
  */
-long devBusToLocalAddr(
+long devBusToLocalAddr2(
     epicsAddressType addrType,
     size_t busAddr,
     volatile void **ppLocalAddress)
@@ -172,7 +171,7 @@ long devBusToLocalAddr(
     /*
      * Call the virtual os routine to map the bus address to a CPU address
      */
-    status = (*pdevLibVME->pDevMapAddr) (addrType, 0, busAddr, 4, &localAddress);
+    status = (*pdevLibVirtualOS->pDevMapAddr) (addrType, 0, busAddr, 4, &localAddress);
     if (status) {
         errPrintf (status, __FILE__, __LINE__, "%s bus address =0X%X\n",
             epicsAddressTypeName[addrType], (unsigned int)busAddr);
@@ -194,7 +193,7 @@ long devBusToLocalAddr(
 /*
  * devRegisterAddress()
  */
-long devRegisterAddress(
+long devRegisterAddress2(
     const char *pOwnerName,
     epicsAddressType addrType,
     size_t base,
@@ -264,46 +263,6 @@ long devRegisterAddress(
 }
 
 /*
- * devReadProbe()
- *
- * a bus error safe "wordSize" read at the specified address which returns 
- * unsuccessful status if the device isnt present
- */
-long devReadProbe (unsigned wordSize, volatile const void *ptr, void *pValue)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevReadProbe) (wordSize, ptr, pValue);
-}
-
-/*
- * devWriteProbe
- *
- * a bus error safe "wordSize" write at the specified address which returns 
- * unsuccessful status if the device isnt present
- */
-long devWriteProbe (unsigned wordSize, volatile void *ptr, const void *pValue)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevWriteProbe) (wordSize, ptr, pValue);
-}
-
-/*
  *  devInstallAddr()
  */
 static long devInstallAddr (
@@ -337,7 +296,7 @@ static long devInstallAddr (
      * always map through the virtual os in case the memory
      * management is set up there
      */
-    status = (*pdevLibVME->pDevMapAddr) (addrType, 0, base, 
+    status = (*pdevLibVirtualOS->pDevMapAddr) (addrType, 0, base,
                 size, &pPhysicalAddress);
     if (status) {
         errPrintf (status, __FILE__, __LINE__, "%s base=0X%X size = 0X%X",
@@ -468,7 +427,7 @@ static void report_conflict_device(epicsAddressType addrType, const rangeItem *p
 /*
  *  devUnregisterAddress()
  */
-long devUnregisterAddress(
+long devUnregisterAddress2(
     epicsAddressType addrType,
     size_t baseAddress,
     const char *pOwnerName)
@@ -605,7 +564,7 @@ rangeItem   *pNewRange)
 /*
  * devAllocAddress()
  */
-long devAllocAddress(
+long devAllocAddress2(
     const char *pOwnerName,
     epicsAddressType addrType,
     size_t size,
@@ -702,8 +661,8 @@ static long devLibInit (void)
 
 
     if(devLibInitFlag) return(SUCCESS);
-    if(!pdevLibVME) {
-        epicsPrintf ("pdevLibVME is NULL\n");
+    if(!pdevLibVirtualOS) {
+        epicsPrintf ("pdevLibVirtualOS is NULL\n");
         return S_dev_internal;
     }
 
@@ -732,13 +691,13 @@ static long devLibInit (void)
     }
     epicsMutexUnlock(addrListLock);
     devLibInitFlag = TRUE;
-    return pdevLibVME->pDevInit();
+    return pdevLibVirtualOS->pDevInit();
 }
 
 /*
  *  devAddressMap()
  */
-long devAddressMap(void)
+long devAddressMap2(void)
 {
     return devListAddressMap(addrAlloc);
 }
@@ -845,315 +804,7 @@ static long blockFind (
     return s;
 }
 
-/*
- * devNoResponseProbe()
- */
-long devNoResponseProbe (epicsAddressType addrType,
-    size_t base, size_t size)
+void devReplaceVirtualOS(void)
 {
-    volatile void *pPhysical;
-    size_t probe;
-    size_t byteNo;
-    unsigned wordSize;
-    union {
-        char charWord;
-        short shortWord;
-        int intWord;
-        long longWord;
-    }allWordSizes;
-    long s;
-
-    if (!devLibInitFlag) {
-        s = devLibInit();
-        if (s) {
-            return s;
-        }
-    }
-
-    byteNo = 0;
-    while (byteNo < size) {
-
-        probe = base + byteNo;
-
-        /*
-         * for all word sizes
-         */
-        for (wordSize=1; wordSize<=sizeof(allWordSizes); wordSize <<= 1) {
-            /*
-             * only check naturally aligned words
-             */
-            if ( (probe&(wordSize-1)) != 0 ) {
-                break;
-            }
-
-            if (byteNo+wordSize>size) {
-                break;
-            }
-
-            /*
-             * every byte in the block must 
-             * map to a physical address
-             */
-            s = (*pdevLibVME->pDevMapAddr) (addrType, 0, probe, wordSize, &pPhysical);
-            if (s!=SUCCESS) {
-                return s;
-            }
-
-            /*
-             * verify that no device is present
-             */
-            s = (*pdevLibVME->pDevReadProbe)(wordSize, pPhysical, &allWordSizes);
-            if (s==SUCCESS) {
-                return S_dev_addressOverlap;
-            }
-        }
-        byteNo++;
-    }
-    return SUCCESS;
-}
-
-long devConnectInterruptVME(
-unsigned	vectorNumber,
-void		(*pFunction)(void *),
-void		*parameter )
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevConnectInterruptVME) (vectorNumber, 
-                    pFunction, parameter);
-}
-
-long devDisconnectInterruptVME(
-unsigned		vectorNumber,
-void			(*pFunction)(void *) )
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevDisconnectInterruptVME) (vectorNumber, pFunction);
-}
-
-int devInterruptInUseVME (unsigned level)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevInterruptInUseVME) (level);
-}
-
-long devEnableInterruptLevelVME (unsigned level)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevEnableInterruptLevelVME) (level);
-}
-
-long devDisableInterruptLevelVME (unsigned level)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    return (*pdevLibVME->pDevDisableInterruptLevelVME) (level);
-}
-
-/*
- * devConnectInterrupt ()
- *
- * !! DEPRECATED !!
- */
-long    devConnectInterrupt(
-epicsInterruptType      intType,
-unsigned                vectorNumber,
-void                    (*pFunction)(void *),
-void                    *parameter)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    switch(intType){
-    case intVME:
-    case intVXI:
-        return (*pdevLibVME->pDevConnectInterruptVME) (vectorNumber, 
-                    pFunction, parameter);
-    default:
-        return S_dev_uknIntType;
-    }
-}
-
-/*
- *
- * devDisconnectInterrupt()
- *
- * !! DEPRECATED !!
- */
-long    devDisconnectInterrupt(
-epicsInterruptType      intType,
-unsigned                vectorNumber,
-void                    (*pFunction)(void *) 
-)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    switch(intType){
-    case intVME:
-    case intVXI:
-        return (*pdevLibVME->pDevDisconnectInterruptVME) (vectorNumber, 
-                    pFunction);
-    default:
-        return S_dev_uknIntType;
-    }
-}
-
-/*
- * devEnableInterruptLevel()
- *
- * !! DEPRECATED !!
- */
-long devEnableInterruptLevel(
-epicsInterruptType      intType,
-unsigned                level)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    switch(intType){
-    case intVME:
-    case intVXI:
-        return (*pdevLibVME->pDevEnableInterruptLevelVME) (level);
-    default:
-        return S_dev_uknIntType;
-    }
-}
-
-/*
- * devDisableInterruptLevel()
- *
- * !! DEPRECATED !!
- */
-long    devDisableInterruptLevel (
-epicsInterruptType      intType,
-unsigned                level)
-{
-    long status;
-
-    if (!devLibInitFlag) {
-        status = devLibInit();
-        if (status) {
-            return status;
-        }
-    }
-
-    switch(intType){
-    case intVME:
-    case intVXI:
-        return (*pdevLibVME->pDevDisableInterruptLevelVME) (level);
-    default:
-        return S_dev_uknIntType;
-    }
-}
-
-/*
- * locationProbe
- *
- * !! DEPRECATED !!
- */
-long locationProbe (epicsAddressType addrType, char *pLocation)
-{
-    return devNoResponseProbe (addrType, (size_t) pLocation, sizeof(long));
-}
-
-/******************************************************************************
- *
- * The follwing may, or may not be present in the BSP for the CPU in use.
- *
- */
-/******************************************************************************
- *
- * Routines to use to allocate and free memory present in the A24 region.
- *
- ******************************************************************************/
-
-int devLibA24Debug = 0;     /* Debugging flag */
-
-void *devLibA24Calloc(size_t size)
-{
-  void *ret;
-
-  ret = devLibA24Malloc(size);
-
-  if (ret == NULL)
-    return (NULL);
-
-  memset(ret, 0x00, size);
-  return(ret);
-}
-
-void *devLibA24Malloc(size_t size)
-{
-    void *ret;
-    
-    if (devLibA24Debug)
-        epicsPrintf ("devLibA24Malloc(%u) entered\n", (unsigned int)size);
-    
-    ret = pdevLibVME->pDevA24Malloc(size);
-    return(ret);
-}
-
-void devLibA24Free(void *pBlock)
-{
-    if (devLibA24Debug)
-        epicsPrintf("devLibA24Free(%p) entered\n", pBlock);
-    
-    pdevLibVME->pDevA24Free(pBlock);
+    pdevLibVirtualOS = pdevLibVME2;
 }

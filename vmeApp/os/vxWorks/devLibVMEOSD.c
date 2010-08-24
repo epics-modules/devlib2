@@ -77,7 +77,7 @@ int cISRTest(void (*)(), void (**)(), void **);
  */
 
 #define EPICSAddrTypeNoConvert -1
-
+static
 int EPICStovxWorksAddrType[] 
                 = {
                 VME_AM_SUP_SHORT_IO,
@@ -137,9 +137,9 @@ static devLibVME vxVirtualOS = {
     vxDevMapAddr, vxDevReadProbe, vxDevWriteProbe, 
     vxDevConnectInterruptVME, vxDevDisconnectInterruptVME,
     vxDevEnableInterruptLevelVME, vxDevDisableInterruptLevelVME,
-    devA24Malloc,devA24Free,devInit,vxDevInterruptInUseVME
+    devA24Malloc,devA24Free,devInit
 };
-devLibVME *pdevLibVME = &vxVirtualOS;
+devLibVirtualOS *pdevLibVME2 = &vxVirtualOS;
 
 /*
  * devConnectInterruptVME
@@ -226,41 +226,6 @@ static long vxDevEnableInterruptLevelVME (unsigned level)
 #   else
         return S_dev_intEnFail;
 #   endif
-}
-
-/*
- * enable ISA interrupt level
- */
-long devEnableInterruptLevelISA (unsigned level)
-{
-#   if CPU_FAMILY == I80X86
-        int s;
-        s = sysIntEnablePIC (level);
-        if (s!=OK) {
-            return S_dev_intEnFail;
-        }
-        return 0;
-#   else
-        return S_dev_intEnFail;
-#   endif
-}
-
-/*
- * disable ISA interrupt level
- */
-long devDisableInterruptLevelISA (unsigned level)
-{
-#   if CPU_FAMILY == I80X86
-        int s;
-        s = sysIntDisablePIC (level);
-        if (s!=OK) {
-            return S_dev_intEnFail;
-        }
-#   else
-        return S_dev_intEnFail;
-#   endif
-
-    return 0;
 }
 
 /*

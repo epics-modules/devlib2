@@ -59,6 +59,7 @@ static myISR *defaultHandlerAddr[]={
  * address modes by default
  */
 #define EPICSAddrTypeNoConvert -1
+static
 int EPICStovxWorksAddrType[] 
                 = {
                 VME_AM_SUP_SHORT_IO,
@@ -117,9 +118,9 @@ static devLibVME rtemsVirtualOS = {
     rtemsDevMapAddr, rtemsDevReadProbe, rtemsDevWriteProbe, 
     rtemsDevConnectInterruptVME, rtemsDevDisconnectInterruptVME,
     rtemsDevEnableInterruptLevelVME, rtemsDevDisableInterruptLevelVME,
-    devA24Malloc,devA24Free,rtemsDevInit,rtemsDevInterruptInUseVME
+    devA24Malloc,devA24Free,rtemsDevInit
 };
-devLibVME *pdevLibVME = &rtemsVirtualOS;
+devLibVirtualOS *pdevLibVME2 = &rtemsVirtualOS;
 
 /* RTEMS specific initialization */
 static long
@@ -352,15 +353,3 @@ static void unsolicitedHandlerEPICS(int vectorNumber)
 }
 
 #endif /* defined(__PPC__) && defined(mpc750) */
-
-/*
- * Some vxWorks convenience routines
- */
-void
-bcopyLongs(char *source, char *destination, int nlongs)
-{
-    const long *s = (long *)source;
-    long *d = (long *)destination;
-    while(nlongs--)
-        *d++ = *s++;
-}
