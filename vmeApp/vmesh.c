@@ -1,12 +1,13 @@
 
 #include <stdlib.h>
 
+#include <epicsVersion.h>
 #include <epicsAssert.h>
 #include <epicsTypes.h>
 #include <epicsExport.h>
 #include <errlog.h>
 #include <iocsh.h>
-#include <devLib.h>
+#include <devcsr.h>
 
 void vmeread(epicsUInt32 addr, int amod, int dmod)
 {
@@ -72,5 +73,8 @@ void vmereadCall(const iocshArgBuf *args)
 void vmesh(void)
 {
     iocshRegister(&vmereadeFuncDef,vmereadCall);
+#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10
+    devReplaceVirtualOS();
+#endif
 }
 epicsExportRegistrar(vmesh);
