@@ -114,7 +114,7 @@ static long rtemsDevInit(void);
 /*
  * used by bind in devLib.c
  */
-static devLibVME rtemsVirtualOS = {
+static devLibVirtualOS rtemsVirtualOS = {
     rtemsDevMapAddr, rtemsDevReadProbe, rtemsDevWriteProbe, 
     rtemsDevConnectInterruptVME, rtemsDevDisconnectInterruptVME,
     rtemsDevEnableInterruptLevelVME, rtemsDevDisableInterruptLevelVME,
@@ -144,7 +144,7 @@ static long rtemsDevConnectInterruptVME (
     int status;
 
 
-    if (devInterruptInUseVME(vectorNumber)) {
+    if (rtemsDevInterruptInUseVME(vectorNumber)) {
         return S_dev_vectorInUse; 
     }
     status = BSP_installVME_isr(

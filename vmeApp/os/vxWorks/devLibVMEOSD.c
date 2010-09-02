@@ -133,7 +133,7 @@ static int vxDevInterruptInUseVME (unsigned vectorNumber);
 /*
  * used by dynamic bind in devLib.c
  */
-static devLibVME vxVirtualOS = {
+static devLibVirtualOS vxVirtualOS = {
     vxDevMapAddr, vxDevReadProbe, vxDevWriteProbe, 
     vxDevConnectInterruptVME, vxDevDisconnectInterruptVME,
     vxDevEnableInterruptLevelVME, vxDevDisableInterruptLevelVME,
@@ -154,7 +154,7 @@ static long vxDevConnectInterruptVME (
     int status;
 
 
-    if (devInterruptInUseVME(vectorNumber)) {
+    if (vxDevInterruptInUseVME(vectorNumber)) {
         return S_dev_vectorInUse; 
     }
     status = intConnect(
