@@ -219,7 +219,7 @@ For these card the vendor should document the correct way to
 set the base address.
 
 @code
-    if (devBusToLocalAddr(atVMEA24, base, &a24))
+    if (devRegisterAddress("mydrv", atVMEA24, base, 0xff, &a24))
         return 3;
 @endcode
 
