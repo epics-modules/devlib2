@@ -27,10 +27,11 @@ volatile unsigned char* devCSRProbeSlot(int slot)
     return NULL;
   }
 
+  volatile void **raw=(volatile void**)&addr;
   if( devBusToLocalAddr(
          atVMECSR,
          CSRSlotBase(slot),
-         (volatile void**)&addr) )
+         raw) )
   {
     if(vmeCSRdebug)
       printf("Failed map slot %d address 0x%08lx\n",slot,
