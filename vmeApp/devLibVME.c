@@ -18,6 +18,8 @@
  *
  * NOTES:
  * .01  06-14-93    joh needs devAllocInterruptVector() routine
+ *
+ * This is a stripped down version of the similarly named file from EPICS Base
  */
 
 static const char sccsID[] = "@(#) $Id$";

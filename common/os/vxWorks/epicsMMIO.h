@@ -1,3 +1,20 @@
+/*************************************************************************\
+* Copyright (c) 2010 Brookhaven Science Associates, as Operator of
+*     Brookhaven National Laboratory.
+* Copyright (c) 2006 The University of Chicago,
+*     as Operator of Argonne National Laboratory.
+* Copyright (c) 2006 The Regents of the University of California,
+*     as Operator of Los Alamos National Laboratory.
+* Copyright (c) 2006 The Board of Trustees of the Leland Stanford Junior
+*     University, as Operator of the Stanford Linear Accelerator Center.
+* devLib2 is distributed subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution.
+\*************************************************************************/
+/*
+ * Original Author: Eric Bjorklund  (was called mrfSyncIO.h)
+ * Author: Michael Davidsaver <mdavidsaver@bnl.gov>
+ */
+
 #ifndef EPICSMMIO_H
 #define EPICSMMIO_H
 

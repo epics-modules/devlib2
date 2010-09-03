@@ -13,6 +13,8 @@
  *
  *      Author: Jeff Hill 
  *      Date: 10-30-98  
+ *
+ * This is a stripped down version of the similarly named file from EPICS Base
  */
 
 #include <stdlib.h>

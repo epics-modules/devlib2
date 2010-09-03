@@ -6,7 +6,9 @@
 * in file LICENSE that is included with this distribution.
 \*************************************************************************/
 
-/* $Id$ */
+/* $Id$
+ * This is a copy of the similarly named file from EPICS Base
+ */
 
 #include <stdlib.h>
 

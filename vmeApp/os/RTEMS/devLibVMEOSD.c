@@ -11,6 +11,7 @@
 /*      RTEMS port by Till Straumann, <strauman@slac.stanford.edu>
  *            3/2002
  *
+ * This is a stripped down version of the similarly named file from EPICS Base
  */
 
 #include <epicsStdio.h>
