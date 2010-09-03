@@ -45,8 +45,8 @@ extern "C" {
 #  endif
 #endif
 
-#define DEVLIBVME_MAJOR 1
-#define DEVLIBVME_MINOR 0
+#define DEVLIBVME_MAJOR 1 /**< @brief API major version */
+#define DEVLIBVME_MINOR 0 /**< @brief API minor version */
 
 /** @brief ID info for a VME64(x) device
  * This structure is used to hold identifying information for a VME64

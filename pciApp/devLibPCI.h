@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-#define DEVLIBPCI_MAJOR 1
-#define DEVLIBPCI_MINOR 0
+#define DEVLIBPCI_MAJOR 1 /**< @brief API major version */
+#define DEVLIBPCI_MINOR 0 /**< @brief API minor version */
 
 /** @brief PCI device identifier
  *
@@ -122,15 +122,14 @@ typedef int (*devPCISearchFn)(void* ptr,const epicsPCIDevice* dev);
 /** @brief PCI bus search w/ callback
  *
  * Iterate through all devices in the system and invoke
- * the provided callback for all those matching the
+ * the provided callback for those matching an entry in the
  * provided ID list.
  *
  @param idlist List of PCI identifiers
  @param searchfn User callback
  @param arg User pointer
  @param opt Modifiers.  Currently unused
- @retval 0 Success
- @retval !0 Failure
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int devPCIFindCB(
@@ -142,7 +141,7 @@ int devPCIFindCB(
 
 /** @brief PCI bus probe
  *
- * Probe and test a single address.  It it matches
+ * Probe and test a single address.  If it matches,
  * the corresponding ::epicsPCIDevice instance is
  * stored in 'found'
  *
@@ -152,8 +151,7 @@ int devPCIFindCB(
  @param f function
  @param[out] found On success the results is stored here
  @param opt Modifiers.  Currently unused
- @retval 0 Success
- @retval !0 Failure
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int devPCIFindBDF(
@@ -173,8 +171,7 @@ const epicsPCIDevice **found,
  @param bar BAR number
  @param[out] ppLocalAddr Pointer to start of BAR
  @param opt Modifiers.  Currently unused
- @retval 0 Success
- @retval !0 Failure
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int
@@ -190,13 +187,14 @@ devPCIToLocalAddr(
  * Returns the size (in bytes) of the region visible through
  * the given BAR.
  *
- @warning On RTEMS and vxWorks this is a destructive operations.
+ @warning On RTEMS and vxWorks this is a invasive operation.
           When calling it ensure that nothing access the device.
-         \b "Don't call this on a device used by another driver."
+         \b Don't \b call \b this \b on \b a \b device \b used \b by \b another \b driver.
  *
  @param id PCI device pointer
  @param bar BAR number
- @returns 0 on success or an error code.
+ @param[out] len BAR size in bytes
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int
@@ -212,16 +210,17 @@ devPCIBarLen(
  * invoked whenever the device asserts
  * an interrupt.
  *
- @note Always connect the interrupt handler before allowing
-       the device to send.
+ @note Always connect the interrupt handler before enabling
+       the device to send interrupts.
  *
- @note All drivers should be prepared for the device to share an interrupt
+ @note All drivers should be prepared for their device to share an interrupt
        with other devices.
  *
  @param id PCI device pointer
  @param pFunction User ISR
  @param parameter User pointer
  @param opt Modifiers.  Currently unused
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int devPCIConnectInterrupt(
@@ -237,6 +236,7 @@ int devPCIConnectInterrupt(
  @param id PCI device pointer
  @param pFunction User ISR
  @param parameter User pointer
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int devPCIDisconnectInterrupt(
@@ -256,10 +256,13 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev);
 /** @brief Select driver implementation.
  * Pick driver implementation by name, or NULL to use default.
  * If no selection is made then the default will be used if available.
+ *
+ @param name An implementation name
+ @returns 0 on success or an EPICS error code on failure.
  */
 epicsShareFunc
 int
-devLibPCIUse(const char*);
+devLibPCIUse(const char* name);
 
 epicsShareFunc
 const char* devLibPCIDriverName();
