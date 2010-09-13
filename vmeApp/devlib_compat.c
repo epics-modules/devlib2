@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 
+#include <epicsVersion.h>
 #include <devLib.h>
 
 #define epicsExportSharedSymbols
@@ -68,3 +69,14 @@ epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
 devLibVirtualOS *pdevLibVirtualOS = NULL;
 
 #endif /* NEED_PIMPL */
+
+#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION>=10
+#include <epicsExport.h>
+
+void devReplaceVirtualOS(void)
+{
+    /* not needed after 3.14.9 */
+}
+
+epicsExportRegistrar(devReplaceVirtualOS);
+#endif

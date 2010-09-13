@@ -806,7 +806,11 @@ static long blockFind (
     return s;
 }
 
+#include <epicsExport.h>
+
 void devReplaceVirtualOS(void)
 {
     pdevLibVirtualOS = pdevLibVME2;
 }
+
+epicsExportRegistrar(devReplaceVirtualOS);
