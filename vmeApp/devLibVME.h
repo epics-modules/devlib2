@@ -31,8 +31,9 @@ extern "C" {
 #endif
 
 /*
- * epdevAddressType & EPICStovxWorksAddrType
- * devLib.c must change in unison
+ * Earlier versions of EPICS may not implement CR/CSR addressing
+ * in base devLib.  Make sure that we have a definition for atVMECSR
+ * and that atLast indicates the end of the devLib2 address tables.
  */
 
 #define atVMECSR ((epicsAddressType)4)
@@ -40,7 +41,7 @@ extern "C" {
 
 /*
  * pointer to an array of strings for each of
- * the above address types
+ * the VME address types
  */
 epicsShareExtern const char *epicsAddressTypeName2[];
 #define epicsAddressTypeName epicsAddressTypeName2

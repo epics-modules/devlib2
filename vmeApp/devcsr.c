@@ -32,9 +32,10 @@ volatile unsigned char* devCSRProbeSlot(int slot)
          CSRSlotBase(slot),
          (volatile void**)(void*)&addr) )
   {
+
     if(vmeCSRdebug)
-      printf("Failed map slot %d address 0x%08lx\n",slot,
-        (unsigned long)CSRSlotBase(slot));
+      printf("Failed to map slot %d to CR/CSR address 0x%08lx\n",slot,
+             (unsigned long)CSRSlotBase(slot));
     return NULL;
   }
 
