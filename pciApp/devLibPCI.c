@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include <ellLib.h>
+#include <errlog.h>
 #include <epicsThread.h>
 #include <epicsMutex.h>
 #include <iocsh.h>
@@ -68,7 +69,7 @@ devLibPCIRegisterDriver(devLibPCI* drv)
     for(cur=ellFirst(&pciDrivers); cur; cur=ellNext(cur)) {
         other=CONTAINER(cur, devLibPCI, node);
         if (strcmp(drv->name, other->name)==0) {
-            fprintf(stderr,"Failed to register PCI bus driver: name already taken\n");
+            errlogPrintf("Failed to register PCI bus driver: name already taken\n");
             ret=1;
             break;
         }
@@ -97,7 +98,7 @@ devLibPCIUse(const char* use)
 
     if (pdevLibPCI) {
         epicsMutexUnlock(pciDriversLock);
-        fprintf(stderr,"PCI bus driver already selected. Can't change selection\n");
+        errlogPrintf("PCI bus driver already selected. Can't change selection\n");
         return 1;
     }
 
@@ -110,7 +111,7 @@ devLibPCIUse(const char* use)
         }
     }
     epicsMutexUnlock(pciDriversLock);
-    fprintf(stderr,"PCI bus driver '%s' not found\n",use);
+    errlogPrintf("PCI bus driver '%s' not found\n",use);
     return 1;
 }
 
@@ -319,12 +320,13 @@ void
 devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
-    printf("PCI %u:%u.%u IRQ %u\n"
+    errlogFlush();
+    errlogPrintf("PCI %u:%u.%u IRQ %u\n"
            "  vendor:device %04x:%04x\n",
            dev->bus, dev->device, dev->function, dev->irq,
            dev->id.vendor, dev->id.device);
     if(lvl>=1)
-        printf("  subved:subdev %04x:%04x\n"
+        errlogPrintf("  subved:subdev %04x:%04x\n"
                "  class %06x rev %02x\n",
                dev->id.sub_vendor, dev->id.sub_device,
                dev->id.pci_class, dev->id.revision
@@ -333,7 +335,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
         return;
     for(i=0; i<PCIBARCOUNT; i++)
     {
-        printf("BAR %u %s-bit %s%s\n",i,
+        errlogPrintf("BAR %u %s-bit %s%s\n",i,
                dev->bar[i].addr64?"64":"32",
                dev->bar[i].ioport?"IO Port":"MMIO",
                dev->bar[i].below1M?" Below 1M":"");

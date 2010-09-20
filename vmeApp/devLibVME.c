@@ -222,7 +222,7 @@ long devRegisterAddress2(
     }
  
 #ifdef DEBUG
-    printf ("Req Addr 0X%X Size 0X%X\n", base, size);
+    errlogPrintf ("Req Addr 0X%X Size 0X%X\n", base, size);
 #endif
 
     epicsMutexMustLock(addrListLock);
@@ -231,14 +231,14 @@ long devRegisterAddress2(
         if (pRange->begin > base) {
             pRange = NULL;
 #           ifdef DEBUG
-                printf ("Unable to locate a free block\n");
+                errlogPrintf ("Unable to locate a free block\n");
                 devListAddressMap (&addrFree[addrType]);
 #           endif
             break;
         }
         else if (base + (size - 1) <= pRange->end) {
 #           ifdef DEBUG
-                printf ("Found free block Begin 0X%X End 0X%X\n", 
+                errlogPrintf ("Found free block Begin 0X%X End 0X%X\n",
                         pRange->begin, pRange->end);
 #           endif
             break;
@@ -719,15 +719,16 @@ static long devListAddressMap(ELLLIST *pRangeList)
             return s;
         }
     }
+    errlogFlush();
 
     epicsMutexMustLock(addrListLock);
     for (i=0; i<NELEMENTS(addrAlloc); i++) {
         pri = (rangeItem *) ellFirst(&pRangeList[i]);
         if (pri) {
-            printf ("%s Address Map\n", epicsAddressTypeName[i]);
+            errlogPrintf ("%s Address Map\n", epicsAddressTypeName[i]);
         }
         while (pri) {
-            printf ("\t0X%0*lX - 0X%0*lX physical base %p %s\n",
+            errlogPrintf ("\t0X%0*lX - 0X%0*lX physical base %p %s\n",
                 addrHexDig[i],
                 (unsigned long) pri->begin,
                 addrHexDig[i],
