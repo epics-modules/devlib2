@@ -14,8 +14,6 @@
 #define epicsExportSharedSymbols
 #include "devcsr.h"
 
-int vmeCSRdebug = 1;
-
 epicsShareFunc
 volatile unsigned char* devCSRProbeSlot(int slot)
 {
@@ -33,15 +31,13 @@ volatile unsigned char* devCSRProbeSlot(int slot)
          (volatile void**)(void*)&addr) )
   {
 
-    if(vmeCSRdebug)
-      printf("Failed to map slot %d to CR/CSR address 0x%08lx\n",slot,
-             (unsigned long)CSRSlotBase(slot));
+    printf("Failed to map slot %d to CR/CSR address 0x%08lx\n",slot,
+           (unsigned long)CSRSlotBase(slot));
     return NULL;
   }
 
   if( devReadProbe(1, addr+CR_ASCII_C, &cr[0]) ){
-    if(vmeCSRdebug>=2)
-      printf("No card in  slot %d\n",slot);
+    printf("No card in  slot %d\n",slot);
     return NULL;
   }
 
@@ -49,8 +45,7 @@ volatile unsigned char* devCSRProbeSlot(int slot)
   cr[2]='\0';
 
   if( cr[0]!='C' || cr[1]!='R' ){
-    if(vmeCSRdebug)
-      printf("Card in slot %d has non-standard CR layout.  Ignoring...\n",slot);
+    printf("Card in slot %d has non-standard CR layout.  Ignoring...\n",slot);
     return NULL;
   }
 
