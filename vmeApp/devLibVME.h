@@ -34,8 +34,9 @@ extern "C" {
  * epdevAddressType & EPICStovxWorksAddrType
  * devLib.c must change in unison
  */
-#define atVMECSR ((epicsAddressType)5)
-#define atLast ((epicsAddressType)6)
+
+#define atVMECSR ((epicsAddressType)4)
+#define atLast   ((epicsAddressType)5)
 
 /*
  * pointer to an array of strings for each of
