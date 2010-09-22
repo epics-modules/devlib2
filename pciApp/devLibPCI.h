@@ -116,6 +116,9 @@ typedef struct {
  *
  @param ptr User pointer
  @param dev PCI device pointer
+ @return 0 Continue search
+ @return 1 Abort search Ok (devPCIFindCB() returns 0)
+ @return other Abort search failed (devPCIFindCB() returns this code)
  */
 typedef int (*devPCISearchFn)(void* ptr,const epicsPCIDevice* dev);
 
@@ -125,11 +128,15 @@ typedef int (*devPCISearchFn)(void* ptr,const epicsPCIDevice* dev);
  * the provided callback for those matching an entry in the
  * provided ID list.
  *
+ * Iteration will stop when the callback returns a non-zero value.
+ * If the callback returns 1 this call will return 0.  Any other value
+ * will be returned without modification.
+ *
  @param idlist List of PCI identifiers
  @param searchfn User callback
  @param arg User pointer
  @param opt Modifiers.  Currently unused
- @returns 0 on success or an EPICS error code on failure.
+ @returns 0 on success or the error code returned by the callback.
  */
 epicsShareFunc
 int devPCIFindCB(
@@ -143,13 +150,16 @@ int devPCIFindCB(
  *
  * Probe and test a single address.  If it matches,
  * the corresponding ::epicsPCIDevice instance is
- * stored in 'found'
+ * stored in 'found'.
+ *
+ * If no compatible device is present the call returns
+ * S_dev_noDevice.
  *
  @param idlist List of PCI identifiers
  @param b bus
  @param d device
  @param f function
- @param[out] found On success the results is stored here
+ @param[out] found On success the result is stored here
  @param opt Modifiers.  Currently unused
  @returns 0 on success or an EPICS error code on failure.
  */

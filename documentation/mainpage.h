@@ -16,6 +16,25 @@ for the 3.15.x series.
 After that point devlib2 will continue to exist as a location for backports
 and bug fixes for the 3.14.x series.
 
+@section whereis Source
+
+Releases can be found at @url http://sourceforge.net/projects/epics/files/devlib2/
+
+This module is versioned with Mercurial and can be viewed at
+@url http://epics.hg.sourceforge.net/hgweb/epics/devlib2/
+
+Or checked out with
+
+hg clone http://epics.hg.sourceforge.net:8000/hgroot/epics/devlib2
+
+The canonical version of this page is @url http://epics.sourceforge.net/devlib2/
+
+@subsection requires Requires
+
+EPICS Base >= 3.14.8.2
+
+@url http://www.aps.anl.gov/epics/
+
 @section features Features
 
 devLib2 adds features in several areas: PCI bus access, VME64x CSR/CSR,
@@ -40,8 +59,8 @@ even those which lack an implementation.
 
 The VME64x library provides several functions for accessing the CSR/CR
 address space defined by VME64 and extended by VME64x.
-This includes: probing by slot number and matching by indentifier registers,
-definitions for standard registers, and functions to access them.
+This includes: probing by slot number and matching by identifier registers,
+definitions of standard registers, and functions to access them.
 
 @li @ref vmecsr "API Docmentation"
 
@@ -52,7 +71,7 @@ definitions for standard registers, and functions to access them.
 @subsection mmiosec MMIO
 
 The MMIO library provides an OS and CPU architecture independent way to
-safely access memory mapped I/O devices.  It makes guarantees on
+safely access memory mapped I/O devices.  Makes guarantees of
 the width and order of accesses.
 
 @li @ref mmio "API Docmentation"
@@ -110,7 +129,7 @@ myVMECardSetup(const char* port,
 
     if( portExists(port) ) return 1;
 
-    if (devPCIFindCB(mydevids, b,d,f, &dev, 0))
+    if (devPCIFindBDF(mydevids, b,d,f, &dev, 0))
         return 2;
 @endcode
 
@@ -278,12 +297,12 @@ The devLib2 PCI driver treats each as a PCI BAR.
 @section shouldi When to Use
 
 It is importent to consider writing a full kernel module.
-The advantage of the UIO interface are simpler development with access to userspace tools and safeguards.
+The advantage of the UIO interface is simpler development with access to userspace tools and safeguards.
 Also compatibility with RTEMS and vxWorks.
-Its disadvantage is increased latency, being forced to be compatible with RTEMS and vxWorks,
+The disadvantage is increased latency, being forced to be compatible with RTEMS and vxWorks,
 and being restricted in use to EPICS code.
 
-It is likely that devices needing low latency, high throughput, or needing access to features like DMA
+It is likely that devices needing low latency, high throughput, or access to features like DMA
 would be better served by writing a full kernel module.
 
 @section linuxrefs References

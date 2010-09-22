@@ -201,7 +201,8 @@ nat_iowrite32(volatile void* addr, epicsUInt32 val)
  *'T' can either be 'le', 'be', or 'nat' (except ioread8 and
  *iowrite8).
  *
- *The macros defined use OS specific extensions to ensure the following.
+ *The macros defined use OS specific extensions (when available)
+ *to ensure the following.
  *
  *@li Width.  A 16 bit operation will not be broken into two 8 bit operations,
  *           or one half of a 32 bit operation.

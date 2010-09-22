@@ -1,6 +1,9 @@
 
 devLib2 - Library for direct MMIO access to PCI and VME64x
 
+Version 2.0
+Sept. 2010
+
 Michael Davidsaver <mdavidsaver@bnl.gov>
 
 
@@ -13,14 +16,22 @@ for the 3.15.x series.
 After that point devlib2 will continue to exist as a location for backports
 and bug fixes for the 3.14.x series.
 
+Releases are found at:
+
+http://sourceforge.net/projects/epics/files/
+
 Requires:
 
 EPICS Base >= 3.14.8.2
 
 http://www.aps.anl.gov/epics/
 
-For details see documentation/mainpage.h
-This is formatted for the Doxygen documentation generator (http://www.doxygen.org/).
+For details see 
+
+http://epics.sourceforge.net/devlib2
+
+This documentation is generated from source in this module (documentation/mainpage.h)
+formatted for the Doxygen documentation generator (http://www.doxygen.org/).
 
 $ cd documentation
 $ doxygen Doxyfile
