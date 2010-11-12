@@ -16,7 +16,7 @@
 #include "osdPciShared.h"
 
 #if defined(VXPCIINTOFFSET)
-// do nothing
+/* do nothing */
 
 #elif defined(INT_NUM_IRQ0)
 #define VXPCIINTOFFSET INT_NUM_IRQ0

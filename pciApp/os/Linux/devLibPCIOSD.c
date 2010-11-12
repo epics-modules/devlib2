@@ -664,7 +664,7 @@ int linuxDevPCIConnectInterrupt(
   unsigned int opt
 )
 {
-    char name[10]; /* RTEMS native names are only 4 chars long */
+    char name[10];
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
