@@ -66,7 +66,11 @@ epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
 
 #ifdef NEED_PIMPL
 
+#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<12
 devLibVirtualOS *pdevLibVirtualOS = NULL;
+#else
+devLibVME *pdevLibVirtualOS = NULL;
+#endif
 
 #endif /* NEED_PIMPL */
 
