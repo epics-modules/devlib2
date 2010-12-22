@@ -27,6 +27,7 @@
 
 #ifdef NEED_IFACE
 
+#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<12
 /*
  * Most devlib function go through an indirection table with a null
  * implimentation provided for systems which doen't impliment some
@@ -61,6 +62,8 @@ epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
 {
    return -1; /* Not implemented in Base <= 3.14.11 */
 }
+#endif /* EPICS < 3.14.12 */
+
 
 #endif /* NEED_IFACE */
 
