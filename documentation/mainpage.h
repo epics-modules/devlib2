@@ -76,6 +76,20 @@ the width and order of accesses.
 
 @li @ref mmio "API Docmentation"
 
+@section changelog Changelog
+
+@subsection ver21 2.1 (Jan. 2011)
+
+@li Fix build issue with 3.14.12 with RTEMS pc386 (found by Jim Chen from Hytec)
+@li Add notification of missed PCI interrupt events on Linux
+@li Additional arguement 'count' for vmeread() to show blocks of registers
+@li Add section to PCI Usage on x86 Port I/O
+@li Add section to PCI Access in Linux concerning hardware requirements
+
+@subsection ver20 2.0 (Sept. 2010)
+
+@li Initial release.
+
 @author Michael Davidsaver <mdavidsaver@bnl.gov>
 
 */
@@ -90,18 +104,18 @@ These will likely be included in the card vendor's documentation,
 but can be verified by observing the OS boot messages or with the devPCIShow()
 function.
 
-Including this identifing information in your code provides an important
-safe guard against user misconfiguration.  This provides an easy way
+Including this identifying information in your code provides an important
+safe guard against user mis-configuration.  This provides an easy way
 to prevent your code from trying to access the wrong type of device.
 
 PCI devices are uniquely identified by the triplet bus:device.function.
 While it is possible
 to automatically detect cards it is preferable to have a user defined
 mapping between physical id (b:d.f) and logical id (Asyn port, device ID, etc.).
-This allows for consitent naming even if cards are added or removed
+This allows for consistent naming even if cards are added or removed
 from the system.
 
-For EPICS drivers initialization will usualy be done with an IOC shell
+For EPICS drivers initialization will usually be done with an IOC shell
 function.  For example:
 
 @code
@@ -161,6 +175,24 @@ Then connect the interrupt service routine.
 
 And that is it.
 
+@section pciiotypes Note on PCI I/O Types
+
+The PCI bus has the notion of two different I/O address types:
+Memory Mapped, and Port.
+This distinction comes from the x86 processor for which these are
+two separate address spaces which must be accessed using different
+instructions (load/store vs. out/in).
+
+Each BAR must either be accessed using Memory Mapped I/O (MMIO),
+or Port I/O (PIO) operations. This can be determined by inspecting
+the 'ioport' member of the ::PCIBar structure.
+
+If the value is false (0) then @ref mmio "MMIO operations" should be used.
+
+If however, the value is true (1) then the pointer returned by devPCIToLocalAddr()
+needs to be treated as a PIO address.  It should be cast to the appropriate type
+and access using OS defined PIO operations (ie inb/outb).
+
 */
 
 /**
@@ -175,17 +207,17 @@ The library functions vmecsrdump(lvl) and vmecsrprint(slot,lvl)
 can be used for this.  See the IOC shell section for detail on
 these functions.
 
-Including this identifing information in your code provides an important
-safe guard against user misconfiguration.  This provides an easy way
+Including this identifying information in your code provides an important
+safe guard against user mis-configuration.  This provides an easy way
 to prevent your code from trying to access the wrong type of device.
 
 To initialize you must know its slot number.  While it is possible
 to automatically detect cards it is preferable to have a user defined
 mapping between physical id (slot#) and logical id (Asyn port, device ID, etc.).
-This allows for consitent naming even if cards are added or removed
+This allows for consistent naming even if cards are added or removed
 from the system.
 
-For EPICS drivers initialization will usualy be done with an IOC shell
+For EPICS drivers initialization will usually be done with an IOC shell
 function.  For example:
 
 @code
@@ -193,7 +225,7 @@ myVMECardSetup("dac", 5, 0x210000, 4, 0x60)
 @endcode
 
 Would set card "dac" to be the card in slot 5.
-This immaginary card is given an A24 base address of 0x210000,
+This imaginary card is given an A24 base address of 0x210000,
 and set to generate interrupt vector 0x60 at level 4.
 
 Below is an example implementation of myVMECardSetup().
@@ -287,16 +319,18 @@ To support this an additional small kernel module must be written for each devic
 being supported.
 The main purpose of the kernel module is to provide an interrupt handler in kernel context
 to silence the interrupt.
-The UIO framework then notifies the userspace application that an interrupt has occured.
+The UIO framework then notifies the userspace application that an interrupt has occurred.
 Once serviced the interrupt must be reenabled by the application.
 
 A UIO kernel module will expose several memory regions.
 These can be MMIO or main memory.
 The devLib2 PCI driver treats each as a PCI BAR.
 
+@note This code is under development.  All testing result (positive or negative) are welcomed.
+
 @section shouldi When to Use
 
-It is importent to consider writing a full kernel module.
+It is important to consider writing a full kernel module.
 The advantage of the UIO interface is simpler development with access to userspace tools and safeguards.
 Also compatibility with RTEMS and vxWorks.
 The disadvantage is increased latency, being forced to be compatible with RTEMS and vxWorks,
@@ -304,6 +338,26 @@ and being restricted in use to EPICS code.
 
 It is likely that devices needing low latency, high throughput, or access to features like DMA
 would be better served by writing a full kernel module.
+
+@section hwrequire Hardware Requirements
+
+When servicing interrupts from a userspace process it is not possible to globally
+disable interrupts.  Thus it is not possible to rely on epicsInterruptLock()
+when accessing resources which must be shared between kernel and user-space.
+
+This makes it difficult to perform read-modify-write operations
+on shared registers.  This can be an intractable problem
+for a device which implements its interrupt enable register as a bit mask.
+
+When evaluating hardware for the suitability look for a single register
+which can disable/enable interrupts without resetting interrupt active
+flags.
+
+This should not be an issue for devices having a single interrupt condition.
+Devices using PCI to local bus bridges like the PLX PCI9030 should be usable.
+Also, devices supporting version 2.3 or greater of PCI standard can make use
+of the standard master interrupt enable/status bits in the control and status
+registers.
 
 @section linuxrefs References
 

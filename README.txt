@@ -1,8 +1,8 @@
 
 devLib2 - Library for direct MMIO access to PCI and VME64x
 
-Version 2.0
-Sept. 2010
+Version 2.1
+Jan. 2011
 
 Michael Davidsaver <mdavidsaver@bnl.gov>
 

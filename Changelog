@@ -1,0 +1,16 @@
+
+Version 2.1
+
+  * Fix build issue with 3.14.12 with RTEMS pc386
+       (found by Jim Chen from Hytec)
+  * Add notification of missed PCI interrupt events on Linux
+  * Additional argument 'count' for vmeread() to show blocks of registers
+  * Add documentation sections on x86 Port I/O and Linux requirements
+
+ -- Michael Davidsaver<mdavidsaver@bnl.gov> Fri, 14 Jan 2011 10:53:22 -0500
+
+Version 2.0
+
+  * Initial release
+
+ -- Michael Davidsaver<mdavidsaver@bnl.gov> Wed, 22 Sep 2010 14:12:35 -0400
