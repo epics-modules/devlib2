@@ -664,7 +664,7 @@ int linuxDevPCIConnectInterrupt(
   unsigned int opt
 )
 {
-    char name[10]; /* RTEMS native names are only 4 chars long */
+    char name[10];
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
@@ -722,7 +722,7 @@ void isrThread(void* arg)
     osdISR *isr=arg;
     osdPCIDevice *osd=isr->osd;
     int interrupted=0, ret;
-    epicsInt32 event;
+    epicsInt32 event, next=0;
     const char* name;
     sigset_t allow;
     int isrflag;
@@ -774,7 +774,11 @@ void isrThread(void* arg)
         } else
             interrupted=1;
 
-        /* the 'event' number isn't used */
+        if (next!=event && next!=0) {
+            errlogPrintf("isrThread '%s' missed %d events\n",
+                         name, event-next);
+        }
+        next=event+1;
 
         epicsMutexMustLock(osd->devLock);
     }
