@@ -23,6 +23,7 @@ epicspci_SRCS_RTEMS += osdPciShared.c
 epicspci_SRCS_vxWorks += osdPciShared.c
 
 epicspci_SRCS += devLibPCIOSD.c
+epicspci_SRCS += pcish.c
 
 epicspci_LIBS += Com
 
