@@ -138,7 +138,7 @@ long pagesize;
 
 #define BUSBASE "/sys/bus/pci/devices/0000:%02x:%02x.%1x/"
 
-#define UIO     "uio:uio%u/"
+#define UIONUM     "uio%u"
 
 #define fbad(FILE) ( feof(FILE) || ferror(FILE))
 
@@ -243,12 +243,59 @@ read_sysfs_hex(int *err, const char *fileformat, ...)
     return ret;
 }
 
+/* location of UIO entries in sysfs tree
+ *
+ * circa 2.6.28
+ * in /sys/bus/pci/devices/0000:%02x:%02x.%1x/
+ * called uio:uio#
+ *
+ * circa 2.6.32
+ * in /sys/bus/pci/devices/0000:%02x:%02x.%1x/uio/
+ * called uio#
+ */
+static const
+struct locations_t {
+    const char *dir, *name;
+} locations[] = {
+{BUSBASE,        "uio:" UIONUM},
+{BUSBASE "uio/", UIONUM},
+{NULL,NULL}
+};
+
 static
-int match_uio(const struct dirent *ent)
+int match_uio(const char *pat, const struct dirent *ent)
 {
     unsigned int X;
     /* poor mans regexp... */
-    return sscanf(ent->d_name, "uio:uio%u", &X)==1;
+    return sscanf(ent->d_name, pat, &X)==1;
+}
+
+static
+int find_uio_number2(const char* dname, const char* pat)
+{
+    int ret=-1;
+    DIR *d;
+    struct dirent *ent;
+
+    d=opendir(dname);
+    if (!d)
+        return ret;
+
+    while ((ent=readdir(d))!=NULL) {
+        if (!match_uio(pat, ent))
+            continue;
+        if (sscanf(ent->d_name, pat, &ret)==1) {
+            break;
+        }
+        ret=-1;
+    }
+
+    closedir(d);
+
+    if (ret==-1)
+        errno=ENOENT;
+
+    return ret;
 }
 
 /* Each PCI device with a UIO instance attached to in should have
@@ -259,42 +306,46 @@ static
 int
 find_uio_number(const struct osdPCIDevice* osd)
 {
-    int N, ret=-1;
-    char *devdir;
-    struct dirent **namelist=NULL;
+    int ret=-1;
+    char *devdir=NULL;
+    const struct locations_t *curloc;
 
-    devdir=allocPrintf(BUSBASE, osd->dev.bus, osd->dev.device, osd->dev.function);
-    if (!devdir)
-        goto fail;
+    for(curloc=locations; curloc->dir; ++curloc)
+    {
+        free(devdir);
 
-    N=scandir(devdir, &namelist, match_uio, alphasort );
-    if (N<0) {
-        errlogPrintf("find_uio_number: Search of %s failed\n",devdir);
-        perror("scandir");
-        goto fail;
-    } else if (N==0) {
-        errlogPrintf("No UIO driver associated with %u:%u.%u\n"
-                     "Looked in %s",
-                     osd->dev.bus, osd->dev.device, osd->dev.function,
-                     devdir);
-        goto fail;
-    } else if (N>1) {
-        errlogPrintf("Warning: More the one driver associated with  %u:%u.%u\n"
-                     "Using %s/%s",
-                     osd->dev.bus, osd->dev.device, osd->dev.function,
-                     devdir, namelist[0]->d_name);
-        goto fail;
+        devdir=allocPrintf(curloc->dir, osd->dev.bus, osd->dev.device, osd->dev.function);
+        if (!devdir)
+            goto fail;
+
+        ret=find_uio_number2(devdir, curloc->name);
+        if (ret<0) {
+            if(errno==ENOENT)
+                continue;
+
+            errlogPrintf("find_uio_number: Search of %s failed\n",devdir);
+            perror("opendir");
+            goto fail;
+
+        } else
+            break;
     }
-    /* N==1 */
-    if (sscanf(namelist[0]->d_name, "uio:uio%u", &ret)!=1) {
-        errlogPrintf("find_uio_number: Someone changed the match conditions and didn't update me!\n");
-        ret=-1;
-        goto fail;
+
+    if (ret==-1) {
+        errlogPrintf("After looking:\n");
+        for(curloc=locations; curloc->dir; ++curloc)
+        {
+            devdir=allocPrintf(curloc->dir, osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf("in %s for %s\n",devdir,curloc->name);
+            free(devdir);
+        }
+        devdir=NULL;
+        errlogPrintf("Failed to find device %u:%u.%u\n",
+                     osd->dev.bus, osd->dev.device, osd->dev.function);
     }
 
     /* ret set by sscanf */
 fail:
-    free(namelist);
     free(devdir);
     return ret;
 }
