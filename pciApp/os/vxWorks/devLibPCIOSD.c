@@ -77,12 +77,46 @@ int vxworksDevPCIDisconnectInterrupt(
   return 1;
 }
 
+static
+int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
+                          unsigned int bar, volatile void **loc,
+                          unsigned int o)
+{
+  int ret, space=0;
+  volatile void *pci;
+
+  ret=sharedDevPCIToLocalAddr(dev, bar, &pci, o);
+
+  if(ret)
+    return ret;
+
+#if defined(PCI_SPACE_MEMIO_PRI)
+  if(!dev->bar[bar].ioport) {
+    space = PCI_SPACE_MEMIO_PRI;
+  }
+#endif
+
+#if defined(PCI_SPACE_IO_PRI)
+  if(dev->bar[bar].ioport) {
+    space = PCI_SPACE_IO_PRI;
+  }
+#endif
+
+  if(space) {
+    if(sysBusToLocalAdrs(space, (char*)pci, (char**)loc))
+      return -1;
+  } else {
+    *loc=pci;
+  }
+
+  return 0;
+}
 
 devLibPCI pvxworksPCI = {
   "native",
   NULL, NULL,
   sharedDevPCIFindCB,
-  sharedDevPCIToLocalAddr,
+  vxworksPCIToLocalAddr,
   sharedDevPCIBarLen,
   vxworksDevPCIConnectInterrupt,
   vxworksDevPCIDisconnectInterrupt

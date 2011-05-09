@@ -3,6 +3,7 @@
 
 #include <vxWorks.h>
 #include <types.h>
+#include <pci.h>
 #include <drv/pci/pciConfigLib.h>
 #include <sysLib.h>
 #include <vxLib.h>
