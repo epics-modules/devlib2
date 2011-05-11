@@ -71,7 +71,7 @@ void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
     return;
   }
 
-  epicsPrintf("Mapped to 0x%08x for %d bytes\n",(unsigned int)mptr,dbytes*count);
+  epicsPrintf("Mapped to 0x%08lx for %d bytes\n",(unsigned long)mptr,dbytes*count);
 
   if( devReadProbe(
     dbytes,
