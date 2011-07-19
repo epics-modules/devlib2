@@ -23,6 +23,3 @@
 # If you don't want to install into $(TOP) then
 # define INSTALL_LOCATION here
 #INSTALL_LOCATION=<fullpathname>
-
-USR_CFLAGS += -Werror
-USR_CXXFLAGS += -Werror
