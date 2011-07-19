@@ -22,6 +22,11 @@
 /*  Required Header Files                                                                         */
 /**************************************************************************************************/
 
+/* This is needed on vxWorks 6.8 */
+#ifndef _VSB_CONFIG_FILE
+#  define _VSB_CONFIG_FILE <../lib/h/config/vsbConfig.h>
+#endif
+
 #include  <vxWorks.h>                           /* vxWorks common definitions                     */
 #include  <vxAtomicLib.h>                       /* vxWorks atomic operator definitions            */
 #include  <sysLib.h>                            /* vxWorks System Library Definitions             */
