@@ -6,3 +6,4 @@ O.*
 ^lib$
 ^envPaths$
 ^html$
+^documentation/doc$
