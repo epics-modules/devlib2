@@ -41,7 +41,7 @@ int matchbdf(void* raw,const epicsPCIDevice* dev)
     return 1;
 }
 
-void pcidiagset(int b, int d, int f, int bar, int vendor, int device)
+void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
 {
     epicsUInt32 len=0;
     struct bdf loc;
@@ -52,9 +52,9 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device)
 
     printf("Looking for %u:%u.%u\n", b, d, f);
 
-    if(vendor==0)
+    if(vendor==0 && !exact)
         ids[0].vendor=DEVPCI_ANY_VENDOR;
-    if(device==0)
+    if(device==0 && !exact)
         ids[0].device=DEVPCI_ANY_DEVICE;
 
     loc.b=b;
@@ -156,14 +156,15 @@ static const iocshArg pcidiagsetArg2 = { "Function",iocshArgInt};
 static const iocshArg pcidiagsetArg3 = { "BAR",iocshArgInt};
 static const iocshArg pcidiagsetArg4 = { "PCI vendor ID",iocshArgInt};
 static const iocshArg pcidiagsetArg5 = { "PCI device ID",iocshArgInt};
-static const iocshArg * const pcidiagsetArgs[6] =
-    {&pcidiagsetArg0,&pcidiagsetArg1,&pcidiagsetArg2,&pcidiagsetArg3,&pcidiagsetArg4,&pcidiagsetArg5};
+static const iocshArg pcidiagsetArg6 = { "exact",iocshArgInt};
+static const iocshArg * const pcidiagsetArgs[7] =
+    {&pcidiagsetArg0,&pcidiagsetArg1,&pcidiagsetArg2,&pcidiagsetArg3,&pcidiagsetArg4,&pcidiagsetArg5,&pcidiagsetArg6};
 static const iocshFuncDef pcidiagsetFuncDef =
-    {"pcidiagset",6,pcidiagsetArgs};
+    {"pcidiagset",7,pcidiagsetArgs};
 
 void pcidiagsetCall(const iocshArgBuf *args)
 {
-    pcidiagset(args[0].ival, args[1].ival, args[2].ival, args[3].ival, args[4].ival, args[5].ival);
+    pcidiagset(args[0].ival, args[1].ival, args[2].ival, args[3].ival, args[4].ival, args[5].ival, args[6].ival);
 }
 
 static const iocshArg pcireadArg0 = { "data width (8,16,32)",iocshArgInt};
