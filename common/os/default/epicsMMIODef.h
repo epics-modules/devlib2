@@ -114,6 +114,10 @@ nat_iowrite32(volatile void* addr, epicsUInt32 val)
 #elif EPICS_BYTE_ORDER == EPICS_ENDIAN_LITTLE
 
 #include <arpa/inet.h>
+#ifdef __rtems__
+   // some rtems bsps (pc386) don't provide htonl correctly
+#  include <rtems/endian.h>
+#endif
 
 /** @ingroup mmio
  *@{
