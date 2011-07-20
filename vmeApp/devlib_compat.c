@@ -16,11 +16,13 @@
 #define epicsExportSharedSymbols
 #include <shareLib.h>
 
-#ifdef __rtems__
+#if defined(__rtems__)
 #  if !defined(__PPC__) && !defined(__mcf528x__)
 #    define NEED_IFACE
 #    define NEED_PIMPL
 #  endif
+#elif defined(__vxWorks__)
+ /* nothing needed */
 #else
 #  define NEED_IFACE
 #endif
@@ -77,7 +79,7 @@ devLibVME *pdevLibVirtualOS = NULL;
 
 #endif /* NEED_PIMPL */
 
-#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION>=10
+#if !(EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10)
 #include <epicsExport.h>
 
 void devReplaceVirtualOS(void)
