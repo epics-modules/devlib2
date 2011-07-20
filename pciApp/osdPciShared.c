@@ -215,12 +215,17 @@ int sharedDevPCIFind(epicsUInt16 dev,epicsUInt16 vend,ELLLIST* store)
 
     err=pci_find_device(vend,dev,N, &b, &d, &f);
     if(err){ /* No more */
+      if(N==0 && devPCIDebug>=1)
+        errlogPrintf("sharedDevPCIFind: found no vendor:device with %04x:%04x\n",vend,dev);
       free(next);
       break;
     }
     next->dev.bus=b;
     next->dev.device=d;
     next->dev.function=f;
+
+    if(devPCIDebug>=1)
+      errlogPrintf("sharedDevPCIFind found %d.%d.%d\n",b,d,f);
 
     pci_read_config_word(b,d,f,PCI_DEVICE_ID, &val16);
     next->dev.id.device=val16;
@@ -267,6 +272,12 @@ int sharedDevPCIFind(epicsUInt16 dev,epicsUInt16 vend,ELLLIST* store)
 
     pci_read_config_byte(b,d,f,PCI_INTERRUPT_LINE, &val8);
     next->dev.irq=val8;
+
+    if(devPCIDebug>=1)
+      errlogPrintf(" as pri %04x:%04x sub %04x:%04x cls %06x\n",
+                   next->dev.id.vendor, next->dev.id.device,
+                   next->dev.id.sub_vendor, next->dev.id.sub_device,
+                   next->dev.id.pci_class);
 
     ellInsert(store,NULL,&next->node);
   }

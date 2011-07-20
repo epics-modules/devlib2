@@ -277,6 +277,8 @@ devLibPCIUse(const char* name);
 epicsShareFunc
 const char* devLibPCIDriverName();
 
+extern int devPCIDebug;
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

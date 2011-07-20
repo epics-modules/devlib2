@@ -34,6 +34,8 @@
 # endif
 #endif
 
+int devPCIDebug = 0;
+
 static ELLLIST pciDrivers = {{NULL,NULL},0};
 
 static devLibPCI *pdevLibPCI=NULL;
@@ -385,3 +387,5 @@ void devLibPCIIOCSH()
 }
 
 epicsExportRegistrar(devLibPCIIOCSH);
+
+epicsExportAddress(int,devPCIDebug);
