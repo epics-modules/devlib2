@@ -28,7 +28,6 @@
 #endif
 
 #include  <vxWorks.h>                           /* vxWorks common definitions                     */
-#include  <vxAtomicLib.h>                       /* vxWorks atomic operator definitions            */
 #include  <sysLib.h>                            /* vxWorks System Library Definitions             */
 
 #include  <epicsTypes.h>                        /* EPICS Common Type Definitions                  */
