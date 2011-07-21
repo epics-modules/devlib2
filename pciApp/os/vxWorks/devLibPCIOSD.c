@@ -114,7 +114,7 @@ int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
 
 devLibPCI pvxworksPCI = {
   "native",
-  NULL, NULL,
+  sharedDevPCIInit, NULL,
   sharedDevPCIFindCB,
   vxworksPCIToLocalAddr,
   sharedDevPCIBarLen,

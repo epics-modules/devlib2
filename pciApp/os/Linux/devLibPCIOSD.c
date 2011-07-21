@@ -464,6 +464,16 @@ int linuxDevPCIInit(void)
             fail=0;
         }
 
+        if(devPCIDebug>=1) {
+            errlogPrintf("linuxDevPCIInit found %d.%d.%d\n",
+                         osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf(" as pri %04x:%04x sub %04x:%04x cls %06x\n",
+                         osd->dev.id.vendor, osd->dev.id.device,
+                         osd->dev.id.sub_vendor, osd->dev.id.sub_device,
+                         osd->dev.id.pci_class);
+            errlogFlush();
+        }
+
         /* Read BAR info */
 
         /* Base address */
