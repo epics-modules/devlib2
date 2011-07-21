@@ -77,7 +77,7 @@ int rtemsDevPCIDisconnectInterrupt(
 
 devLibPCI prtemsPCI = {
   "native",
-  NULL, NULL,
+  sharedDevPCIInit, NULL,
   sharedDevPCIFindCB,
   sharedDevPCIToLocalAddr,
   sharedDevPCIBarLen,

@@ -76,4 +76,6 @@ sharedDevPCIBarLen(
   epicsUInt32 *len
 );
 
+int sharedDevPCIInit(void);
+
 #endif /* OSDPCISHARED_H_INC */

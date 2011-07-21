@@ -12,6 +12,8 @@
 
 #include <ellLib.h>
 #include <errlog.h>
+#include <epicsMutex.h>
+#include <epicsInterrupt.h>
 
 #include "devLibPCIImpl.h"
 
@@ -19,6 +21,9 @@
 
 #define epicsExportSharedSymbols
 #include "osdPciShared.h"
+
+/* Guards access to the devices, and dev_vend_cache lists */
+static epicsMutexId sharedGuard;
 
 /* List of osdPCIDevice */
 static ELLLIST devices;
@@ -33,6 +38,15 @@ static ELLLIST dev_vend_cache;
 
 static
 int fill_cache(epicsUInt16 dev,epicsUInt16 vend);
+
+int
+sharedDevPCIInit(void)
+{
+    sharedGuard = epicsMutexCreate();
+    if(sharedGuard)
+        return 0;
+    return S_dev_internal;
+}
 
 /*
  * Machinery for searching for PCI devices.
@@ -56,6 +70,9 @@ sharedDevPCIFindCB(
   if(!searchfn || !idlist)
     return S_dev_badArgument;
 
+  if(epicsMutexLock(sharedGuard)!=epicsMutexLockOK)
+    return S_dev_internal;
+
   /*
    * Ensure all entries for the requested device/vendor pairs
    * are in the 'devices' list.
@@ -65,10 +82,11 @@ sharedDevPCIFindCB(
        search->vendor==DEVPCI_ANY_VENDOR)
     {
       errlogPrintf("devPCI: Wildcards are not supported in Device and Vendor fields\n");
-      return S_dev_badRequest;
+      err=S_dev_badRequest;
+      goto done;
     }
     if( (err=fill_cache(search->device, search->vendor)) )
-      return err;
+      goto done;
   }
 
   cur=ellFirst(&devices);
@@ -110,16 +128,19 @@ sharedDevPCIFindCB(
       case 0: /* Continue search */
         break;
       case 1: /* Abort search OK */
-        return 0;
+        err=0;
       default:/* Abort search Err */
-        return err;
+        goto done;
       }
 
     }
 
   }
 
-  return 0;
+  err=0;
+done:
+  epicsMutexUnlock(sharedGuard);
+  return err;
 }
 
 int
@@ -131,6 +152,10 @@ sharedDevPCIToLocalAddr(
 )
 {
   struct osdPCIDevice *osd=pcidev2osd(dev);
+
+  /* No locking since the base address is not changed
+   * after the osdPCIDevice is created
+   */
 
   if(!osd->base[bar])
     return S_dev_addrMapFail;
@@ -149,12 +174,21 @@ sharedDevPCIBarLen(
   struct osdPCIDevice *osd=pcidev2osd(dev);
   int b=dev->bus, d=dev->device, f=dev->function;
   UINT32 start, max, mask;
+  long iflag;
 
   if(!osd->base[bar])
     return S_dev_badSignalNumber;
 
-  if(osd->len[bar])
+  /* Disable interrupts since we are changing a device's PCI BAR
+   * register.  This is not safe to do on an active device.
+   * Disabling interrupts avoids some, but not all, of these problems
+   */
+  iflag=epicsInterruptLock();
+
+  if(osd->len[bar]) {
+    epicsInterruptUnlock(iflag);
     return osd->len[bar];
+  }
 
   /* Note: the following assumes the bar is 32-bit */
 
@@ -175,8 +209,10 @@ sharedDevPCIBarLen(
   pci_read_config_dword(b,d,f,PCI_BASE_ADDRESS(bar), &start);
 
   /* If the BIOS didn't set this BAR then don't mess with it */
-  if((start&mask)==0)
+  if((start&mask)==0) {
+    epicsInterruptUnlock(iflag);
     return S_dev_badRequest;
+  }
 
   pci_write_config_dword(b,d,f,PCI_BASE_ADDRESS(bar), mask);
   pci_read_config_dword(b,d,f,PCI_BASE_ADDRESS(bar), &max);
@@ -189,6 +225,7 @@ sharedDevPCIBarLen(
   osd->len[bar] = max & ~(max-1);
 
   *len=osd->len[bar];
+  epicsInterruptUnlock(iflag);
   return 0;
 }
 
