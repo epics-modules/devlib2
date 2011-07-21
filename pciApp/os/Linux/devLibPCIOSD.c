@@ -590,7 +590,7 @@ linuxDevPCIFindCB(
   osdPCIDevice *curdev=NULL;
   const epicsPCIID *search;
 
-  if(!searchfn)
+  if(!searchfn || !idlist)
     return S_dev_badArgument;
 
   epicsMutexMustLock(pciLock);
@@ -600,7 +600,7 @@ linuxDevPCIFindCB(
       curdev=CONTAINER(cur,osdPCIDevice,node);
       epicsMutexMustLock(curdev->devLock);
 
-      for(search=idlist; search && !!search->device; search++){
+      for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
 
           if(search->device!=DEVPCI_ANY_DEVICE &&
              search->device!=curdev->dev.id.device)

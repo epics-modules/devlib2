@@ -53,14 +53,14 @@ sharedDevPCIFindCB(
   osdPCIDevice *curdev=NULL;
   const epicsPCIID *search;
 
-  if(!searchfn)
+  if(!searchfn || !idlist)
     return S_dev_badArgument;
 
   /*
    * Ensure all entries for the requested device/vendor pairs
    * are in the 'devices' list.
    */
-  for(search=idlist; search && !!search->device; search++){
+  for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
     if(search->device==DEVPCI_ANY_DEVICE ||
        search->vendor==DEVPCI_ANY_VENDOR)
     {

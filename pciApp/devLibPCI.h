@@ -66,8 +66,10 @@ typedef struct {
 #define DEVPCI_ANY_CLASS 0x1000000
 #define DEVPCI_ANY_REVISION 0x100
 
+#define DEVPCI_LAST_DEVICE 0xffff0000
+
 /** @brief The last item in a list of PCI IDS */
-#define DEVPCI_END {0,0,0,0,0,0}
+#define DEVPCI_END {DEVPCI_LAST_DEVICE,0,0,0,0,0}
 
 #define DEVPCI_DEVICE_VENDOR(dev,vend) \
 { dev, vend, DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
