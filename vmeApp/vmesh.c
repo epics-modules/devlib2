@@ -106,12 +106,12 @@ static const iocshArg * const vmereadArgs[4] =
 static const iocshFuncDef vmereadeFuncDef =
     {"vmeread",4,vmereadArgs};
 
-void vmereadCall(const iocshArgBuf *args)
+static void vmereadCall(const iocshArgBuf *args)
 {
     vmeread(args[0].ival, args[1].ival, args[2].ival, args[3].ival);
 }
 
-void vmesh(void)
+static void vmesh(void)
 {
     iocshRegister(&vmereadeFuncDef,vmereadCall);
 #if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10

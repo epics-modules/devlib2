@@ -162,7 +162,7 @@ static const iocshArg * const pcidiagsetArgs[7] =
 static const iocshFuncDef pcidiagsetFuncDef =
     {"pcidiagset",7,pcidiagsetArgs};
 
-void pcidiagsetCall(const iocshArgBuf *args)
+static void pcidiagsetCall(const iocshArgBuf *args)
 {
     pcidiagset(args[0].ival, args[1].ival, args[2].ival, args[3].ival, args[4].ival, args[5].ival, args[6].ival);
 }
@@ -175,12 +175,12 @@ static const iocshArg * const pcireadArgs[3] =
 static const iocshFuncDef pcireadFuncDef =
     {"pciread",3,pcireadArgs};
 
-void pcireadCall(const iocshArgBuf *args)
+static void pcireadCall(const iocshArgBuf *args)
 {
     pciread(args[0].ival, args[1].ival, args[2].ival);
 }
 
-void pcish(void)
+static void pcish(void)
 {
     iocshRegister(&pcireadFuncDef,pcireadCall);
     iocshRegister(&pcidiagsetFuncDef,pcidiagsetCall);

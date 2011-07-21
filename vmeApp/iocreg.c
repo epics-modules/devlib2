@@ -31,6 +31,7 @@ void vmecsrdumpCall(const iocshArgBuf *arg)
   vmecsrdump(arg[0].ival);
 }
 
+static
 void vmecsr(void)
 {
     iocshRegister(&vmecsrprintFuncDef,vmecsrprintCall);
