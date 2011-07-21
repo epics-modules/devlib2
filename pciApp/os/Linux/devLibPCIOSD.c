@@ -19,6 +19,7 @@
 #include <epicsString.h>
 #include <epicsThread.h>
 #include <epicsMutex.h>
+#include <epicsEvent.h>
 #include <epicsInterrupt.h>
 #include <compilerDependencies.h>
 
@@ -104,7 +105,7 @@ struct osdISR {
     ELLNODE node;
 
     epicsThreadId waiter;
-    pthread_t waiter_id; /* filled by waiter after start */
+    epicsEventId done;
     enum {
         osdISRStarting=0, /* started, id not filled */
         osdISRRunning, /* id filled, normal operation */
@@ -743,9 +744,12 @@ int linuxDevPCIConnectInterrupt(
     isr->param=parameter;
     isr->osd=osd;
     isr->waiter_status=osdISRStarting;
+    isr->done=epicsEventCreate(epicsEventEmpty);
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+    if(!isr->done || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
+        free(isr);
         return S_dev_internal;
+    }
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
@@ -792,17 +796,9 @@ void isrThread(void* arg)
     int interrupted=0, ret;
     epicsInt32 event, next=0;
     const char* name;
-    sigset_t allow;
     int isrflag;
 
-    sigemptyset(&allow);
-    sigaddset(&allow, SIGHUP);
-
     name=epicsThreadGetNameSelf();
-
-    if (pthread_sigmask(SIG_UNBLOCK, &allow, NULL))
-        errlogPrintf("Failed to set mask for thread %s,\n"
-                     "ISR disconnect may not work correctly", name);
 
     if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
         errlogMessage("Can't lock ISR thread");
@@ -815,7 +811,6 @@ void isrThread(void* arg)
         return;
     }
 
-    isr->waiter_id = pthread_self();
     isr->waiter_status = osdISRRunning;
 
     while (isr->waiter_status==osdISRRunning) {
@@ -861,6 +856,7 @@ void isrThread(void* arg)
     isr->waiter_status = osdISRDone;
 
     epicsMutexUnlock(osd->devLock);
+    epicsEventSignal(isr->done);
 }
 
 /* Caller must take devLock */
@@ -870,16 +866,13 @@ stopIsrThread(osdISR *isr)
 {
     if (isr->waiter_status==osdISRDone)
         return;
-    else if (isr->waiter_status==osdISRRunning) {
-        pthread_kill(isr->waiter_id, SIGHUP);
-    }
 
     isr->waiter_status = osdISRStopping;
 
     while (isr->waiter_status!=osdISRDone) {
         epicsMutexUnlock(isr->osd->devLock);
 
-        epicsThreadSleep(0.1);
+        epicsEventWait(isr->done);
 
         epicsMutexMustLock(isr->osd->devLock);
     }
@@ -909,6 +902,7 @@ int linuxDevPCIDisconnectInterrupt(
             stopIsrThread(isr);
 
             ellDelete(&osd->isrs,cur);
+            epicsEventDestroy(isr->done);
             free(isr);
 
             ret=0;
