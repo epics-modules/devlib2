@@ -186,8 +186,9 @@ sharedDevPCIBarLen(
   iflag=epicsInterruptLock();
 
   if(osd->len[bar]) {
+    *len=osd->len[bar];
     epicsInterruptUnlock(iflag);
-    return osd->len[bar];
+    return 0;
   }
 
   /* Note: the following assumes the bar is 32-bit */
