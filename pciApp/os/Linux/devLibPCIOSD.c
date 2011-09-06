@@ -604,12 +604,16 @@ linuxDevPCIFindCB(
   if(!searchfn || !idlist)
     return S_dev_badArgument;
 
-  epicsMutexMustLock(pciLock);
+  if(epicsMutexLock(pciLock)!=epicsMutexLockOK)
+      return S_dev_internal;
 
   cur=ellFirst(&devices);
   for(; cur; cur=ellNext(cur)){
       curdev=CONTAINER(cur,osdPCIDevice,node);
-      epicsMutexMustLock(curdev->devLock);
+      if(epicsMutexLock(curdev->devLock)!=epicsMutexLockOK) {
+          ret=S_dev_internal;
+          goto done;
+      }
 
       for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
 
@@ -676,7 +680,8 @@ linuxDevPCIToLocalAddr(
 {
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
-    epicsMutexMustLock(osd->devLock);
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+        return S_dev_internal;
 
     if (open_uio(osd)) {
         epicsMutexUnlock(osd->devLock);
@@ -712,7 +717,8 @@ linuxDevPCIBarLen(
 {
     osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
 
-    epicsMutexMustLock(osd->devLock);
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+        return -1;
     *len=osd->len[bar];
     epicsMutexUnlock(osd->devLock);
     return 0;
@@ -738,7 +744,9 @@ int linuxDevPCIConnectInterrupt(
     isr->osd=osd;
     isr->waiter_status=osdISRStarting;
 
-    epicsMutexMustLock(osd->devLock);
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+        return S_dev_internal;
+
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
         other=CONTAINER(cur,osdISR,node);
@@ -762,8 +770,9 @@ int linuxDevPCIConnectInterrupt(
                                     isrThread,
                                     isr
                                     );
-    if (!isr->waiter || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-        errlogPrintf("Failed to create ISR thread\n");
+    if (!isr->waiter) {
+        epicsMutexUnlock(osd->devLock);
+        errlogPrintf("Failed to create ISR thread %s\n", name);
 
         free(isr);
         return S_dev_vecInstlFail;
@@ -795,7 +804,10 @@ void isrThread(void* arg)
         errlogPrintf("Failed to set mask for thread %s,\n"
                      "ISR disconnect may not work correctly", name);
 
-    epicsMutexMustLock(osd->devLock);
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
+        errlogMessage("Can't lock ISR thread");
+        return;
+    }
 
     if (isr->waiter_status!=osdISRStarting) {
         isr->waiter_status = osdISRDone;
@@ -839,7 +851,11 @@ void isrThread(void* arg)
         }
         next=event+1;
 
-        epicsMutexMustLock(osd->devLock);
+        if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
+            errlogMessage("Failed to relock ISR thread\n");
+            isr->waiter_status = osdISRDone;
+            return;
+        }
     }
 
     isr->waiter_status = osdISRDone;
@@ -881,7 +897,9 @@ int linuxDevPCIDisconnectInterrupt(
     osdISR *isr;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
-    epicsMutexMustLock(osd->devLock);
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+        return S_dev_internal;
+
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
         isr=CONTAINER(cur,osdISR,node);
