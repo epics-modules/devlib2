@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
+#include <epicsStdio.h>
 #include <errlog.h>
 #include <epicsString.h>
 #include <epicsThread.h>
@@ -748,31 +749,28 @@ int linuxDevPCIConnectInterrupt(
             return S_dev_vecInstlFail;
         }
     }
-    ellAdd(&osd->isrs,&isr->node);
-    epicsMutexUnlock(osd->devLock);
 
-    snprintf(name,NELEMENTS(name),"%02xPCIISR",dev->irq);
+    epicsSnprintf(name,NELEMENTS(name),"%02xPCIISR",dev->irq);
     name[NELEMENTS(name)-1]='\0';
 
     /* Ensure that "IRQ" thread has higher priority
      * then all other EPICS threads.
      */
-    isr->waiter = epicsThreadMustCreate(name,
-                                        epicsThreadPriorityMax-1,
-                                        epicsThreadStackMedium,
-                                        isrThread,
-                                        isr
-                                        );
-    if (!isr->waiter) {
+    isr->waiter = epicsThreadCreate(name,
+                                    epicsThreadPriorityMax-1,
+                                    epicsThreadStackMedium,
+                                    isrThread,
+                                    isr
+                                    );
+    if (!isr->waiter || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
         errlogPrintf("Failed to create ISR thread\n");
-
-        epicsMutexMustLock(osd->devLock);
-        ellDelete(&osd->isrs,&isr->node);
-        epicsMutexUnlock(osd->devLock);
 
         free(isr);
         return S_dev_vecInstlFail;
     }
+
+    ellAdd(&osd->isrs,&isr->node);
+    epicsMutexUnlock(osd->devLock);
 
     return 0;
 }
