@@ -78,6 +78,15 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver22 2.2 (Sept. 2011)
+
+@li linux: follow changes to /sys (needed for kernel >2.6.26)
+@li pci: IOC shell functions added: pciread()
+@li pci: vxworks translate PCI addresses
+@li Build on vxWorks 6.8  (Thanks to Andrew Johnson)
+@li pci: Make operations reentrant on RTEMS and vxWorks (previously was not oops.)
+@li pci: Fix bug with devPCIBarLen on RTEMS and vxWorks.
+
 @subsection ver21 2.1 (Jan. 2011)
 
 @li Fix build issue with 3.14.12 with RTEMS pc386 (found by Jim Chen from Hytec)
@@ -326,7 +335,7 @@ A UIO kernel module will expose several memory regions.
 These can be MMIO or main memory.
 The devLib2 PCI driver treats each as a PCI BAR.
 
-@note This code is under development.  All testing result (positive or negative) are welcomed.
+@note Support for Linux is considered beta quality.  All testing result (positive or negative) are welcomed.
 
 @section shouldi When to Use
 

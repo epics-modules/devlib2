@@ -1,4 +1,15 @@
 
+Version 2.2
+
+  * linux: follow changes to /sys (needed for kernel >2.6.26)
+  * pci: IOC shell functions added: pciread()
+  * pci: vxworks translate PCI addresses
+  * Build on vxWorks 6.8 (Thanks to Andrew Johnson)
+  * pci: Make operations reentrant on RTEMS and vxWorks (previously was not oops.)
+  * pci: Fix bug with devPCIBarLen on RTEMS and vxWorks.
+
+ -- Michael Davidsaver<mdavidsaver@bnl.gov> Mon, 26 Sep 2011 10:34:27 -0400
+
 Version 2.1
 
   * Fix build issue with 3.14.12 with RTEMS pc386

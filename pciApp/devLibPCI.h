@@ -200,7 +200,7 @@ devPCIToLocalAddr(
  * the given BAR.
  *
  @warning On RTEMS and vxWorks this is a invasive operation.
-          When calling it ensure that nothing access the device.
+          When calling it ensure that nothing is accessing the device.
          \b Don't \b call \b this \b on \b a \b device \b used \b by \b another \b driver.
  *
  @param id PCI device pointer
