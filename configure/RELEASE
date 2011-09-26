@@ -21,5 +21,4 @@ TEMPLATE_TOP=$(EPICS_BASE)/templates/makeBaseApp/top
 ## Required Modules ##
 
 # EPICS_BASE usually appears last so other apps can override stuff:
-EPICS_BASE=/usr/epics/base
-
+EPICS_BASE=/usr/lib/epics
