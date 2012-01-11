@@ -79,7 +79,7 @@ long devDisableInterruptLevel (epicsInterruptType intType, unsigned level) {retu
 
 long locationProbe (epicsAddressType addrType, char *pLocation) {return -1;}
 
-#ifndef __vxWorks__
+#ifndef vxWorks
 void bcopyLongs(char *source, char *destination, int nlongs) {}
 #endif
 

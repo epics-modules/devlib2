@@ -21,7 +21,7 @@
 #    define NEED_IFACE
 #    define NEED_PIMPL
 #  endif
-#elif defined(__vxWorks__)
+#elif defined(vxWorks)
  /* nothing needed */
 #else
 #  define NEED_IFACE

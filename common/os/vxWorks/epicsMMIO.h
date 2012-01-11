@@ -29,9 +29,21 @@
 
 #include  <vxWorks.h>                           /* vxWorks common definitions                     */
 #include  <sysLib.h>                            /* vxWorks System Library Definitions             */
+#include  <version.h>                           /* vxWorks Version Definitions                    */
 
 #include  <epicsTypes.h>                        /* EPICS Common Type Definitions                  */
 #include  <epicsEndian.h>                       /* EPICS Byte Order Definitions                   */
+
+/*=====================
+ * vxAtomicLib.h (which defines the memory barrier macros)
+ * is available on vxWorks 6.6 and above.
+ */
+
+#if _WRS_VXWORKS_MAJOR > 6
+#  include  <vxAtomicLib.h>
+#elif _WRS_VXWORKS_MAJOR == 6 && _WRS_VXWORKS_MINOR >= 6
+#  include  <vxAtomicLib.h>
+#endif
 
 /**************************************************************************************************/
 /*  Function Prototypes for Routines Not Defined in sysLib.h                                      */
