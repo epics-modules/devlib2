@@ -110,6 +110,16 @@ void        sysOut32   (volatile void*, epicsUInt32);    /* Synchronous 32 bit w
 #define le_iowrite16(address,data) sysOut16    ((address), le16_to_cpu((epicsUInt16)(data)))
 #define le_iowrite32(address,data) sysOut32    ((address), le32_to_cpu((epicsUInt32)(data)))
 
+#ifndef VX_MEM_BARRIER_R
+#  define VX_MEM_BARRIER_R() do{}while(0)
+#endif
+#ifndef VX_MEM_BARRIER_W
+#  define VX_MEM_BARRIER_W() do{}while(0)
+#endif
+#ifndef VX_MEM_BARRIER_RW
+#  define VX_MEM_BARRIER_RW() do{}while(0)
+#endif
+
 #define rbarr()  VX_MEM_BARRIER_R()
 #define wbarr()  VX_MEM_BARRIER_W()
 #define rwbarr() VX_MEM_BARRIER_RW()
