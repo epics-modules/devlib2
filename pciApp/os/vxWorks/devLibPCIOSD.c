@@ -43,10 +43,10 @@ int vxworksDevPCIConnectInterrupt(
   status=pciIntConnect((void*)INUM_TO_IVEC(VXPCIINTOFFSET + osd->dev.irq),
                        pFunction, (int)parameter);
 
-  if(status<0)
+  if(status)
     return S_dev_vecInstlFail;
 
-  return 1;
+  return 0;
 }
 
 static
@@ -71,10 +71,10 @@ int vxworksDevPCIDisconnectInterrupt(
 
 #endif
 
-  if(status<0)
+  if(status)
     return S_dev_intDisconnect;
 
-  return 1;
+  return 0;
 }
 
 static
