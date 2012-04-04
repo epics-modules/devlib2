@@ -1,3 +1,10 @@
+Version 2.3
+
+  * Include proper headers to enable memory barriers for vxWorks >= 6.6
+  * Fallback to noop when vxWorks memory barriers are not available
+  * Fix incorrect return code when connecting pci interrupts on vxWorks
+
+ -- Michael Davidsaver<mdavidsaver@bnl.gov> Wed, 04 Apr 2012 10:03:34 -0400
 
 Version 2.2
 
