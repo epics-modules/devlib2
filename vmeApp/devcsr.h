@@ -333,7 +333,7 @@ CSRSetBase(volatile void* base, epicsUInt8 N, epicsUInt32 addr, epicsUInt8 amod)
 }
 
 #ifdef __cplusplus
-} // extern "C"
+} /* extern "C" */
 #endif
 
 #endif /* DEVLIBCSR_H */
