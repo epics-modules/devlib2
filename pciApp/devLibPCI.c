@@ -135,10 +135,14 @@ const char* devLibPCIDriverName()
 static
 void devInit(void* junk)
 {
-  if(devLibPCIUse(NULL)) {
-    devPCIInit_result = S_dev_internal;
-    return;
-  }
+  epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
+  epicsMutexMustLock(pciDriversLock);
+  if(!pdevLibPCI && devLibPCIUse(NULL)) {
+      epicsMutexUnlock(pciDriversLock);
+      devPCIInit_result = S_dev_internal;
+      return;
+    }
+  epicsMutexUnlock(pciDriversLock);
 
   if(!!pdevLibPCI->pDevInit)
     devPCIInit_result = (*pdevLibPCI->pDevInit)();
