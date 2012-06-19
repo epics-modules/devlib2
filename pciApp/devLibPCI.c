@@ -16,6 +16,7 @@
 #include <epicsThread.h>
 #include <epicsMutex.h>
 #include <iocsh.h>
+#include <stdint.h>
 
 #include "devLibPCIImpl.h"
 
@@ -356,6 +357,88 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
                dev->bar[i].ioport?"IO Port":"MMIO",
                dev->bar[i].below1M?" Below 1M":"");
     }
+}
+
+#define IS_BIGENDIAN() (!!tester.b[1])
+
+static void
+swap_if_necessary(void *what, DevLibPCIAccMode mode)
+{
+union { char b[2]; short s; } tester = { s: 1, };
+uint16_t v16;
+
+	if ( IS_BIGENDIAN() ) {
+		switch ( CFG_ACC_WIDTH( mode ) ) {
+			case 4: *(int32_t*)what = __builtin_bswap32(*(int32_t*)what); break;
+			case 2: v16 = *(uint16_t*)what;
+                    *(uint16_t*)what = (v16>>8) | (v16<<8);
+					/* fall thru */
+			default:
+					break;
+		}
+	}
+}
+
+static int
+checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, DevLibPCIAccMode mode)
+{
+int rval;
+
+	if ( (offset & (CFG_ACC_WIDTH(mode) - 1)) )
+		return S_dev_badArgument; /* misaligned      */
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	if ( CFG_ACC_WRITE(mode) ) {
+		swap_if_necessary(arg, mode);
+	}
+
+	rval = (*pdevLibPCI->pDevPCIConfigAccess)(dev, offset, arg, mode);
+
+	if ( rval )
+		return rval;
+
+	if ( ! CFG_ACC_WRITE(mode) ) {
+		swap_if_necessary(arg, mode);
+	}
+
+	return 0;
+}
+
+int
+devLibPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_08);
+}
+
+int
+devLibPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_16);
+}
+
+int 
+devLibPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_32);
+}
+
+int
+devLibPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_08);
+}
+
+int
+devLibPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_16);
+}
+
+int 
+devLibPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_32);
 }
 
 static const iocshArg devPCIShowArg0 = { "verbosity level",iocshArgInt};

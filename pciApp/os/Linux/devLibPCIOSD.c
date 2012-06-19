@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <errno.h>
 
 #include <unistd.h>
@@ -66,6 +67,12 @@
 #define PCI_BASE_ADDRESS_MEM_MASK      (~0x0fUL)
 #define PCI_BASE_ADDRESS_IO_MASK      (~0x03UL)
 
+#define CMODE_READ 1
+#define CMODE_WRTE 2
+#define CMODE_RDWR 3
+#define CMODE_RONL 0x11
+#define CMODE_NONE 0x10
+ 
 /**@brief Info of a single PCI device
  *
  * Lifetime: Created in linuxDevPCIInit and free'd in linuxDevFinal
@@ -90,6 +97,8 @@ struct osdPCIDevice {
     char *linuxDriver;
 
     int fd; /* /dev/uio# */
+	int cfd; /* config-space descriptor */
+	int cmode; /* config-space mode */
 
     epicsMutexId devLock; /* guard access to isrs list */
 
@@ -435,6 +444,7 @@ int linuxDevPCIInit(void)
             goto fail;
         }
         osd->fd=-1;
+		osd->cfd = -1;
 
         int matched=fscanf(dlist, "%4x %8x %2x",
                            &bdf, &vendor_device, &irq);
@@ -669,6 +679,7 @@ done:
 
   return ret;
 }
+
 
 static
 int
@@ -914,6 +925,79 @@ int linuxDevPCIDisconnectInterrupt(
     return ret;
 }
 
+static int
+linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevLibPCIAccMode mode)
+{
+int           rval    = S_dev_internal;
+char         *scratch = 0;
+osdPCIDevice *osd     = CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
+ssize_t       st;
+int           cmode;
+
+    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
+        return S_dev_internal;
+
+	if ( CMODE_NONE == osd->cmode ) {
+		/* have already tried to open */
+		rval = S_dev_badRequest;
+		goto bail;
+	}
+
+	if ( -1 == osd->cfd ) {
+		if ( ! (scratch = allocPrintf(BUSBASE"config", osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
+				rval = S_dev_noMemory;
+				goto bail;
+		}
+		if ( (osd->cfd = open(scratch, O_RDWR, 0)) < 0 ) {
+			errlogPrintf("devLibPCIOSD: Unable to open configuration space for writing: %s\n", strerror(errno));
+			/* try readonly */
+			if ( (osd->cfd = open(scratch, O_RDONLY, 0)) < 0 ) {
+					errlogPrintf("devLibPCIOSD: Unable to open configuration space for read-only: %s\n", strerror(errno));
+					rval = S_dev_badRequest;
+					osd->cmode = CMODE_NONE;
+					goto bail;
+			}
+			osd->cmode = CMODE_RONL;
+		} else {
+			osd->cmode = CMODE_RDWR;
+		}
+	}
+
+	cmode = (CFG_ACC_WRITE(mode) ? CMODE_WRTE : CMODE_READ);
+
+	if ( ! (osd->cmode & cmode) ) {
+		rval = S_dev_badRequest;
+		goto bail;
+	}
+
+	if ( CFG_ACC_WRITE(mode) ) {
+		st = pwrite( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
+	} else {
+		st = pread( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
+	}
+
+	if ( CFG_ACC_WIDTH(mode) != st ) {
+		if ( st < 0 )
+			errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
+			             CFG_ACC_WRITE(mode) ? "write" : "read",
+			             CFG_ACC_WIDTH(mode),
+			             CFG_ACC_WRITE(mode) ? "to" : "from",
+			             strerror(errno));
+                       
+		rval = S_dev_internal;
+		goto bail;
+	}
+
+	rval = 0;
+
+bail:
+	free(scratch);
+
+    epicsMutexUnlock(osd->devLock);
+
+	return rval;
+}
+
 devLibPCI plinuxPCI = {
   "native",
   linuxDevPCIInit, linuxDevFinal,
@@ -921,7 +1005,8 @@ devLibPCI plinuxPCI = {
   linuxDevPCIToLocalAddr,
   linuxDevPCIBarLen,
   linuxDevPCIConnectInterrupt,
-  linuxDevPCIDisconnectInterrupt
+  linuxDevPCIDisconnectInterrupt,
+  linuxDevPCIConfigAccess
 };
 #include <epicsExport.h>
 
