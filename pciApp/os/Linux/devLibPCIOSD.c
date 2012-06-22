@@ -679,6 +679,7 @@ linuxDevPCIToLocalAddr(
   unsigned int opt
 )
 {
+int mapno,i;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
@@ -690,9 +691,26 @@ linuxDevPCIToLocalAddr(
     }
 
     if (!osd->base[bar]) {
+
+		if ( osd->dev.bar[bar].ioport ) {
+            errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u -- mapping of IOPORTS is not possible\n", bar,
+                         osd->dev.bus, osd->dev.device, osd->dev.function);
+			return S_dev_addrMapFail;
+		}
+
+		/* mmap requires the number of *mappings* times pagesize;
+		 * valid mappings are only PCI memory regions.
+		 * Let's count them here
+		 */
+		for ( i=0, mapno=bar; i<=bar; i++ ) {
+			if ( osd->dev.bar[i].ioport ) {
+				mapno--;
+			}
+		}
+		
         osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
                               PROT_READ|PROT_WRITE, MAP_SHARED,
-                              osd->fd, bar*pagesize);
+                              osd->fd, mapno*pagesize);
         if (osd->base[bar]==MAP_FAILED) {
             perror("Failed to map BAR");
             errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u\n", bar,
