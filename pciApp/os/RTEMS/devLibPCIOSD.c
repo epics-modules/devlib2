@@ -102,7 +102,7 @@ int rtemsDevPCIDisconnectInterrupt(
 }
 
 static int
-rtemsDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevLibPCIAccMode mode)
+rtemsDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
 int           rval    = S_dev_internal;
 int           st;

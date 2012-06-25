@@ -944,7 +944,7 @@ int linuxDevPCIDisconnectInterrupt(
 }
 
 static int
-linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevLibPCIAccMode mode)
+linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
 int           rval    = S_dev_internal;
 char         *scratch = 0;

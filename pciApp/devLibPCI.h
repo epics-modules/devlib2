@@ -290,7 +290,7 @@ extern int devPCIDebug;
  */
 
 epicsShareFunc
-int devLibPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult);
+int devPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult);
 
 /** @brief Read (16-bit) word from configuration space
  *
@@ -302,7 +302,7 @@ int devLibPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 
 
 
 epicsShareFunc
-int devLibPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult);
+int devPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult);
 
 /** @brief Read (32-bit) dword from configuration space
  *
@@ -313,7 +313,7 @@ int devLibPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt1
  */
 
 epicsShareFunc
-int devLibPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult);
+int devPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult);
 
 /** @brief Write byte to configuration space
  *
@@ -324,7 +324,7 @@ int devLibPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt3
  */
 
 epicsShareFunc
-int devLibPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value);
+int devPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value);
 
 /** @brief Write (16-bit) word from configuration space
  *
@@ -336,7 +336,7 @@ int devLibPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8
 
 
 epicsShareFunc
-int devLibPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value);
+int devPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value);
 
 /** @brief Write (32-bit) dword from configuration space
  *
@@ -347,7 +347,7 @@ int devLibPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt
  */
 
 epicsShareFunc
-int devLibPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value);
+int devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value);
 
 #ifdef __cplusplus
 } /* extern "C" */

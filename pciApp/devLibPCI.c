@@ -362,7 +362,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 #define IS_BIGENDIAN() (!!tester.b[1])
 
 static void
-swap_if_necessary(void *what, DevLibPCIAccMode mode)
+swap_if_necessary(void *what, DevPCIAccMode mode)
 {
 union { char b[2]; short s; } tester = { s: 1, };
 uint16_t v16;
@@ -380,7 +380,7 @@ uint16_t v16;
 }
 
 static int
-checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, DevLibPCIAccMode mode)
+checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, DevPCIAccMode mode)
 {
 int rval;
 
@@ -406,37 +406,37 @@ int rval;
 }
 
 int
-devLibPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult)
+devPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult)
 {
 	return checkCfgAccess(dev, offset, pResult, RD_08);
 }
 
 int
-devLibPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult)
+devPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult)
 {
 	return checkCfgAccess(dev, offset, pResult, RD_16);
 }
 
 int 
-devLibPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult)
+devPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult)
 {
 	return checkCfgAccess(dev, offset, pResult, RD_32);
 }
 
 int
-devLibPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value)
+devPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value)
 {
 	return checkCfgAccess(dev, offset, &value, WR_08);
 }
 
 int
-devLibPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value)
+devPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value)
 {
 	return checkCfgAccess(dev, offset, &value, WR_16);
 }
 
 int 
-devLibPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value)
+devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value)
 {
 	return checkCfgAccess(dev, offset, &value, WR_32);
 }
