@@ -799,7 +799,7 @@ int linuxDevPCIConnectInterrupt(
      */
     isr->waiter = epicsThreadCreate(name,
                                     epicsThreadPriorityMax-1,
-                                    epicsThreadStackMedium,
+                                    epicsThreadGetStackSize(epicsThreadStackMedium),
                                     isrThread,
                                     isr
                                     );
