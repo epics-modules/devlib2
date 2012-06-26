@@ -25,7 +25,19 @@ static epicsMutexId rtemsGuard;
  * override the weak one.
  */
 
+#ifdef __rtems__
+#include <rtems.h>
+#if !defined(__RTEMS_MAJOR__) || !defined(__RTEMS_MINOR__)
+#error "Unkown RTEMS version -- missing header?"
+#endif
+
+#if (__RTEMS_MAJOR__ < 4) || (__RTEMS_MAJOR__ == 4 && __RTEMS_MINOR__ <= 9)
+#define rtems_pci_config_t pci_config
+#endif
+
 extern rtems_pci_config_t BSP_pci_configuration __attribute__((weak));
+
+#endif
 
 static int
 rtemsDevPCIInit(void)
