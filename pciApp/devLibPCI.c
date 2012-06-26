@@ -16,7 +16,6 @@
 #include <epicsThread.h>
 #include <epicsMutex.h>
 #include <iocsh.h>
-#include <stdint.h>
 
 #include "devLibPCIImpl.h"
 
@@ -361,17 +360,33 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 
 #define IS_BIGENDIAN() (!!tester.b[1])
 
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#include <stdint.h>
+#define  SWAP_T int32_t
+#else
+#define  SWAP_T epicsUInt32
+
+static epicsUInt32
+__builtin_bswap32(epicsUInt32 v)
+{
+	v = ((v&0x00ff00ff)<<8)  | ((v>>8)  & 0x00ff00ff);
+	v = ((v&0x0000ffff)<<16) | ((v>>16) & 0x0000ffff);
+	return v;
+}
+#endif
+
+
 static void
 swap_if_necessary(void *what, DevPCIAccMode mode)
 {
 union { char b[2]; short s; } tester = { s: 1, };
-uint16_t v16;
+epicsUInt16 v16;
 
 	if ( IS_BIGENDIAN() ) {
 		switch ( CFG_ACC_WIDTH( mode ) ) {
-			case 4: *(int32_t*)what = __builtin_bswap32(*(int32_t*)what); break;
-			case 2: v16 = *(uint16_t*)what;
-                    *(uint16_t*)what = (v16>>8) | (v16<<8);
+			case 4: *(epicsUInt32*)what = __builtin_bswap32((SWAP_T)*(epicsUInt32*)what); break;
+			case 2: v16 = *(epicsUInt16*)what;
+                    *(epicsUInt16*)what = (v16>>8) | (v16<<8);
 					/* fall thru */
 			default:
 					break;
