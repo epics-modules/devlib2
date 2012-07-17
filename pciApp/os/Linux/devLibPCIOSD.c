@@ -150,11 +150,22 @@ static
 char*
 vallocPrintf(const char *format, va_list args)
 {
+    va_list nargs;
     char* ret=NULL;
     int size, size2;
 
+    /* May use a va_list only *once* (on some implementations it may
+     * be a reference to something that holds internal state information
+     *
+     * Luckily, C99 provides va_copy.
+     */
+    va_copy(nargs, args);
+
     /* Take advantage of the fact that sprintf will tell us how much space to allocate */
-    size=vsnprintf("",0,format,args);
+    size=vsnprintf("",0,format,nargs);
+
+    va_end(nargs);
+
     if (size<=0) {
         errlogPrintf("vaprintf: Failed to convert format '%s'\n",format);
         goto fail;
