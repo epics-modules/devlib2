@@ -1,3 +1,15 @@
+Version 2.4 Unreleased
+
+  [Michael Davidsaver]
+  * Remove C++ style comments from epicsMMIODef.h and devcsr.h
+  * Fix Issue preventing Custom PCI bus implementation. (Found by Dan Eichel)
+
+  [Till Straumann]
+  * Linux "ISR" thread stack size not correct
+  * Fix mapping issue effecting PCI cards with I/O Port BARs before MMIO BARs
+
+ -- Michael Davidsaver<mdavidsaver@bnl.gov> Tue, 17 Jul 2012 16:48:07 -0400
+
 Version 2.3
 
   * Include proper headers to enable memory barriers for vxWorks >= 6.6
