@@ -709,16 +709,19 @@ linuxDevPCIToLocalAddr(
             return S_dev_addrMapFail;
         }
 
-        /* mmap requires the number of *mappings* times pagesize;
-         * valid mappings are only PCI memory regions.
-         * Let's count them here
-         */
-        for ( i=0, mapno=bar; i<=bar; i++ ) {
-            if ( osd->dev.bar[i].ioport ) {
-                mapno--;
+        if (opt&DEVLIB_MAP_UIOCOMPACT) {
+            /* mmap requires the number of *mappings* times pagesize;
+             * valid mappings are only PCI memory regions.
+             * Let's count them here
+             */
+            for ( i=0, mapno=bar; i<=bar; i++ ) {
+                if ( osd->dev.bar[i].ioport ) {
+                    mapno--;
+                }
             }
-        }
-		
+        } else
+            mapno=bar;
+
         osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
                               PROT_READ|PROT_WRITE, MAP_SHARED,
                               osd->fd, mapno*pagesize);

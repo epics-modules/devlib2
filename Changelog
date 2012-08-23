@@ -6,7 +6,8 @@ Version 2.4 Unreleased
 
   [Till Straumann]
   * Linux "ISR" thread stack size not correct
-  * Fix mapping issue effecting PCI cards with I/O Port BARs before MMIO BARs
+  * Linux: Add options to address mapping issue effecting PCI cards with
+           I/O Port BARs before MMIO BARs.  See documentation of devPCIToLocalAddr().
 
  -- Michael Davidsaver<mdavidsaver@bnl.gov> Tue, 17 Jul 2012 16:48:07 -0400
 
