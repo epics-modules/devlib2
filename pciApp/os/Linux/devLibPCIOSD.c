@@ -789,8 +789,7 @@ int linuxDevPCIConnectInterrupt(
         if (other->fptr==isr->fptr && other->param==isr->param) {
             epicsMutexUnlock(osd->devLock);
             errlogPrintf("ISR already registered\n");
-            free(isr);
-            return S_dev_vecInstlFail;
+            goto error;
         }
     }
 
@@ -809,15 +808,17 @@ int linuxDevPCIConnectInterrupt(
     if (!isr->waiter) {
         epicsMutexUnlock(osd->devLock);
         errlogPrintf("Failed to create ISR thread %s\n", name);
-
-        free(isr);
-        return S_dev_vecInstlFail;
+        goto error;
     }
 
     ellAdd(&osd->isrs,&isr->node);
     epicsMutexUnlock(osd->devLock);
 
     return 0;
+error:
+    epicsEventDestroy(isr->done);
+    free(isr);
+    return S_dev_vecInstlFail;
 }
 
 static
