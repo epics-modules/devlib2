@@ -1,47 +1,5 @@
-Version 2.4 Unreleased
+See Changelog section of documentation/mainpage.h
 
-  [Michael Davidsaver]
-  * Remove C++ style comments from epicsMMIODef.h and devcsr.h
-  * Fix Issue preventing Custom PCI bus implementation. (Found by Dan Eichel)
+Also
 
-  [Till Straumann]
-  * Linux "ISR" thread stack size not correct
-  * Linux: Add options to address mapping issue effecting PCI cards with
-           I/O Port BARs before MMIO BARs.  See documentation of devPCIToLocalAddr().
-
- -- Michael Davidsaver<mdavidsaver@bnl.gov> Tue, 17 Jul 2012 16:48:07 -0400
-
-Version 2.3
-
-  * Include proper headers to enable memory barriers for vxWorks >= 6.6
-  * Fallback to noop when vxWorks memory barriers are not available
-  * Fix incorrect return code when connecting pci interrupts on vxWorks
-
- -- Michael Davidsaver<mdavidsaver@bnl.gov> Wed, 04 Apr 2012 10:03:34 -0400
-
-Version 2.2
-
-  * linux: follow changes to /sys (needed for kernel >2.6.26)
-  * pci: IOC shell functions added: pciread()
-  * pci: vxworks translate PCI addresses
-  * Build on vxWorks 6.8 (Thanks to Andrew Johnson)
-  * pci: Make operations reentrant on RTEMS and vxWorks (previously was not oops.)
-  * pci: Fix bug with devPCIBarLen on RTEMS and vxWorks.
-
- -- Michael Davidsaver<mdavidsaver@bnl.gov> Mon, 26 Sep 2011 10:34:27 -0400
-
-Version 2.1
-
-  * Fix build issue with 3.14.12 with RTEMS pc386
-       (found by Jim Chen from Hytec)
-  * Add notification of missed PCI interrupt events on Linux
-  * Additional argument 'count' for vmeread() to show blocks of registers
-  * Add documentation sections on x86 Port I/O and Linux requirements
-
- -- Michael Davidsaver<mdavidsaver@bnl.gov> Fri, 14 Jan 2011 10:53:22 -0500
-
-Version 2.0
-
-  * Initial release
-
- -- Michael Davidsaver<mdavidsaver@bnl.gov> Wed, 22 Sep 2010 14:12:35 -0400
+http://epics.sourceforge.net/devlib2/#changelog

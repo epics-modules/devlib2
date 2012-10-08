@@ -78,12 +78,15 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver24 2.4 (Unreleased)
+@subsection ver24 2.4 (Oct. 2012)
 
 @li Remove C++ style comments from epicsMMIODef.h and devcsr.h
 @li Fix Issue preventing Custom PCI bus implementation. (Found by Dan Eichel)
-@li Linux "ISR" thread stack size not correct
-@li Linux: Add options to address mapping issue effecting PCI cards with I/O Port BARs before MMIO BARs.
+@li Linux "ISR" thread stack size not correct (Fixed by Till Straumann)
+@li Linux: Previous versions expected Linux kernel modules to leave gaps for un-mappable PCI BARs (I/O Ports).
+    However, most existing kernel modules don't do this.  Add a flag to devPCIToLocalAddr() to specify
+    how a device's kernel module does mapping.  The default is to map as in previous versions.
+    (New behavior by Till Straumann)
     See documentation of devPCIToLocalAddr().
 
 @subsection ver23 2.3 (Apr. 2012)
