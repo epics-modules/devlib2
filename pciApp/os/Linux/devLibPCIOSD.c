@@ -764,13 +764,18 @@ int mapfd;
 		if ( (mapfd = osd->rfd[bar]) >= 0 ) {
 			mapno = 0;
 		} else {
-			/* mmap requires the number of *mappings* times pagesize;
-			 * valid mappings are only PCI memory regions.
-			 * Let's count them here
-			 */
-			for ( i=0, mapno=bar; i<=bar; i++ ) {
-				if ( osd->dev.bar[i].ioport ) {
-					mapno--;
+
+			mapno = bar;
+
+			if (opt&DEVLIB_MAP_UIOCOMPACT) {
+				/* mmap requires the number of *mappings* times pagesize;
+				 * valid mappings are only PCI memory regions.
+				 * Let's count them here
+				 */
+				for ( i=0; i<=bar; i++ ) {
+					if ( osd->dev.bar[i].ioport ) {
+						mapno--;
+					}
 				}
 			}
 
@@ -828,6 +833,7 @@ int linuxDevPCIConnectInterrupt(
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
+	int     ret = S_dev_vectInstlFail;
 
     if (!isr) return S_dev_noMemory;
 
@@ -838,14 +844,14 @@ int linuxDevPCIConnectInterrupt(
     isr->done=epicsEventCreate(epicsEventEmpty);
 
     if(!isr->done || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-        free(isr);
-        return S_dev_internal;
+		ret = S_dev_internal;
+		goto error;
     }
 
 	if ( open_uio(osd) ) {
 		epicsMutexUnlock(osd->devLock);
-		free(isr);
-		return S_dev_noDevice;
+		ret = S_dev_noDevice;
+		goto error;
 	}
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
@@ -854,8 +860,7 @@ int linuxDevPCIConnectInterrupt(
         if (other->fptr==isr->fptr && other->param==isr->param) {
             epicsMutexUnlock(osd->devLock);
             errlogPrintf("ISR already registered\n");
-            free(isr);
-            return S_dev_vecInstlFail;
+			goto error;
         }
     }
 
@@ -874,15 +879,17 @@ int linuxDevPCIConnectInterrupt(
     if (!isr->waiter) {
         epicsMutexUnlock(osd->devLock);
         errlogPrintf("Failed to create ISR thread %s\n", name);
-
-        free(isr);
-        return S_dev_vecInstlFail;
+		goto error;
     }
 
     ellAdd(&osd->isrs,&isr->node);
     epicsMutexUnlock(osd->devLock);
 
     return 0;
+error:
+	epicsEventDestroy(isr->done);
+	free(isr);
+	return ret;
 }
 
 static
