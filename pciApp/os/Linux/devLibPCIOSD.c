@@ -187,7 +187,7 @@ vallocPrintf(const char *format, va_list args)
         errlogPrintf("vaprintf: Failed to allocate memory for format '%s'\n",format);
         goto fail;
     }
-    size2=vsprintf(ret,format,args);
+    size2=vsnprintf(ret,size+1,format,args);
     if (size!=size2) {
         errlogPrintf("vaprintf: Format yielded different size %d %d : %s\n",size,size2,format);
         goto fail;
