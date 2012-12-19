@@ -98,6 +98,7 @@ struct osdPCIDevice {
 
     int fd; /* /dev/uio# */
 	int cfd; /* config-space descriptor */
+	int rfd[PCIBARCOUNT];
 	int cmode; /* config-space mode */
 
     epicsMutexId devLock; /* guard access to isrs list */
@@ -150,6 +151,8 @@ long pagesize;
 #define BUSBASE "/sys/bus/pci/devices/0000:%02x:%02x.%1x/"
 
 #define UIONUM     "uio%u"
+
+#define RESNUM  BUSBASE"resource%u"
 
 #define fbad(FILE) ( feof(FILE) || ferror(FILE))
 
@@ -401,6 +404,32 @@ fail:
     return ret;
 }
 
+static int
+open_res(struct osdPCIDevice *osd, int bar)
+{
+	int   ret  = 1;
+	char *fname=NULL;
+
+	if ( bar < 0 || bar > sizeof(osd->rfd)/sizeof(osd->rfd[0]) )
+		return ret;
+
+	if ( osd->rfd[bar] >= 0 )
+		return 0;
+
+	if ( ! (fname = allocPrintf(RESNUM, osd->dev.bus, osd->dev.device, osd->dev.function, bar)) )
+		goto fail;
+
+	if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
+		errlogPrintf("Unable to open resource file '%s': %s\n", fname, strerror(errno));
+		goto fail;
+	}
+
+	ret = 0;
+fail:
+	free(fname);
+	return ret;	
+}
+
 static
 void
 close_uio(struct osdPCIDevice* osd)
@@ -416,6 +445,13 @@ close_uio(struct osdPCIDevice* osd)
 
     if (osd->fd!=-1) close(osd->fd);
     osd->fd=-1;
+
+	for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ ) {
+		if ( osd->rfd[i] >= 0 ) {
+			close(osd->rfd[i]);
+			osd->rfd[i] = -1;
+		}
+	}
 }
 
 static
@@ -456,6 +492,8 @@ int linuxDevPCIInit(void)
         }
         osd->fd=-1;
 		osd->cfd = -1;
+		for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ )
+			osd->rfd[i] = -1;
 
         int matched=fscanf(dlist, "%4x %8x %2x",
                            &bdf, &vendor_device, &irq);
@@ -702,12 +740,14 @@ linuxDevPCIToLocalAddr(
 )
 {
 int mapno,i;
+int mapfd;
+
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
         return S_dev_internal;
 
-    if (open_uio(osd)) {
+    if (open_res(osd, bar) && open_uio(osd)) {
         epicsMutexUnlock(osd->devLock);
         return S_dev_addrMapFail;
     }
@@ -717,22 +757,33 @@ int mapno,i;
 		if ( osd->dev.bar[bar].ioport ) {
             errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u -- mapping of IOPORTS is not possible\n", bar,
                          osd->dev.bus, osd->dev.device, osd->dev.function);
+        	epicsMutexUnlock(osd->devLock);
 			return S_dev_addrMapFail;
 		}
 
-		/* mmap requires the number of *mappings* times pagesize;
-		 * valid mappings are only PCI memory regions.
-		 * Let's count them here
-		 */
-		for ( i=0, mapno=bar; i<=bar; i++ ) {
-			if ( osd->dev.bar[i].ioport ) {
-				mapno--;
+		if ( (mapfd = osd->rfd[bar]) >= 0 ) {
+			mapno = 0;
+		} else {
+			/* mmap requires the number of *mappings* times pagesize;
+			 * valid mappings are only PCI memory regions.
+			 * Let's count them here
+			 */
+			for ( i=0, mapno=bar; i<=bar; i++ ) {
+				if ( osd->dev.bar[i].ioport ) {
+					mapno--;
+				}
 			}
+
+			if ( mapno < 0 ) {
+				epicsMutexUnlock(osd->devLock);
+				return S_dev_addrMapFail;	
+			}
+			mapfd = osd->fd;
 		}
 		
         osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
                               PROT_READ|PROT_WRITE, MAP_SHARED,
-                              osd->fd, mapno*pagesize);
+                              mapfd, mapno*pagesize);
         if (osd->base[bar]==MAP_FAILED) {
             perror("Failed to map BAR");
             errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u\n", bar,
@@ -790,6 +841,12 @@ int linuxDevPCIConnectInterrupt(
         free(isr);
         return S_dev_internal;
     }
+
+	if ( open_uio(osd) ) {
+		epicsMutexUnlock(osd->devLock);
+		free(isr);
+		return S_dev_noDevice;
+	}
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
