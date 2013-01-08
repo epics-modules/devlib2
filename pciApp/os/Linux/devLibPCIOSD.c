@@ -833,7 +833,7 @@ int linuxDevPCIConnectInterrupt(
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
-	int     ret = S_dev_vectInstlFail;
+	int     ret = S_dev_vecInstlFail;
 
     if (!isr) return S_dev_noMemory;
 
