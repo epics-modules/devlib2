@@ -7,7 +7,7 @@
 * in file LICENSE that is included with this distribution.
 \*************************************************************************/
 /*
- * Author: Michael Davidsaver <mdavisavero@bnl.gov>
+ * Author: Michael Davidsaver <mdavidsaver@bnl.gov>
  */
 
 #include <stdlib.h>
@@ -52,10 +52,8 @@ static int              inumTableSize = 0;
 
 /*=====================
  * dummySysBusToLocalAdrs()
- *
  * Dummy routine for BSPs that do not implement sysBusToLocalAdrs.
- * Just returns the bus address as the local address.
- *
+ * Always fails
  */
 static
 int dummySysBusToLocalAdrs (
@@ -63,16 +61,12 @@ int dummySysBusToLocalAdrs (
     char*   busAdrs,
     char**  pLocalAdrs)
 {
-    *pLocalAdrs = busAdrs;
-    return 0;
-
-}/*end dummySysBusToLocalAdrs()*/
+    return -1;
+}
 
 /*=====================
  * vxworksDevPCIInit()
- *
  * PCI library initialization for vxWorks
- *
  */
 static
 int vxworksDevPCIInit (void) {
@@ -115,9 +109,7 @@ int vxworksDevPCIInit (void) {
 
 /*=====================
  * vxworksDevPCIConnectInterrupt()
- *
  * Connect ISR to its PCI interrupt vector.
- *
  */
 static
 int vxworksDevPCIConnectInterrupt(
@@ -153,9 +145,7 @@ int vxworksDevPCIConnectInterrupt(
 
 /*=====================
  * vxworksDevPCIDisconnectInterrupt()
- *
  * Disconnect ISR from its PCI interrupt vector.
- *
  */
 static
 int vxworksDevPCIDisconnectInterrupt(
@@ -197,9 +187,7 @@ int vxworksDevPCIDisconnectInterrupt(
 
 /*=====================
  * vxworksPCIToLocalAddr
- *
  * Return base address for specified device.
- *
  */
 static
 int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
@@ -236,11 +224,6 @@ int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
   return 0;
 }
 
-/*
- *
- * Function dispatch table 
- *
- */
 devLibPCI pvxworksPCI = {
   "native",
   vxworksDevPCIInit, NULL,
@@ -252,11 +235,6 @@ devLibPCI pvxworksPCI = {
 };
 #include <epicsExport.h>
 
-/*=====================
- *
- * Export the registration routine 
- *
- */
 void devLibPCIRegisterBaseDefault(void)
 {
     devLibPCIRegisterDriver(&pvxworksPCI);
