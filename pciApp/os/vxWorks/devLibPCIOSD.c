@@ -43,16 +43,55 @@
 #endif
 
 
-typedef int (*sysBusToLocal_t) (int, char*, char**);
+typedef STATUS (*pciInt_t)           (VOIDFUNCPTR*, VOIDFUNCPTR, int);
+typedef STATUS (*pciIntDisconnect_t) (VOIDFUNCPTR*, VOIDFUNCPTR);
+typedef STATUS (*sysBusToLocal_t)    (int, char*, char**);
 
-static sysBusToLocal_t  CallSysBusToLocalAdrs;
-static unsigned char*   inumTable     = NULL;
-static int              inumTableSize = 0;
+static pciInt_t            CallPciIntConnect;
+static pciIntDisconnect_t  CallPciIntDisconnect;
+static pciInt_t            CallPciIntDisconnect2;
+static sysBusToLocal_t     CallSysBusToLocalAdrs;
+
+static unsigned char*      inumTable     = NULL;
+static int                 inumTableSize = 0;
 
 
-/*=====================
- * dummySysBusToLocalAdrs()
- * Dummy routine for BSPs that do not implement sysBusToLocalAdrs.
+/* Dummy routine for BSPs that do not implement pciIntConnect.
+ * Just returns the "vector install failure" error status
+ */
+static
+int dummyPciIntConnect (
+    VOIDFUNCPTR* vector,
+    VOIDFUNCPTR  routine,
+    int          parameter)
+{
+    return S_dev_vecInstlFail;
+}
+
+/* Dummy routine for BSPs that do not implement pciIntDisconnect.
+ * Just returns the "disconnect failure" error status
+ */
+static
+int dummyPciIntDisconnect (
+    VOIDFUNCPTR* vector,
+    VOIDFUNCPTR  routine)
+{
+    return S_dev_intDisconnect;
+}
+
+/* Dummy routine for BSPs that do not implement pciIntDisconnect2.
+ * Just returns the "disconnect failure" error status
+ */
+static
+int dummyPciIntDisconnect2 (
+    VOIDFUNCPTR* vector,
+    VOIDFUNCPTR  routine,
+    int          parameter)
+{
+    return S_dev_intDisconnect;
+}
+
+/* Dummy routine for BSPs that do not implement sysBusToLocalAdrs.
  * Always fails
  */
 static
@@ -64,28 +103,37 @@ int dummySysBusToLocalAdrs (
     return -1;
 }
 
-/*=====================
- * vxworksDevPCIInit()
- * PCI library initialization for vxWorks
- */
+/* PCI library initialization for vxWorks */
 static
 int vxworksDevPCIInit (void) {
     int              status;
     unsigned char**  pTable;
     int*             pTableSize;
 
-   /*---------------------
-    * Invoke the common PCI initialization code
-    */
     if ((status = sharedDevPCIInit()))
         return status;
+
+   /* We cannot be sure if the BSP supports PCI, or even sysBusToLocalAdrs.
+    * Check the symbol table and replace any missing routines with dummy
+    * counterparts.
+    */
+    CallPciIntConnect = epicsFindSymbol ("pciIntConnect");
+    if (!CallPciIntConnect)
+        CallPciIntConnect = &dummyPciIntConnect;
+
+    CallPciIntDisconnect = epicsFindSymbol ("pciIntDisconnect");
+    if (!CallPciIntDisconnect)
+        CallPciIntDisconnect = &dummyPciIntDisconnect;
+
+    CallPciIntDisconnect2 = epicsFindSymbol ("pciIntDisconnect2");
+    if (!CallPciIntDisconnect2)
+        CallPciIntDisconnect2 = &dummyPciIntDisconnect2;
 
     CallSysBusToLocalAdrs = epicsFindSymbol ("sysBusToLocalAdrs");
     if (!CallSysBusToLocalAdrs)
         CallSysBusToLocalAdrs = &dummySysBusToLocalAdrs;
 
-   /*---------------------
-    * See if this BSP uses a translation table to convert IRQ values
+   /* See if this BSP uses a translation table to convert IRQ values
     * into interrupt indices.
     */
     pTable = epicsFindSymbol ("sysInumTbl");
@@ -94,8 +142,7 @@ int vxworksDevPCIInit (void) {
 
     inumTable = *pTable;
 
-   /*---------------------
-    * If the BSP does use translation table, get the number of entries
+   /* If the BSP does use a translation table, get the number of entries
     */
     pTableSize = epicsFindSymbol ("sysInumTblNumEnt");
     if (!pTableSize) {
@@ -107,10 +154,7 @@ int vxworksDevPCIInit (void) {
     return 0;
 }
 
-/*=====================
- * vxworksDevPCIConnectInterrupt()
- * Connect ISR to its PCI interrupt vector.
- */
+/* Connect ISR to its PCI interrupt vector. */
 static
 int vxworksDevPCIConnectInterrupt(
   const epicsPCIDevice *dev,
@@ -122,8 +166,7 @@ int vxworksDevPCIConnectInterrupt(
     struct osdPCIDevice *osd=pcidev2osd(dev);
     int status;
 
-   /*---------------------
-    * Get the IRQ number from the PCI device structure
+   /* Get the IRQ number from the PCI device structure
     * and use it to get the interrupt number from the translation table
     * (if there is one). If there is no translation table, or the table
     * is too small, just use the irq as the interrupt number.
@@ -132,21 +175,17 @@ int vxworksDevPCIConnectInterrupt(
     if (inumTableSize && (irq < inumTableSize))
         irq = inumTable[(int)irq];
 
-   /*---------------------
-    * Attempt to connect the interrupt vector.  Abort on failure.
+   /* Attempt to connect the interrupt vector.  Abort on failure.
     */
-    status=pciIntConnect ((VOIDFUNCPTR *)INUM_TO_IVEC(VXPCIINTOFFSET+irq),
-                          pFunction, (int)parameter);
+    status = CallPciIntConnect ((VOIDFUNCPTR *)INUM_TO_IVEC(VXPCIINTOFFSET+irq),
+                                pFunction, (int)parameter);
     if(status)
         return S_dev_vecInstlFail;
 
     return 0;
 }
 
-/*=====================
- * vxworksDevPCIDisconnectInterrupt()
- * Disconnect ISR from its PCI interrupt vector.
- */
+/* Disconnect ISR from its PCI interrupt vector. */
 static
 int vxworksDevPCIDisconnectInterrupt(
   const epicsPCIDevice *dev,
@@ -157,8 +196,7 @@ int vxworksDevPCIDisconnectInterrupt(
     int status;
     struct osdPCIDevice *osd=pcidev2osd(dev);
 
-   /*---------------------
-    * Get the IRQ number from the PCI device structure
+   /* Get the IRQ number from the PCI device structure
     * and use it to get the interrupt number from the translation table
     * (if there is one). If there is no translation table, or the table
     * is too small, jut use the irq as the interrupt number.
@@ -169,13 +207,13 @@ int vxworksDevPCIDisconnectInterrupt(
 
 #ifdef VXWORKS_PCI_OLD
 
-    status=pciIntDisconnect((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
-                            pFunction);
+    status=CallPciIntDisconnect((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
+                                pFunction);
 
 #else
 
-    status=pciIntDisconnect2((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
-                             pFunction, (int)parameter);
+    status=CallPciIntDisconnect2((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
+                                 pFunction, (int)parameter);
 
 #endif
 
@@ -185,10 +223,7 @@ int vxworksDevPCIDisconnectInterrupt(
     return 0;
 }
 
-/*=====================
- * vxworksPCIToLocalAddr
- * Return base address for specified device.
- */
+/* Return base address for specified device. */
 static
 int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
                           unsigned int bar, volatile void **loc,
@@ -215,7 +250,7 @@ int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
 #endif
 
   if(space) {
-    if(CallSysBusToLocalAdrs(space, (char*)pci, (char**)loc))
+      if(CallSysBusToLocalAdrs(space, (char*)pci, (char**)loc))
       return -1;
   } else {
     *loc=pci;
