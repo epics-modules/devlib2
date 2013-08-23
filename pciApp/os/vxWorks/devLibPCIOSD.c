@@ -79,18 +79,6 @@ int dummyPciIntDisconnect (
     return S_dev_intDisconnect;
 }
 
-/* Dummy routine for BSPs that do not implement pciIntDisconnect2.
- * Just returns the "disconnect failure" error status
- */
-static
-int dummyPciIntDisconnect2 (
-    VOIDFUNCPTR* vector,
-    VOIDFUNCPTR  routine,
-    int          parameter)
-{
-    return S_dev_intDisconnect;
-}
-
 /* Dummy routine for BSPs that do not implement sysBusToLocalAdrs.
  * Always fails
  */
@@ -126,8 +114,6 @@ int vxworksDevPCIInit (void) {
         CallPciIntDisconnect = &dummyPciIntDisconnect;
 
     CallPciIntDisconnect2 = epicsFindSymbol ("pciIntDisconnect2");
-    if (!CallPciIntDisconnect2)
-        CallPciIntDisconnect2 = &dummyPciIntDisconnect2;
 
     CallSysBusToLocalAdrs = epicsFindSymbol ("sysBusToLocalAdrs");
     if (!CallSysBusToLocalAdrs)
@@ -205,17 +191,14 @@ int vxworksDevPCIDisconnectInterrupt(
     if (inumTableSize && (irq < inumTableSize))
         irq = inumTable[(int)irq];
 
-#ifdef VXWORKS_PCI_OLD
-
-    status=CallPciIntDisconnect((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
-                                pFunction);
-
-#else
-
-    status=CallPciIntDisconnect2((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
-                                 pFunction, (int)parameter);
-
-#endif
+    /* prefer the newer API when it is available */
+    if(CallPciIntDisconnect2) {
+        status=CallPciIntDisconnect2((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
+                                     pFunction, (int)parameter);
+    } else {
+        status=CallPciIntDisconnect((void*)INUM_TO_IVEC(VXPCIINTOFFSET + irq),
+                                    pFunction);
+    }
 
     if(status)
         return S_dev_intDisconnect;

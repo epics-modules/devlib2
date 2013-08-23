@@ -12,9 +12,6 @@ LIBRARY_IOC = epicspci
 
 USR_INCLUDES += -I../os/$(OS_CLASS)
 
-VX_PCI_API_5 = -DVXWORKS_PCI_OLD
-devLibPCIOSD_CFLAGS_vxWorks = $(VX_PCI_API_$(VXWORKS_MAJOR_VERSION))
-
 DBD += epicspci.dbd
 
 INC += devLibPCI.h
