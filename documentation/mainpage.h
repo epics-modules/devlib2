@@ -78,6 +78,14 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver25 2.5 (May 2014)
+
+@li Linux: possible string corruption in vallocPrintf()
+      Found by Till Straumann
+@li vxWorks: lookup symbols including sysBusToLocalAdrs at runtime.
+      Work by Eric and Dirk Zimoch
+@li RTEMS: Select no-op MMIO implementation for m68k (no special handling required)
+
 @subsection ver24 2.4 (Oct. 2012)
 
 @li Remove C++ style comments from epicsMMIODef.h and devcsr.h
