@@ -249,7 +249,8 @@ devLibPCI pvxworksPCI = {
   vxworksPCIToLocalAddr,
   sharedDevPCIBarLen,
   vxworksDevPCIConnectInterrupt,
-  vxworksDevPCIDisconnectInterrupt
+  vxworksDevPCIDisconnectInterrupt,
+  sharedDevPCIConfigAccess
 };
 #include <epicsExport.h>
 
