@@ -1091,6 +1091,18 @@ bail:
 	return rval;
 }
 
+static int
+linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
+{
+osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
+epicsInt32    irq_on = !level; 
+
+	if ( osd->fd < 0 )
+		return -EBADF;
+
+	return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? -errno : 0;
+}
+
 devLibPCI plinuxPCI = {
   "native",
   linuxDevPCIInit, linuxDevFinal,
@@ -1099,7 +1111,8 @@ devLibPCI plinuxPCI = {
   linuxDevPCIBarLen,
   linuxDevPCIConnectInterrupt,
   linuxDevPCIDisconnectInterrupt,
-  linuxDevPCIConfigAccess
+  linuxDevPCIConfigAccess,
+  linuxDevPCISwitchInterrupt
 };
 #include <epicsExport.h>
 

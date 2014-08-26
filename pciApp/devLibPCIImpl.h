@@ -59,6 +59,9 @@ typedef struct {
                                     void  *parameter);
 
   int (*pDevPCIConfigAccess)(const epicsPCIDevice *id, unsigned offset, void *pArg, DevPCIAccMode mode);
+
+  /* level 0 enables, higher levels disable - on error a negative value is returned */
+  int (*pDevPCISwitchInterrupt)(const epicsPCIDevice *id, int level);
   ELLNODE node;
 } devLibPCI;
 

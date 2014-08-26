@@ -368,6 +368,28 @@ int devPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 
 epicsShareFunc
 int devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value);
 
+/** @brief Enable interrupts at the device.
+ *
+ @param   dev     A PCI device handle
+ @returns 0       on success or an EPICS error code on failure
+
+ @note            Implementation of this call for any OS is optional
+ */
+epicsShareFunc
+int devPCIEnableInterrupt(const epicsPCIDevice *dev);
+
+/** @brief Enable interrupts at the device.
+ *
+ @param   dev     A PCI device handle
+ @returns 0       on success or an EPICS error code on failure
+
+ @note            Implementation of this call for any OS is optional
+ */
+
+epicsShareFunc
+int devPCIDisableInterrupt(const epicsPCIDevice *dev);
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

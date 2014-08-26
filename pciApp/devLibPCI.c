@@ -456,6 +456,34 @@ devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 valu
 	return checkCfgAccess(dev, offset, &value, WR_32);
 }
 
+
+int
+devPCIEnableInterrupt(const epicsPCIDevice *dev)
+{
+int rval;
+
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 0);
+
+	return ( rval < 0 ) ? S_dev_badFunction : 0;
+}
+
+int
+devPCIDisableInterrupt(const epicsPCIDevice *dev)
+{
+int rval;
+
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 1);
+
+	return ( rval < 0 ) ? S_dev_badFunction : 0;
+}
+
+
 static const iocshArg devPCIShowArg0 = { "verbosity level",iocshArgInt};
 static const iocshArg devPCIShowArg1 = { "PCI Vendor ID (0=any)",iocshArgInt};
 static const iocshArg devPCIShowArg2 = { "PCI Device ID (0=any)",iocshArgInt};
