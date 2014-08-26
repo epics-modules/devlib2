@@ -76,6 +76,14 @@ sharedDevPCIBarLen(
   epicsUInt32 *len
 );
 
+int
+sharedDevPCIConfigAccess(
+  const epicsPCIDevice *dev,
+  unsigned offset,
+  void *pArg,
+  DevPCIAccMode mode
+);
+
 int sharedDevPCIInit(void);
 
 #endif /* OSDPCISHARED_H_INC */

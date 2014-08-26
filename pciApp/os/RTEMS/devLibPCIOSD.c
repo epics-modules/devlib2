@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <epicsAssert.h>
 #include <epicsMutex.h>
+#include <epicsInterrupt.h>
 #include <errlog.h>
 
 #include <rtems/pci.h>
@@ -12,8 +13,6 @@
 
 #include "devLibPCIImpl.h"
 #include "osdPciShared.h"
-
-static epicsMutexId rtemsGuard;
 
 /* Provide a weak symbol for BSP_pci_configuration. If the BSP does not
  * support PCI then BSP_pci_configuration resolves to the weak symbol.
@@ -38,18 +37,6 @@ static epicsMutexId rtemsGuard;
 extern rtems_pci_config_t BSP_pci_configuration __attribute__((weak));
 
 #endif
-
-static int
-rtemsDevPCIInit(void)
-{
-int rval;
-
-	rval = sharedDevPCIInit();
-
-	rtemsGuard = epicsMutexMustCreate();
-
-	return rval;
-}
 
 static
 int rtemsDevPCIConnectInterrupt(
@@ -117,66 +104,38 @@ static int
 rtemsDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
 int           rval    = S_dev_internal;
-int           st;
+long          flags;
 
 	if ( 0 == & BSP_pci_configuration ) {
 		/* BSP has no PCI support */
 		return S_dev_badRequest;
 	}
 
-    if(epicsMutexLock(rtemsGuard)!=epicsMutexLockOK)
-        return S_dev_internal;
+	/* RTEMS (as of 4.10) does NOT have any kind of protection against races
+	 * for the single, shared and global resource (indirect register pair,
+	 * pcibios, ...) which does config-space transactions!
+	 *
+	 * By locking interrupts here we make it at least safe to use the access
+	 * functions from within the framework of devlib2.
+	 *
+	 * We lock interrupts so that we may use access functions from ISRs.
+	 * The downside is a possible latency-penalty (e.g., the i386 implementation
+	 * uses the pci-bios of the machine and nobody knows how fast or slow
+	 * that is...)
+	 */
 
-	if ( CFG_ACC_WRITE(mode) ) {
-		switch ( CFG_ACC_WIDTH(mode) ) {
-			default:
-			case 1:
-				st = pci_write_config_byte( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint8_t*)pArg );
-			break;
+	flags = epicsInterruptLock();
 
-			case 2:
-				st = pci_write_config_word( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint16_t*)pArg );
-			break;
-			case 4:
-				st = pci_write_config_dword( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint32_t*)pArg );
-			break;
-		}
-	} else {
-		switch ( CFG_ACC_WIDTH(mode) ) {
-			default:
-			case 1:
-				st = pci_read_config_byte( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
-			break;
+	rval = sharedDevPCIConfigAccess(dev, offset, pArg, mode);
 
-			case 2:
-				st = pci_read_config_word( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
-			break;
-			case 4:
-				st = pci_read_config_dword( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
-			break;
-		}
-	}
-
-	if ( st ) {
-		errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: PCIBIOS error code 0x%02x\n",
-			             CFG_ACC_WRITE(mode) ? "write" : "read",
-			             CFG_ACC_WIDTH(mode),
-			             CFG_ACC_WRITE(mode) ? "to" : "from",
-			             st);
-                       
-		rval = S_dev_internal;
-	} else {
-		rval = 0;
-	}
-
-    epicsMutexUnlock(rtemsGuard);
+	epicsInterruptUnlock(flags);
 
 	return rval;
 }
 
 devLibPCI prtemsPCI = {
   "native",
-  rtemsDevPCIInit, NULL,
+  sharedDevPCIInit, NULL,
   sharedDevPCIFindCB,
   sharedDevPCIToLocalAddr,
   sharedDevPCIBarLen,
