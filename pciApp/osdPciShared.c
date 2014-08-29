@@ -230,6 +230,56 @@ sharedDevPCIBarLen(
   return 0;
 }
 
+int
+sharedDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
+{
+int rval = S_dev_internal;
+int st;
+
+	if ( CFG_ACC_WRITE(mode) ) {
+		switch ( CFG_ACC_WIDTH(mode) ) {
+			default:
+			case 1:
+				st = pci_write_config_byte( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint8_t*)pArg );
+			break;
+
+			case 2:
+				st = pci_write_config_word( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint16_t*)pArg );
+			break;
+			case 4:
+				st = pci_write_config_dword( dev->bus, dev->device, dev->function, (unsigned char)offset, *(uint32_t*)pArg );
+			break;
+		}
+	} else {
+		switch ( CFG_ACC_WIDTH(mode) ) {
+			default:
+			case 1:
+				st = pci_read_config_byte( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
+			break;
+
+			case 2:
+				st = pci_read_config_word( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
+			break;
+			case 4:
+				st = pci_read_config_dword( dev->bus, dev->device, dev->function, (unsigned char)offset, pArg );
+			break;
+		}
+	}
+
+	if ( st ) {
+		errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: PCIBIOS error code 0x%02x\n",
+			             CFG_ACC_WRITE(mode) ? "write" : "read",
+			             CFG_ACC_WIDTH(mode),
+			             CFG_ACC_WRITE(mode) ? "to" : "from",
+			             st);
+                       
+		rval = S_dev_internal;
+	} else {
+		rval = 0;
+	}
+
+	return rval;
+}
 
 
 /**************** local functions *****************/

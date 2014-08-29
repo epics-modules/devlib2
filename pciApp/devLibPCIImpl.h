@@ -24,6 +24,18 @@
 extern "C" {
 #endif
 
+typedef enum {
+	RD_08 = 0x01,
+	RD_16 = 0x02,
+	RD_32 = 0x04,
+	WR_08 = 0x11,
+	WR_16 = 0x12,
+	WR_32 = 0x14
+} DevPCIAccMode;
+
+#define CFG_ACC_WIDTH(mode) ((mode) & 0x0f)
+#define CFG_ACC_WRITE(mode) ((mode) & 0x10)
+
 typedef struct {
   const char *name;
 
@@ -46,6 +58,10 @@ typedef struct {
                                     void (*pFunction)(void *),
                                     void  *parameter);
 
+  int (*pDevPCIConfigAccess)(const epicsPCIDevice *id, unsigned offset, void *pArg, DevPCIAccMode mode);
+
+  /* level 0 enables, higher levels disable - on error a negative value is returned */
+  int (*pDevPCISwitchInterrupt)(const epicsPCIDevice *id, int level);
   ELLNODE node;
 } devLibPCI;
 

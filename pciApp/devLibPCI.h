@@ -300,6 +300,96 @@ const char* devLibPCIDriverName();
 
 extern int devPCIDebug;
 
+/** @brief Read byte from configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space
+ @param   pResult Pointer to where result is to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+epicsShareFunc
+int devPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult);
+
+/** @brief Read (16-bit) word from configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space (must be 16-bit aligned)
+ @param   pResult Pointer to where result is to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+
+epicsShareFunc
+int devPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult);
+
+/** @brief Read (32-bit) dword from configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space (must be 32-bit aligned)
+ @param   pResult Pointer to where result is to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+epicsShareFunc
+int devPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult);
+
+/** @brief Write byte to configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space
+ @param   value   Value to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+epicsShareFunc
+int devPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value);
+
+/** @brief Write (16-bit) word from configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space (must be 16-bit aligned)
+ @param   value   Value to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+
+epicsShareFunc
+int devPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value);
+
+/** @brief Write (32-bit) dword from configuration space
+ *
+ @param   dev     A PCI device handle
+ @param   offset  Offset into configuration space (must be 32-bit aligned)
+ @param   value   Value to be written
+ @returns 0       on success or an EPICS error code on failure
+ */
+
+epicsShareFunc
+int devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value);
+
+/** @brief Enable interrupts at the device.
+ *
+ @param   dev     A PCI device handle
+ @returns 0       on success or an EPICS error code on failure
+
+ @note            Implementation of this call for any OS is optional
+ */
+epicsShareFunc
+int devPCIEnableInterrupt(const epicsPCIDevice *dev);
+
+/** @brief Enable interrupts at the device.
+ *
+ @param   dev     A PCI device handle
+ @returns 0       on success or an EPICS error code on failure
+
+ @note            Implementation of this call for any OS is optional
+ */
+
+epicsShareFunc
+int devPCIDisableInterrupt(const epicsPCIDevice *dev);
+
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

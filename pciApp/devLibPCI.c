@@ -358,6 +358,132 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
     }
 }
 
+#define IS_BIGENDIAN() (!!tester.b[1])
+
+#if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
+#include <stdint.h>
+#define  SWAP_T int32_t
+#else
+#define  SWAP_T epicsUInt32
+
+static epicsUInt32
+__builtin_bswap32(epicsUInt32 v)
+{
+	v = ((v&0x00ff00ff)<<8)  | ((v>>8)  & 0x00ff00ff);
+	v = ((v&0x0000ffff)<<16) | ((v>>16) & 0x0000ffff);
+	return v;
+}
+#endif
+
+
+static void
+swap_if_necessary(void *what, DevPCIAccMode mode)
+{
+union { char b[2]; short s; } tester = { s: 1, };
+epicsUInt16 v16;
+
+	if ( IS_BIGENDIAN() ) {
+		switch ( CFG_ACC_WIDTH( mode ) ) {
+			case 4: *(epicsUInt32*)what = __builtin_bswap32((SWAP_T)*(epicsUInt32*)what); break;
+			case 2: v16 = *(epicsUInt16*)what;
+                    *(epicsUInt16*)what = (v16>>8) | (v16<<8);
+					/* fall thru */
+			default:
+					break;
+		}
+	}
+}
+
+static int
+checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, DevPCIAccMode mode)
+{
+int rval;
+
+	if ( (offset & (CFG_ACC_WIDTH(mode) - 1)) )
+		return S_dev_badArgument; /* misaligned      */
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	if ( CFG_ACC_WRITE(mode) ) {
+		swap_if_necessary(arg, mode);
+	}
+
+	rval = (*pdevLibPCI->pDevPCIConfigAccess)(dev, offset, arg, mode);
+
+	if ( rval )
+		return rval;
+
+	if ( ! CFG_ACC_WRITE(mode) ) {
+		swap_if_necessary(arg, mode);
+	}
+
+	return 0;
+}
+
+int
+devPCIConfigRead8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_08);
+}
+
+int
+devPCIConfigRead16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_16);
+}
+
+int 
+devPCIConfigRead32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 *pResult)
+{
+	return checkCfgAccess(dev, offset, pResult, RD_32);
+}
+
+int
+devPCIConfigWrite8(const epicsPCIDevice *dev, unsigned offset, epicsUInt8 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_08);
+}
+
+int
+devPCIConfigWrite16(const epicsPCIDevice *dev, unsigned offset, epicsUInt16 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_16);
+}
+
+int 
+devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 value)
+{
+	return checkCfgAccess(dev, offset, &value, WR_32);
+}
+
+
+int
+devPCIEnableInterrupt(const epicsPCIDevice *dev)
+{
+int rval;
+
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 0);
+
+	return ( rval < 0 ) ? S_dev_badFunction : 0;
+}
+
+int
+devPCIDisableInterrupt(const epicsPCIDevice *dev)
+{
+int rval;
+
+	if ( ! pdevLibPCI->pDevPCIConfigAccess )
+		return S_dev_badFunction; /* not implemented */
+
+	rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 1);
+
+	return ( rval < 0 ) ? S_dev_badFunction : 0;
+}
+
+
 static const iocshArg devPCIShowArg0 = { "verbosity level",iocshArgInt};
 static const iocshArg devPCIShowArg1 = { "PCI Vendor ID (0=any)",iocshArgInt};
 static const iocshArg devPCIShowArg2 = { "PCI Device ID (0=any)",iocshArgInt};
