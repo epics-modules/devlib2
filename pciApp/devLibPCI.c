@@ -377,7 +377,7 @@ __builtin_bswap32(epicsUInt32 v)
 
 
 static void
-swap_if_necessary(void *what, DevPCIAccMode mode)
+swap_if_necessary(void *what, devPCIAccessMode mode)
 {
     union { char b[2]; short s; } tester = { s: 1, };
     epicsUInt16 v16;
@@ -395,7 +395,7 @@ swap_if_necessary(void *what, DevPCIAccMode mode)
 }
 
 static int
-checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, DevPCIAccMode mode)
+checkCfgAccess(const epicsPCIDevice *dev, unsigned offset, void *arg, devPCIAccessMode mode)
 {
     int rval;
 

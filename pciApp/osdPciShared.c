@@ -231,7 +231,7 @@ sharedDevPCIBarLen(
 }
 
 int
-sharedDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
+sharedDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, devPCIAccessMode mode)
 {
     int st = 1;
 

@@ -31,7 +31,7 @@ typedef enum {
     WR_08 = 0x11,
     WR_16 = 0x12,
     WR_32 = 0x14
-} DevPCIAccMode;
+} devPCIAccessMode;
 
 #define CFG_ACC_WIDTH(mode) ((mode) & 0x0f)
 #define CFG_ACC_WRITE(mode) ((mode) & 0x10)
@@ -58,7 +58,7 @@ typedef struct {
                                     void (*pFunction)(void *),
                                     void  *parameter);
 
-  int (*pDevPCIConfigAccess)(const epicsPCIDevice *id, unsigned offset, void *pArg, DevPCIAccMode mode);
+  int (*pDevPCIConfigAccess)(const epicsPCIDevice *id, unsigned offset, void *pArg, devPCIAccessMode mode);
 
   /* level 0 enables, higher levels disable - on error a negative value is returned */
   int (*pDevPCISwitchInterrupt)(const epicsPCIDevice *id, int level);

@@ -81,7 +81,7 @@ sharedDevPCIConfigAccess(
   const epicsPCIDevice *dev,
   unsigned offset,
   void *pArg,
-  DevPCIAccMode mode
+  devPCIAccessMode mode
 );
 
 int sharedDevPCIInit(void);
