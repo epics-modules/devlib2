@@ -25,12 +25,12 @@ extern "C" {
 #endif
 
 typedef enum {
-	RD_08 = 0x01,
-	RD_16 = 0x02,
-	RD_32 = 0x04,
-	WR_08 = 0x11,
-	WR_16 = 0x12,
-	WR_32 = 0x14
+    RD_08 = 0x01,
+    RD_16 = 0x02,
+    RD_32 = 0x04,
+    WR_08 = 0x11,
+    WR_16 = 0x12,
+    WR_32 = 0x14
 } DevPCIAccMode;
 
 #define CFG_ACC_WIDTH(mode) ((mode) & 0x0f)

@@ -97,9 +97,9 @@ struct osdPCIDevice {
     char *linuxDriver;
 
     int fd; /* /dev/uio# */
-	int cfd; /* config-space descriptor */
-	int rfd[PCIBARCOUNT];
-	int cmode; /* config-space mode */
+    int cfd; /* config-space descriptor */
+    int rfd[PCIBARCOUNT];
+    int cmode; /* config-space mode */
 
     epicsMutexId devLock; /* guard access to isrs list */
 
@@ -162,21 +162,21 @@ static
 char*
 vallocPrintf(const char *format, va_list args)
 {
-	va_list nargs;
+    va_list nargs;
     char* ret=NULL;
     int size, size2;
 
-	/* May use a va_list only *once* (on some implementations it may
+    /* May use a va_list only *once* (on some implementations it may
 	 * be a reference to something that holds internal state information
 	 *
  	 * Luckily, C99 provides va_copy.
 	 */
-	va_copy(nargs, args);
+    va_copy(nargs, args);
 
     /* Take advantage of the fact that sprintf will tell us how much space to allocate */
     size=vsnprintf("",0,format,nargs);
 
-	va_end(nargs);
+    va_end(nargs);
 
     if (size<=0) {
         errlogPrintf("vaprintf: Failed to convert format '%s'\n",format);
@@ -194,7 +194,7 @@ vallocPrintf(const char *format, va_list args)
     }
 
     return ret;
-fail:
+    fail:
     free(ret);
     return NULL;
 }
@@ -282,7 +282,7 @@ static const
 struct locations_t {
     const char *dir, *name;
 } locations[] = {
-{BUSBASE,        "uio:" UIONUM},
+{BUSBASE, "uio:" UIONUM},
 {BUSBASE "uio/", UIONUM},
 {NULL,NULL}
 };
@@ -407,27 +407,27 @@ fail:
 static int
 open_res(struct osdPCIDevice *osd, int bar)
 {
-	int   ret  = 1;
-	char *fname=NULL;
+    int   ret  = 1;
+    char *fname=NULL;
 
-	if ( bar < 0 || bar > sizeof(osd->rfd)/sizeof(osd->rfd[0]) )
-		return ret;
+    if ( bar < 0 || bar > sizeof(osd->rfd)/sizeof(osd->rfd[0]) )
+        return ret;
 
-	if ( osd->rfd[bar] >= 0 )
-		return 0;
+    if ( osd->rfd[bar] >= 0 )
+        return 0;
 
-	if ( ! (fname = allocPrintf(RESNUM, osd->dev.bus, osd->dev.device, osd->dev.function, bar)) )
-		goto fail;
+    if ( ! (fname = allocPrintf(RESNUM, osd->dev.bus, osd->dev.device, osd->dev.function, bar)) )
+        goto fail;
 
-	if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
-		errlogPrintf("Unable to open resource file '%s': %s\n", fname, strerror(errno));
-		goto fail;
-	}
+    if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
+        errlogPrintf("Unable to open resource file '%s': %s\n", fname, strerror(errno));
+        goto fail;
+    }
 
-	ret = 0;
+    ret = 0;
 fail:
-	free(fname);
-	return ret;	
+    free(fname);
+    return ret;
 }
 
 static
@@ -446,12 +446,12 @@ close_uio(struct osdPCIDevice* osd)
     if (osd->fd!=-1) close(osd->fd);
     osd->fd=-1;
 
-	for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ ) {
-		if ( osd->rfd[i] >= 0 ) {
-			close(osd->rfd[i]);
-			osd->rfd[i] = -1;
-		}
-	}
+    for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ ) {
+        if ( osd->rfd[i] >= 0 ) {
+            close(osd->rfd[i]);
+            osd->rfd[i] = -1;
+        }
+    }
 }
 
 static
@@ -656,77 +656,77 @@ linuxDevPCIFindCB(
      unsigned int opt /* always 0 */
 )
 {
-  int err=0, ret=0;
-  ELLNODE *cur;
-  osdPCIDevice *curdev=NULL;
-  const epicsPCIID *search;
+    int err=0, ret=0;
+    ELLNODE *cur;
+    osdPCIDevice *curdev=NULL;
+    const epicsPCIID *search;
 
-  if(!searchfn || !idlist)
-    return S_dev_badArgument;
+    if(!searchfn || !idlist)
+        return S_dev_badArgument;
 
-  if(epicsMutexLock(pciLock)!=epicsMutexLockOK)
-      return S_dev_internal;
+    if(epicsMutexLock(pciLock)!=epicsMutexLockOK)
+        return S_dev_internal;
 
-  cur=ellFirst(&devices);
-  for(; cur; cur=ellNext(cur)){
-      curdev=CONTAINER(cur,osdPCIDevice,node);
-      if(epicsMutexLock(curdev->devLock)!=epicsMutexLockOK) {
-          ret=S_dev_internal;
-          goto done;
-      }
+    cur=ellFirst(&devices);
+    for(; cur; cur=ellNext(cur)){
+        curdev=CONTAINER(cur,osdPCIDevice,node);
+        if(epicsMutexLock(curdev->devLock)!=epicsMutexLockOK) {
+            ret=S_dev_internal;
+            goto done;
+        }
 
-      for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
+        for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
 
-          if(search->device!=DEVPCI_ANY_DEVICE &&
-             search->device!=curdev->dev.id.device)
-              continue;
-          else
-              if(search->vendor!=DEVPCI_ANY_DEVICE &&
-                 search->vendor!=curdev->dev.id.vendor)
-                  continue;
-          else
-              if( search->sub_device!=DEVPCI_ANY_SUBDEVICE &&
-                  search->sub_device!=curdev->dev.id.sub_device
-                  )
-                  continue;
-          else
-              if( search->sub_vendor!=DEVPCI_ANY_SUBVENDOR &&
-                  search->sub_vendor!=curdev->dev.id.sub_vendor
-                  )
-                  continue;
-          else
-              if( search->pci_class!=DEVPCI_ANY_CLASS &&
-                  search->pci_class!=curdev->dev.id.pci_class
-                  )
-                  continue;
-          else
-              if( search->revision!=DEVPCI_ANY_REVISION &&
-                  search->revision!=curdev->dev.id.revision
-                  )
-                  continue;
+            if(search->device!=DEVPCI_ANY_DEVICE &&
+               search->device!=curdev->dev.id.device)
+                continue;
+            else
+                if(search->vendor!=DEVPCI_ANY_DEVICE &&
+                   search->vendor!=curdev->dev.id.vendor)
+                    continue;
+            else
+                if( search->sub_device!=DEVPCI_ANY_SUBDEVICE &&
+                    search->sub_device!=curdev->dev.id.sub_device
+                    )
+                    continue;
+            else
+                if( search->sub_vendor!=DEVPCI_ANY_SUBVENDOR &&
+                    search->sub_vendor!=curdev->dev.id.sub_vendor
+                    )
+                    continue;
+            else
+                if( search->pci_class!=DEVPCI_ANY_CLASS &&
+                    search->pci_class!=curdev->dev.id.pci_class
+                    )
+                    continue;
+            else
+                if( search->revision!=DEVPCI_ANY_REVISION &&
+                    search->revision!=curdev->dev.id.revision
+                    )
+                    continue;
 
-          /* Match found */
+            /* Match found */
 
-          err=searchfn(arg,&curdev->dev);
-          if(err==0) /* Continue search */
-              continue;
-          else if(err==1) /* Abort search OK */
-              ret=0;
-          else /* Abort search Err */
-              ret=err;
-          epicsMutexUnlock(curdev->devLock);
-          goto done;
+            err=searchfn(arg,&curdev->dev);
+            if(err==0) /* Continue search */
+                continue;
+            else if(err==1) /* Abort search OK */
+                ret=0;
+            else /* Abort search Err */
+                ret=err;
+            epicsMutexUnlock(curdev->devLock);
+            goto done;
 
-      }
+        }
 
-      epicsMutexUnlock(curdev->devLock);
+        epicsMutexUnlock(curdev->devLock);
 
-  }
+    }
 
 done:
-  epicsMutexUnlock(pciLock);
+    epicsMutexUnlock(pciLock);
 
-  return ret;
+    return ret;
 }
 
 
@@ -739,8 +739,8 @@ linuxDevPCIToLocalAddr(
   unsigned int opt
 )
 {
-int mapno,i;
-int mapfd;
+    int mapno,i;
+    int mapfd;
 
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
@@ -754,38 +754,38 @@ int mapfd;
 
     if (!osd->base[bar]) {
 
-		if ( osd->dev.bar[bar].ioport ) {
+        if ( osd->dev.bar[bar].ioport ) {
             errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u -- mapping of IOPORTS is not possible\n", bar,
                          osd->dev.bus, osd->dev.device, osd->dev.function);
-        	epicsMutexUnlock(osd->devLock);
-			return S_dev_addrMapFail;
-		}
+            epicsMutexUnlock(osd->devLock);
+            return S_dev_addrMapFail;
+        }
 
-		if ( (mapfd = osd->rfd[bar]) >= 0 ) {
-			mapno = 0;
-		} else {
+        if ( (mapfd = osd->rfd[bar]) >= 0 ) {
+            mapno = 0;
+        } else {
 
-			mapno = bar;
+            mapno = bar;
 
-			if (opt&DEVLIB_MAP_UIOCOMPACT) {
-				/* mmap requires the number of *mappings* times pagesize;
+            if (opt&DEVLIB_MAP_UIOCOMPACT) {
+                /* mmap requires the number of *mappings* times pagesize;
 				 * valid mappings are only PCI memory regions.
 				 * Let's count them here
 				 */
-				for ( i=0; i<=bar; i++ ) {
-					if ( osd->dev.bar[i].ioport ) {
-						mapno--;
-					}
-				}
-			}
+                for ( i=0; i<=bar; i++ ) {
+                    if ( osd->dev.bar[i].ioport ) {
+                        mapno--;
+                    }
+                }
+            }
 
-			if ( mapno < 0 ) {
-				epicsMutexUnlock(osd->devLock);
-				return S_dev_addrMapFail;	
-			}
-			mapfd = osd->fd;
-		}
-		
+            if ( mapno < 0 ) {
+                epicsMutexUnlock(osd->devLock);
+                return S_dev_addrMapFail;
+            }
+            mapfd = osd->fd;
+        }
+
         osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
                               PROT_READ|PROT_WRITE, MAP_SHARED,
                               mapfd, mapno*pagesize);
@@ -833,7 +833,7 @@ int linuxDevPCIConnectInterrupt(
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
-	int     ret = S_dev_vecInstlFail;
+    int     ret = S_dev_vecInstlFail;
 
     if (!isr) return S_dev_noMemory;
 
@@ -844,15 +844,15 @@ int linuxDevPCIConnectInterrupt(
     isr->done=epicsEventCreate(epicsEventEmpty);
 
     if(!isr->done || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-		ret = S_dev_internal;
-		goto error;
+        ret = S_dev_internal;
+        goto error;
     }
 
-	if ( open_uio(osd) ) {
-		epicsMutexUnlock(osd->devLock);
-		ret = S_dev_noDevice;
-		goto error;
-	}
+    if ( open_uio(osd) ) {
+        epicsMutexUnlock(osd->devLock);
+        ret = S_dev_noDevice;
+        goto error;
+    }
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
@@ -860,7 +860,7 @@ int linuxDevPCIConnectInterrupt(
         if (other->fptr==isr->fptr && other->param==isr->param) {
             epicsMutexUnlock(osd->devLock);
             errlogPrintf("ISR already registered\n");
-			goto error;
+            goto error;
         }
     }
 
@@ -879,7 +879,7 @@ int linuxDevPCIConnectInterrupt(
     if (!isr->waiter) {
         epicsMutexUnlock(osd->devLock);
         errlogPrintf("Failed to create ISR thread %s\n", name);
-		goto error;
+        goto error;
     }
 
     ellAdd(&osd->isrs,&isr->node);
@@ -887,9 +887,9 @@ int linuxDevPCIConnectInterrupt(
 
     return 0;
 error:
-	epicsEventDestroy(isr->done);
-	free(isr);
-	return ret;
+    epicsEventDestroy(isr->done);
+    free(isr);
+    return ret;
 }
 
 static
@@ -1021,86 +1021,86 @@ int linuxDevPCIDisconnectInterrupt(
 static int
 linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
-int           rval    = S_dev_internal;
-char         *scratch = 0;
-osdPCIDevice *osd     = CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
-ssize_t       st;
-int           cmode;
+    int           rval    = S_dev_internal;
+    char         *scratch = 0;
+    osdPCIDevice *osd     = CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
+    ssize_t       st;
+    int           cmode;
 
     if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
         return S_dev_internal;
 
-	if ( CMODE_NONE == osd->cmode ) {
-		/* have already tried to open */
-		rval = S_dev_badRequest;
-		goto bail;
-	}
+    if ( CMODE_NONE == osd->cmode ) {
+        /* have already tried to open */
+        rval = S_dev_badRequest;
+        goto bail;
+    }
 
-	if ( -1 == osd->cfd ) {
-		if ( ! (scratch = allocPrintf(BUSBASE"config", osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
-				rval = S_dev_noMemory;
-				goto bail;
-		}
-		if ( (osd->cfd = open(scratch, O_RDWR, 0)) < 0 ) {
-			errlogPrintf("devLibPCIOSD: Unable to open configuration space for writing: %s\n", strerror(errno));
-			/* try readonly */
-			if ( (osd->cfd = open(scratch, O_RDONLY, 0)) < 0 ) {
-					errlogPrintf("devLibPCIOSD: Unable to open configuration space for read-only: %s\n", strerror(errno));
-					rval = S_dev_badRequest;
-					osd->cmode = CMODE_NONE;
-					goto bail;
-			}
-			osd->cmode = CMODE_RONL;
-		} else {
-			osd->cmode = CMODE_RDWR;
-		}
-	}
+    if ( -1 == osd->cfd ) {
+        if ( ! (scratch = allocPrintf(BUSBASE"config", osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
+            rval = S_dev_noMemory;
+            goto bail;
+        }
+        if ( (osd->cfd = open(scratch, O_RDWR, 0)) < 0 ) {
+            errlogPrintf("devLibPCIOSD: Unable to open configuration space for writing: %s\n", strerror(errno));
+            /* try readonly */
+            if ( (osd->cfd = open(scratch, O_RDONLY, 0)) < 0 ) {
+                errlogPrintf("devLibPCIOSD: Unable to open configuration space for read-only: %s\n", strerror(errno));
+                rval = S_dev_badRequest;
+                osd->cmode = CMODE_NONE;
+                goto bail;
+            }
+            osd->cmode = CMODE_RONL;
+        } else {
+            osd->cmode = CMODE_RDWR;
+        }
+    }
 
-	cmode = (CFG_ACC_WRITE(mode) ? CMODE_WRTE : CMODE_READ);
+    cmode = (CFG_ACC_WRITE(mode) ? CMODE_WRTE : CMODE_READ);
 
-	if ( ! (osd->cmode & cmode) ) {
-		rval = S_dev_badRequest;
-		goto bail;
-	}
+    if ( ! (osd->cmode & cmode) ) {
+        rval = S_dev_badRequest;
+        goto bail;
+    }
 
-	if ( CFG_ACC_WRITE(mode) ) {
-		st = pwrite( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
-	} else {
-		st = pread( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
-	}
+    if ( CFG_ACC_WRITE(mode) ) {
+        st = pwrite( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
+    } else {
+        st = pread( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
+    }
 
-	if ( CFG_ACC_WIDTH(mode) != st ) {
-		if ( st < 0 )
-			errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
-			             CFG_ACC_WRITE(mode) ? "write" : "read",
-			             CFG_ACC_WIDTH(mode),
-			             CFG_ACC_WRITE(mode) ? "to" : "from",
-			             strerror(errno));
-                       
-		rval = S_dev_internal;
-		goto bail;
-	}
+    if ( CFG_ACC_WIDTH(mode) != st ) {
+        if ( st < 0 )
+            errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
+                         CFG_ACC_WRITE(mode) ? "write" : "read",
+                         CFG_ACC_WIDTH(mode),
+                         CFG_ACC_WRITE(mode) ? "to" : "from",
+                         strerror(errno));
 
-	rval = 0;
+        rval = S_dev_internal;
+        goto bail;
+    }
+
+    rval = 0;
 
 bail:
-	free(scratch);
+    free(scratch);
 
     epicsMutexUnlock(osd->devLock);
 
-	return rval;
+    return rval;
 }
 
 static int
 linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
 {
-osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
-epicsInt32    irq_on = !level; 
+    osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
+    epicsInt32    irq_on = !level;
 
-	if ( osd->fd < 0 )
-		return -EBADF;
+    if ( osd->fd < 0 )
+        return -EBADF;
 
-	return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? -errno : 0;
+    return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? -errno : 0;
 }
 
 devLibPCI plinuxPCI = {

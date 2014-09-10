@@ -46,29 +46,29 @@ int rtemsDevPCIConnectInterrupt(
   unsigned int opt
 )
 {
-  struct osdPCIDevice *id=pcidev2osd(dev);
+    struct osdPCIDevice *id=pcidev2osd(dev);
 
-  rtems_irq_connect_data isr;
+    rtems_irq_connect_data isr;
 
-  isr.name = id->dev.irq;
-  isr.hdl = pFunction;
-  isr.handle = parameter;
+    isr.name = id->dev.irq;
+    isr.hdl = pFunction;
+    isr.handle = parameter;
 
-  isr.on = NULL;
-  isr.off= NULL;
-  isr.isOn=NULL;
+    isr.on = NULL;
+    isr.off= NULL;
+    isr.isOn=NULL;
 
 #ifdef BSP_SHARED_HANDLER_SUPPORT
-  isr.next_handler=NULL;
+    isr.next_handler=NULL;
 
-  if (!BSP_install_rtems_shared_irq_handler(&isr))
-    return S_dev_vecInstlFail;
+    if (!BSP_install_rtems_shared_irq_handler(&isr))
+        return S_dev_vecInstlFail;
 #else
-  if (!BSP_install_rtems_irq_handler(&isr))
-    return S_dev_vecInstlFail;
+    if (!BSP_install_rtems_irq_handler(&isr))
+        return S_dev_vecInstlFail;
 #endif
 
-  return 0;
+    return 0;
 }
 
 static
@@ -78,59 +78,59 @@ int rtemsDevPCIDisconnectInterrupt(
   void  *parameter
 )
 {
-  struct osdPCIDevice *id=pcidev2osd(dev);
+    struct osdPCIDevice *id=pcidev2osd(dev);
 
-  rtems_irq_connect_data isr;
+    rtems_irq_connect_data isr;
 
-  isr.name = id->dev.irq;
-  isr.hdl = pFunction;
-  isr.handle = parameter;
+    isr.name = id->dev.irq;
+    isr.hdl = pFunction;
+    isr.handle = parameter;
 
-  isr.on = NULL;
-  isr.off= NULL;
-  isr.isOn=NULL;
+    isr.on = NULL;
+    isr.off= NULL;
+    isr.isOn=NULL;
 
 #ifdef BSP_SHARED_HANDLER_SUPPORT
-  isr.next_handler=NULL;
+    isr.next_handler=NULL;
 #endif
 
-  if(!BSP_remove_rtems_irq_handler(&isr))
-    return S_dev_intDisconnect;
+    if(!BSP_remove_rtems_irq_handler(&isr))
+        return S_dev_intDisconnect;
 
-  return 0;
+    return 0;
 }
 
 static int
 rtemsDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
-int           rval    = S_dev_internal;
-long          flags;
+    int           rval    = S_dev_internal;
+    long          flags;
 
-	if ( 0 == & BSP_pci_configuration ) {
-		/* BSP has no PCI support */
-		return S_dev_badRequest;
-	}
+    if ( 0 == & BSP_pci_configuration ) {
+        /* BSP has no PCI support */
+        return S_dev_badRequest;
+    }
 
-	/* RTEMS (as of 4.10) does NOT have any kind of protection against races
-	 * for the single, shared and global resource (indirect register pair,
-	 * pcibios, ...) which does config-space transactions!
-	 *
-	 * By locking interrupts here we make it at least safe to use the access
-	 * functions from within the framework of devlib2.
-	 *
-	 * We lock interrupts so that we may use access functions from ISRs.
-	 * The downside is a possible latency-penalty (e.g., the i386 implementation
-	 * uses the pci-bios of the machine and nobody knows how fast or slow
-	 * that is...)
-	 */
+    /* RTEMS (as of 4.10) does NOT have any kind of protection against races
+     * for the single, shared and global resource (indirect register pair,
+     * pcibios, ...) which does config-space transactions!
+     *
+     * By locking interrupts here we make it at least safe to use the access
+     * functions from within the framework of devlib2.
+     *
+     * We lock interrupts so that we may use access functions from ISRs.
+     * The downside is a possible latency-penalty (e.g., the i386 implementation
+     * uses the pci-bios of the machine and nobody knows how fast or slow
+     * that is...)
+     */
 
-	flags = epicsInterruptLock();
+    flags = epicsInterruptLock();
 
-	rval = sharedDevPCIConfigAccess(dev, offset, pArg, mode);
+    rval = sharedDevPCIConfigAccess(dev, offset, pArg, mode);
 
-	epicsInterruptUnlock(flags);
+    epicsInterruptUnlock(flags);
 
-	return rval;
+    return rval;
 }
 
 devLibPCI prtemsPCI = {
