@@ -19,11 +19,9 @@
 #include <epicsMMIO.h>
 #include <devLibPCI.h>
 
-static
-volatile void *diagbase=0;
-
-static
-volatile epicsUInt32 diaglen=0;
+static const epicsPCIDevice *diagdev;
+static volatile void *diagbase;
+static epicsUInt32 diaglen;
 
 struct bdf {
     int b,d,f;
@@ -49,6 +47,10 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
         DEVPCI_DEVICE_VENDOR(device,vendor),
         DEVPCI_END
     };
+
+    diagbase = NULL;
+    diagdev = NULL;
+    diaglen = 0;
 
     printf("Looking for %u:%u.%u\n", b, d, f);
 
@@ -85,6 +87,7 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
         printf("Failed to map BAR\n");
         return;
     }
+    diagdev = loc.dev;
     diaglen=len;
 
 #if defined(linux)
@@ -93,6 +96,20 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
     printf("BAR %u from 0x%08lx\n",bar, (unsigned long)diagbase);
 #endif
 
+}
+
+static int check_args(int dmod, int offset, int count)
+{
+    switch(dmod){
+    case 8:
+    case 16:
+    case 32:
+        break;
+    default:
+      printf("Invalid data width %d\n",dmod);
+      return 1;
+    }
+    return 0;
 }
 
 void pciread(int dmod, int offset, int count)
@@ -107,37 +124,13 @@ void pciread(int dmod, int offset, int count)
       return;
   }
 
-  switch(dmod){
-  case 8:
-  case 16:
-  case 32:
-      break;
-  default:
-    epicsPrintf("Invalid data width %d\n",dmod);
-    return;
-  }
+  if(check_args(dmod, offset, count))
+      return;
 
   dbytes=dmod/8;
-  if(dmod%8)
-    dbytes++;
-  if(dbytes <=0 || dbytes>4){
-    epicsPrintf("Invalid data width\n");
-    return;
-  }
-
-  if(count<dbytes) count=dbytes;
-
-  if(offset%dbytes!=0 || count%dbytes!=0) {
-      printf("Unaligned transfers are not supported\n");
-      return;
-  }
-
-  if(diaglen && offset+count > diaglen) {
-      printf("Out of range\n");
-      return;
-  }
 
   count/=dbytes;
+  if(count==0) count=1;
 
   for(i=0, dptr=diagbase+offset; i<count; i++, dptr+=dbytes) {
       if ((i*dbytes)%16==0)
@@ -152,6 +145,42 @@ void pciread(int dmod, int offset, int count)
       }
   }
   printf("\n");
+}
+
+void pciconfread(int dmod, int offset, int count)
+{
+    int err = 0;
+    short dbytes;
+
+    if(!diagdev) {
+        printf("Run pcidiagset first\n");
+        return;
+    }
+
+    if(check_args(dmod, offset, count))
+        return;
+
+    dbytes=dmod/8;
+
+    count/=dbytes;
+    if(count==0) count=1;
+
+    for(;count && !err;offset+=dbytes,count--) {
+        epicsUInt8 u8;
+        epicsUInt16 u16;
+        epicsUInt32 u32;
+        printf("0x%04x ", offset);
+        switch(dmod) {
+        case 8: err = devPCIConfigRead8(diagdev, offset, &u8); printf("%02x\n", u8); break;
+        case 16: err = devPCIConfigRead16(diagdev, offset, &u16); printf("%04x\n", u16); break;
+        case 32: err = devPCIConfigRead32(diagdev, offset, &u32); printf("%08x\n", u32); break;
+        default:
+            printf("Invalid dmod %d, must be 8, 16, or 32\n", dmod);
+            break;
+        }
+    }
+    if(err)
+        printf("read error %d\n", err);
 }
 
 static const iocshArg pcidiagsetArg0 = { "Bus",iocshArgInt};
@@ -184,9 +213,23 @@ static void pcireadCall(const iocshArgBuf *args)
     pciread(args[0].ival, args[1].ival, args[2].ival);
 }
 
+static const iocshArg pciconfreadArg0 = { "data width (8,16,32)",iocshArgInt};
+static const iocshArg pciconfreadArg1 = { "offset",iocshArgInt};
+static const iocshArg pciconfreadArg2 = { "count",iocshArgInt};
+static const iocshArg * const pciconfreadArgs[3] =
+    {&pciconfreadArg0,&pciconfreadArg1,&pciconfreadArg2};
+static const iocshFuncDef pciconfreadFuncDef =
+    {"pciconfread",3,pciconfreadArgs};
+
+static void pciconfreadCall(const iocshArgBuf *args)
+{
+    pciconfread(args[0].ival, args[1].ival, args[2].ival);
+}
+
 static void pcish(void)
 {
     iocshRegister(&pcireadFuncDef,pcireadCall);
+    iocshRegister(&pciconfreadFuncDef,pciconfreadCall);
     iocshRegister(&pcidiagsetFuncDef,pcidiagsetCall);
 }
 epicsExportRegistrar(pcish);
