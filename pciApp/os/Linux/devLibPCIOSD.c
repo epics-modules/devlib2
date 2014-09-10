@@ -410,7 +410,7 @@ open_res(struct osdPCIDevice *osd, int bar)
     int   ret  = 1;
     char *fname=NULL;
 
-    if ( bar < 0 || bar > sizeof(osd->rfd)/sizeof(osd->rfd[0]) )
+    if ( bar < 0 || bar >= PCIBARCOUNT )
         return ret;
 
     if ( osd->rfd[bar] >= 0 )

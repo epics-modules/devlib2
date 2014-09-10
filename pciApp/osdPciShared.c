@@ -233,8 +233,7 @@ sharedDevPCIBarLen(
 int
 sharedDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, DevPCIAccMode mode)
 {
-    int rval = S_dev_internal;
-    int st;
+    int st = 1;
 
     if ( CFG_ACC_WRITE(mode) ) {
         switch ( CFG_ACC_WIDTH(mode) ) {
@@ -273,12 +272,10 @@ sharedDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg,
                      CFG_ACC_WRITE(mode) ? "to" : "from",
                      st);
 
-        rval = S_dev_internal;
+        return S_dev_internal;
     } else {
-        rval = 0;
+        return 0;
     }
-
-    return rval;
 }
 
 
