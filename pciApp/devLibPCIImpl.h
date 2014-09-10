@@ -67,7 +67,9 @@ typedef struct {
 
 epicsShareFunc
 int
-devLibPCIRegisterDriver(devLibPCI*);
+devLibPCIRegisterDriver2(devLibPCI*, size_t);
+
+#define devLibPCIRegisterDriver(TPTR) devLibPCIRegisterDriver2(TPTR, sizeof(*(TPTR)))
 
 #ifdef __cplusplus
 } /* extern "C" */

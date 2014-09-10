@@ -36,11 +36,11 @@
 
 int devPCIDebug = 0;
 
-static ELLLIST pciDrivers = {{NULL,NULL},0};
+static ELLLIST pciDrivers;
 
-static devLibPCI *pdevLibPCI=NULL;
+static devLibPCI *pdevLibPCI;
 
-static epicsMutexId pciDriversLock = NULL;
+static epicsMutexId pciDriversLock;
 static epicsThreadOnceId devPCIReg_once = EPICS_THREAD_ONCE_INIT;
 
 static epicsThreadOnceId devPCIInit_once = EPICS_THREAD_ONCE_INIT;
@@ -56,20 +56,28 @@ void regInit(void* junk)
 
 epicsShareFunc
 int
-devLibPCIRegisterDriver(devLibPCI* drv)
+devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
 {
     int ret=0;
     ELLNODE *cur;
-    devLibPCI *other;
 
     if (!drv->name) return 1;
+
+    if(drvsize!=sizeof(*drv)) {
+        errlogPrintf("devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
+                     "expect %lu but given %lu\n"
+                     "Please do a clean rebuild of devLib2 and any code with custom PCI OS structs\n",
+                     (unsigned long)sizeof(*drv),
+                     (unsigned long)drvsize);
+        return S_dev_internal;
+    }
 
     epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
 
     epicsMutexMustLock(pciDriversLock);
 
     for(cur=ellFirst(&pciDrivers); cur; cur=ellNext(cur)) {
-        other=CONTAINER(cur, devLibPCI, node);
+        devLibPCI *other=CONTAINER(cur, devLibPCI, node);
         if (strcmp(drv->name, other->name)==0) {
             errlogPrintf("Failed to register PCI bus driver: name already taken\n");
             ret=1;
