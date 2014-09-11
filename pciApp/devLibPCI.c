@@ -424,27 +424,19 @@ devPCIConfigWrite32(const epicsPCIDevice *dev, unsigned offset, epicsUInt32 valu
 int
 devPCIEnableInterrupt(const epicsPCIDevice *dev)
 {
-    int rval;
-
     if ( ! pdevLibPCI->pDevPCIConfigAccess )
         return S_dev_badFunction; /* not implemented */
 
-    rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 0);
-
-    return ( rval < 0 ) ? S_dev_badFunction : 0;
+    return pdevLibPCI->pDevPCISwitchInterrupt(dev, 0);
 }
 
 int
 devPCIDisableInterrupt(const epicsPCIDevice *dev)
 {
-    int rval;
-
     if ( ! pdevLibPCI->pDevPCIConfigAccess )
         return S_dev_badFunction; /* not implemented */
 
-    rval = pdevLibPCI->pDevPCISwitchInterrupt(dev, 1);
-
-    return ( rval < 0 ) ? S_dev_badFunction : 0;
+    return pdevLibPCI->pDevPCISwitchInterrupt(dev, 1);
 }
 
 

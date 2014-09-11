@@ -1104,7 +1104,7 @@ linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
     if(ret)
         return S_dev_badInit;
 
-    return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? -errno : 0;
+    return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? errno : 0;
 }
 
 devLibPCI plinuxPCI = {
