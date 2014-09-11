@@ -491,9 +491,9 @@ int linuxDevPCIInit(void)
             goto fail;
         }
         osd->fd=-1;
-		osd->cfd = -1;
-		for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ )
-			osd->rfd[i] = -1;
+        osd->cfd = -1;
+        for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ )
+            osd->rfd[i] = -1;
 
         int matched=fscanf(dlist, "%4x %8x %2x",
                            &bdf, &vendor_device, &irq);
@@ -769,9 +769,9 @@ linuxDevPCIToLocalAddr(
 
             if (opt&DEVLIB_MAP_UIOCOMPACT) {
                 /* mmap requires the number of *mappings* times pagesize;
-				 * valid mappings are only PCI memory regions.
-				 * Let's count them here
-				 */
+                 * valid mappings are only PCI memory regions.
+                 * Let's count them here
+                 */
                 for ( i=0; i<=bar; i++ ) {
                     if ( osd->dev.bar[i].ioport ) {
                         mapno--;
