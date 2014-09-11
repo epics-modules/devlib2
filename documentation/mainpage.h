@@ -78,6 +78,19 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver26 2.6 (Xyz 2020)
+
+@li Add PCI Config space access functions devPCIConfigRead##() and devPCIConfigWrite##()
+@li Add the pciconfread() iocsh function.
+@li Add devPCIEnableInterrupt() and devPCIDisableInterrupt().
+    Presently only implemented for Linux where it invokes the UIO irqcontrol callback function
+    with a 1 or 0.
+@li devLibPCIRegisterDriver()  is now a macro wrapping devLibPCIRegisterDriver2()
+    which performs a consistency check on the size of the devLibPCI structure.
+@li provide bswap16() and bswap32() for RTEMS PPC targets.  Previously omitted.
+@li Increment API version to 1.1 (previously 1.0)
+@li Change name format of Linux user "ISR" thread to include PCI BDF.
+
 @subsection ver25 2.5 (May 2014)
 
 @li Linux: possible string corruption in vallocPrintf()
