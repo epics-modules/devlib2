@@ -829,7 +829,7 @@ int linuxDevPCIConnectInterrupt(
   unsigned int opt
 )
 {
-    char name[10];
+    char name[20];
     ELLNODE *cur;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
@@ -864,7 +864,7 @@ int linuxDevPCIConnectInterrupt(
         }
     }
 
-    epicsSnprintf(name,NELEMENTS(name),"%02xPCIISR",dev->irq);
+    epicsSnprintf(name,NELEMENTS(name),"PCIISR%d:%d.%d",dev->bus,dev->device,dev->function);
     name[NELEMENTS(name)-1]='\0';
 
     /* Ensure that "IRQ" thread has higher priority
