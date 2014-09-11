@@ -664,16 +664,12 @@ linuxDevPCIFindCB(
     if(!searchfn || !idlist)
         return S_dev_badArgument;
 
-    if(epicsMutexLock(pciLock)!=epicsMutexLockOK)
-        return S_dev_internal;
+    epicsMutexMustLock(pciLock);
 
     cur=ellFirst(&devices);
     for(; cur; cur=ellNext(cur)){
         curdev=CONTAINER(cur,osdPCIDevice,node);
-        if(epicsMutexLock(curdev->devLock)!=epicsMutexLockOK) {
-            ret=S_dev_internal;
-            goto done;
-        }
+        epicsMutexMustLock(curdev->devLock);
 
         for(search=idlist; search->device!=DEVPCI_LAST_DEVICE; search++){
 
@@ -744,8 +740,7 @@ linuxDevPCIToLocalAddr(
 
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
-        return S_dev_internal;
+    epicsMutexMustLock(osd->devLock);
 
     if (open_res(osd, bar) && open_uio(osd)) {
         epicsMutexUnlock(osd->devLock);
@@ -814,8 +809,7 @@ linuxDevPCIBarLen(
 {
     osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
-        return -1;
+    epicsMutexMustLock(osd->devLock);
     *len=osd->len[bar];
     epicsMutexUnlock(osd->devLock);
     return 0;
@@ -841,12 +835,9 @@ int linuxDevPCIConnectInterrupt(
     isr->param=parameter;
     isr->osd=osd;
     isr->waiter_status=osdISRStarting;
-    isr->done=epicsEventCreate(epicsEventEmpty);
+    isr->done=epicsEventMustCreate(epicsEventEmpty);
 
-    if(!isr->done || epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-        ret = S_dev_internal;
-        goto error;
-    }
+    epicsMutexMustLock(osd->devLock)
 
     if ( open_uio(osd) ) {
         epicsMutexUnlock(osd->devLock);
@@ -904,10 +895,7 @@ void isrThread(void* arg)
 
     name=epicsThreadGetNameSelf();
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-        errlogMessage("Can't lock ISR thread");
-        return;
-    }
+    epicsMutexMustLock(osd->devLock);
 
     if (isr->waiter_status!=osdISRStarting) {
         isr->waiter_status = osdISRDone;
@@ -950,11 +938,7 @@ void isrThread(void* arg)
         }
         next=event+1;
 
-        if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK) {
-            errlogMessage("Failed to relock ISR thread\n");
-            isr->waiter_status = osdISRDone;
-            return;
-        }
+        epicsMutexMustLock(osd->devLock);
     }
 
     isr->waiter_status = osdISRDone;
@@ -994,8 +978,7 @@ int linuxDevPCIDisconnectInterrupt(
     osdISR *isr;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
-        return S_dev_internal;
+    epicsMutexMustLock(osd->devLock);
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
@@ -1027,8 +1010,7 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
     ssize_t       st;
     int           cmode;
 
-    if(epicsMutexLock(osd->devLock)!=epicsMutexLockOK)
-        return S_dev_internal;
+    epicsMutexMustLock(osd->devLock);
 
     if ( CMODE_NONE == osd->cmode ) {
         /* have already tried to open */
