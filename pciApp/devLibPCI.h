@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 #define DEVLIBPCI_MAJOR 1 /**< @brief API major version */
-#define DEVLIBPCI_MINOR 0 /**< @brief API minor version */
+#define DEVLIBPCI_MINOR 1 /**< @brief API minor version */
 
 /** @brief PCI device identifier
  *
