@@ -1096,9 +1096,13 @@ linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
 {
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
     epicsInt32    irq_on = !level;
+    int ret;
 
-    if ( osd->fd < 0 )
-        return -EBADF;
+    epicsMutexMustLock(osd->devLock)
+    ret = open_uio(osd);
+    epicsMutexUnlock(osd->devLock);
+    if(ret)
+        return S_dev_badInit;
 
     return write(osd->fd, &irq_on, sizeof(irq_on)) < 0 ? -errno : 0;
 }
