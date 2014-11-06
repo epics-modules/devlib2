@@ -236,12 +236,12 @@ vread_sysfs_hex(int *err, const char *fileformat, va_list args)
 
     fd=fopen(scratch, "r");
     if (!fd) {
-        errlogPrintf("vread_sysfs_hex: Failed to open %s\n",fileformat);
+        errlogPrintf("vread_sysfs_hex: Failed to open %s\n",scratch);
         goto done;
     }
     size=fscanf(fd, "0x%8lx",&ret);
     if(size!=1 || ferror(fd)) {
-        errlogPrintf("vread_sysfs_hex: Failed to read %s\n",fileformat);
+        errlogPrintf("vread_sysfs_hex: Failed to read %s\n",scratch);
         goto done;
     }
 
