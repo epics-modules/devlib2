@@ -220,7 +220,7 @@ allocPrintf(const char *format, ...)
  */
 static
 unsigned long
-vread_sysfs_hex(int *err, const char *fileformat, va_list args)
+vread_sysfs(int *err, const char *fileformat, va_list args)
 {
     unsigned long ret=0;
     int size;
@@ -236,12 +236,12 @@ vread_sysfs_hex(int *err, const char *fileformat, va_list args)
 
     fd=fopen(scratch, "r");
     if (!fd) {
-        errlogPrintf("vread_sysfs_hex: Failed to open %s\n",scratch);
+        errlogPrintf("vread_sysfs: Failed to open %s\n",scratch);
         goto done;
     }
-    size=fscanf(fd, "0x%8lx",&ret);
+    size=fscanf(fd, "%li",&ret);
     if(size!=1 || ferror(fd)) {
-        errlogPrintf("vread_sysfs_hex: Failed to read %s\n",scratch);
+        errlogPrintf("vread_sysfs: Failed to read %s\n",scratch);
         goto done;
     }
 
@@ -254,16 +254,16 @@ done:
 
 static
 unsigned long
-read_sysfs_hex(int *err, const char *fileformat, ...) EPICS_PRINTF_STYLE(2,3);
+read_sysfs(int *err, const char *fileformat, ...) EPICS_PRINTF_STYLE(2,3);
 
 static
 unsigned long
-read_sysfs_hex(int *err, const char *fileformat, ...)
+read_sysfs(int *err, const char *fileformat, ...)
 {
     unsigned long ret;
     va_list args;
     va_start(args, fileformat);
-    ret=vread_sysfs_hex(err,fileformat,args);
+    ret=vread_sysfs(err,fileformat,args);
     va_end(args);
     return ret;
 }
@@ -510,11 +510,11 @@ int linuxDevPCIInit(void)
         osd->dev.id.vendor=(vendor_device>>16)&0xffff;
         osd->dev.id.device=vendor_device&0xffff;
         osd->dev.irq=irq;
-        osd->dev.id.sub_vendor=read_sysfs_hex(&fail, BUSBASE "subsystem_vendor",
+        osd->dev.id.sub_vendor=read_sysfs(&fail, BUSBASE "subsystem_vendor",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
-        osd->dev.id.sub_device=read_sysfs_hex(&fail, BUSBASE "subsystem_device",
+        osd->dev.id.sub_device=read_sysfs(&fail, BUSBASE "subsystem_device",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
-        osd->dev.id.pci_class= read_sysfs_hex(&fail, BUSBASE "class",
+        osd->dev.id.pci_class= read_sysfs(&fail, BUSBASE "class",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.revision=0;
 
