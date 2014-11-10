@@ -242,6 +242,15 @@ int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
   return 0;
 }
 
+static int
+vxworksDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
+{
+    if (level)
+        return intEnable(VXPCIINTOFFSET+dev->irq);
+    else
+        return intDisable(VXPCIINTOFFSET+dev->irq);
+}
+
 devLibPCI pvxworksPCI = {
   "native",
   vxworksDevPCIInit, NULL,
@@ -250,7 +259,8 @@ devLibPCI pvxworksPCI = {
   sharedDevPCIBarLen,
   vxworksDevPCIConnectInterrupt,
   vxworksDevPCIDisconnectInterrupt,
-  sharedDevPCIConfigAccess
+  sharedDevPCIConfigAccess,
+  vxworksDevPCISwitchInterrupt
 };
 #include <epicsExport.h>
 
