@@ -147,7 +147,7 @@ epicsMutexId pciLock=NULL;
 static
 long pagesize;
 
-#define BUSBASE "/sys/bus/pci/devices/0000:%02x:%02x.%1x/"
+#define BUSBASE "/sys/bus/pci/devices/%04x:%02x:%02x.%1x/"
 
 #define UIONUM     "uio%u"
 
@@ -415,7 +415,7 @@ open_res(struct osdPCIDevice *osd, int bar)
     if ( osd->rfd[bar] >= 0 )
         return 0;
 
-    if ( ! (fname = allocPrintf(RESNUM, osd->dev.bus, osd->dev.device, osd->dev.function, bar)) )
+    if ( ! (fname = allocPrintf(RESNUM, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar)) )
         goto fail;
 
     if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
@@ -502,17 +502,17 @@ int linuxDevPCIInit(void)
         }
  
         osd->dev.id.vendor=read_sysfs(&fail, BUSBASE "vendor",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.device=read_sysfs(&fail, BUSBASE "device",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_vendor=read_sysfs(&fail, BUSBASE "subsystem_vendor",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_device=read_sysfs(&fail, BUSBASE "subsystem_device",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.pci_class= read_sysfs(&fail, BUSBASE "class",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.irq=read_sysfs(&fail, BUSBASE "irq",
-                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.revision=0;
 
         if (fail) {
@@ -537,7 +537,7 @@ int linuxDevPCIInit(void)
         /* Base address */
         
         filename = allocPrintf(BUSBASE "resource",
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!filename) {
             errMessage(S_dev_noMemory, "Out of memory");
             goto fail;
@@ -582,7 +582,7 @@ int linuxDevPCIInit(void)
         
         /* driver name */
         filename = allocPrintf(BUSBASE "driver",
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!filename) {
             errMessage(S_dev_noMemory, "Out of memory");
             goto fail;
@@ -859,7 +859,7 @@ int linuxDevPCIConnectInterrupt(
         }
     }
 
-    epicsSnprintf(name,NELEMENTS(name),"PCIISR%d:%d.%d",dev->bus,dev->device,dev->function);
+    epicsSnprintf(name,NELEMENTS(name),"PCIISR%04x:%02x:%02x.%x",dev->domain,dev->bus,dev->device,dev->function);
     name[NELEMENTS(name)-1]='\0';
 
     /* Ensure that "IRQ" thread has higher priority
@@ -1023,7 +1023,8 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
     }
 
     if ( -1 == osd->cfd ) {
-        if ( ! (scratch = allocPrintf(BUSBASE"config", osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
+        if ( ! (scratch = allocPrintf(BUSBASE"config",
+                    osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
             rval = S_dev_noMemory;
             goto bail;
         }

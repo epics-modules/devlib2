@@ -186,7 +186,7 @@ int devPCIFindCB(
 
 struct bdfmatch
 {
-  unsigned int b,d,f;
+  unsigned int domain,b,d,f;
   const epicsPCIDevice* found;
 };
 
@@ -195,7 +195,9 @@ int bdfsearch(void* ptr, const epicsPCIDevice* cur)
 {
   struct bdfmatch *mt=ptr;
 
-  if( cur->bus==mt->b && cur->device==mt->d &&
+  if( cur->domain==mt->domain &&
+      cur->bus==mt->b &&
+      cur->device==mt->d &&
       cur->function==mt->f )
   {
     mt->found=cur;
@@ -209,8 +211,9 @@ int bdfsearch(void* ptr, const epicsPCIDevice* cur)
  * The most common PCI search using only id fields and BDF.
  */
 epicsShareFunc
-int devPCIFindBDF(
+int devPCIFindDBDF(
      const epicsPCIID *idlist,
+     unsigned int      domain,
      unsigned int      b,
      unsigned int      d,
      unsigned int      f,
@@ -224,6 +227,7 @@ const epicsPCIDevice **found,
   if(!found)
     return 2;
 
+  find.domain=domain;
   find.b=b;
   find.d=d;
   find.f=f;
@@ -244,6 +248,20 @@ const epicsPCIDevice **found,
 
   *found=find.found;
   return 0;
+}
+
+/* for backward compatilility: search domain 0 only */
+epicsShareFunc
+int devPCIFindBDF(
+     const epicsPCIID *idlist,
+     unsigned int      b,
+     unsigned int      d,
+     unsigned int      f,
+const epicsPCIDevice **found,
+     unsigned int      opt
+)
+{
+    return devPCIFindDBDF(idlist, 0, b, d, f, found, opt);
 }
 
 int
@@ -345,9 +363,9 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
     errlogFlush();
-    errlogPrintf("PCI %u:%u.%u IRQ %u\n"
+    errlogPrintf("PCI %04x:%02x:%02x.%x IRQ %u\n"
            "  vendor:device %04x:%04x\n",
-           dev->bus, dev->device, dev->function, dev->irq,
+           dev->domain, dev->bus, dev->device, dev->function, dev->irq,
            dev->id.vendor, dev->id.device);
     if(lvl>=1)
         errlogPrintf("  subved:subdev %04x:%04x\n"

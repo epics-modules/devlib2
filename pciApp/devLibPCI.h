@@ -109,6 +109,7 @@ typedef struct {
   unsigned int function;
   struct PCIBar bar[6];
   epicsUInt8 irq;
+  unsigned int domain;
 } epicsPCIDevice;
 
 /** @brief The maximum number of base address registers (BARs). */
@@ -158,6 +159,7 @@ int devPCIFindCB(
  * S_dev_noDevice.
  *
  @param idlist List of PCI identifiers
+ @param domain domain
  @param b bus
  @param d device
  @param f function
@@ -165,6 +167,17 @@ int devPCIFindCB(
  @param opt Modifiers.  Currently unused
  @returns 0 on success or an EPICS error code on failure.
  */
+epicsShareFunc
+int devPCIFindDBDF(
+     const epicsPCIID *idlist,
+     unsigned int      domain,
+     unsigned int      b,
+     unsigned int      d,
+     unsigned int      f,
+const epicsPCIDevice **found,
+     unsigned int opt /* always 0 */
+);
+
 epicsShareFunc
 int devPCIFindBDF(
      const epicsPCIID *idlist,
