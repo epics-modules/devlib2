@@ -839,7 +839,7 @@ int linuxDevPCIConnectInterrupt(
     isr->waiter_status=osdISRStarting;
     isr->done=epicsEventMustCreate(epicsEventEmpty);
 
-    epicsMutexMustLock(osd->devLock)
+    epicsMutexMustLock(osd->devLock);
 
     if ( open_uio(osd) ) {
         epicsMutexUnlock(osd->devLock);
@@ -1083,7 +1083,7 @@ linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
     epicsInt32    irq_on = !level;
     int ret;
 
-    epicsMutexMustLock(osd->devLock)
+    epicsMutexMustLock(osd->devLock);
     ret = open_uio(osd);
     epicsMutexUnlock(osd->devLock);
     if(ret)
