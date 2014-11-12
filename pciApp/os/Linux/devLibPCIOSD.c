@@ -167,10 +167,8 @@ vallocPrintf(const char *format, va_list args)
 
     /* May use a va_list only *once* (on some implementations it may
 	 * be a reference to something that holds internal state information
-	 *
- 	 * Luckily, C99 provides va_copy.
 	 */
-    va_copy(nargs, args);
+    __va_copy(nargs, args);
 
     /* Take advantage of the fact that sprintf will tell us how much space to allocate */
     size=vsnprintf("",0,format,nargs);
