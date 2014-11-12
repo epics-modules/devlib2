@@ -493,8 +493,8 @@ int linuxDevPCIInit(void)
         for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ )
             osd->rfd[i] = -1;
 
-	match = sscanf(dir->d_name,"0000:%2x:%2x.%x",
-                                            &osd->dev.bus,&osd->dev.device,&osd->dev.function);
+	match = sscanf(dir->d_name,"%x:%x:%x.%x",
+                             &osd->dev.domain,&osd->dev.bus,&osd->dev.device,&osd->dev.function);
         if (match != 4){
             errlogPrintf("Could not decode PCI device directory %s\n", dir->d_name);
         }
