@@ -18,6 +18,7 @@ INC += devLibPCI.h
 INC += devLibPCIImpl.h
 
 epicspci_SRCS += devLibPCI.c
+epicspci_SRCS += devLibPCIStrings.c
 
 epicspci_SRCS_RTEMS += osdPciShared.c
 epicspci_SRCS_vxWorks += osdPciShared.c

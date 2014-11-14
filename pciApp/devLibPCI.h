@@ -403,6 +403,14 @@ int devPCIEnableInterrupt(const epicsPCIDevice *dev);
 epicsShareFunc
 int devPCIDisableInterrupt(const epicsPCIDevice *dev);
 
+/** @brief Translate class id to string.
+ *
+ @param   classId    PCI class Id
+ @returns            constant class name string
+ */
+
+epicsShareFunc
+const char* devPCIDeviceClassToString(int classId);
 
 #ifdef __cplusplus
 } /* extern "C" */
