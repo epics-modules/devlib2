@@ -379,10 +379,21 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
         return;
     for(i=0; i<PCIBARCOUNT; i++)
     {
-        errlogPrintf("BAR %u %s-bit %s%s\n",i,
-               dev->bar[i].addr64?"64":"32",
-               dev->bar[i].ioport?"IO Port":"MMIO",
-               dev->bar[i].below1M?" Below 1M":"");
+        epicsUInt32 len;
+
+        if ((*pdevLibPCI->pDevPCIBarLen)(dev, i, &len) == 0 && len > 0)
+        {
+            char* u = "";
+            if (len >= 1024) { len >>= 10; u = "k"; }
+            if (len >= 1024) { len >>= 10; u = "M"; }
+            if (len >= 1024) { len >>= 10; u = "G"; }
+
+            errlogPrintf("  BAR %u %s-bit %s%s %3u %sB\n",i,
+                   dev->bar[i].addr64?"64":"32",
+                   dev->bar[i].ioport?"IO Port":"MMIO   ",
+                   dev->bar[i].below1M?" Below 1M":"",
+                   len, u);
+        }
     }
 }
 
