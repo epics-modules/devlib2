@@ -110,6 +110,7 @@ typedef struct {
   struct PCIBar bar[6];
   epicsUInt8 irq;
   unsigned int domain;
+  const char* driver;
 } epicsPCIDevice;
 
 /** @brief The maximum number of base address registers (BARs). */

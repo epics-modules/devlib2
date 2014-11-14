@@ -95,8 +95,6 @@ struct osdPCIDevice {
     epicsUInt32 displayBAR[PCIBARCOUNT]; /* Raw PCI address */
     epicsUInt32 displayErom;
 
-    char *linuxDriver;
-
     int fd; /* /dev/uio# */
     int cfd; /* config-space descriptor */
     int rfd[PCIBARCOUNT];
@@ -587,10 +585,8 @@ int linuxDevPCIInit(void)
         }
         memset (dname, 0, sizeof(dname));
         if (readlink(filename, dname, sizeof(dname)-1) != -1)
-            osd->linuxDriver = epicsStrDup(basename(dname));
+            osd->dev.driver = epicsStrDup(basename(dname));
         free(filename);
-        if (!osd->linuxDriver)
-            errlogPrintf("Warning: Failed to copy driver name\n");
 
         osd->devLock = epicsMutexMustCreate();
 
@@ -640,7 +636,6 @@ int linuxDevFinal(void)
 
         epicsMutexUnlock(curdev->devLock);
         epicsMutexDestroy(curdev->devLock);
-        free(curdev->linuxDriver);
         free(curdev);
     }
     epicsMutexUnlock(pciLock);
