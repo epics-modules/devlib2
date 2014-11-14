@@ -147,7 +147,7 @@ epicsMutexId pciLock=NULL;
 static
 long pagesize;
 
-#define BUSBASE "/sys/bus/pci/devices/%04x:%02x:%02x.%1x/"
+#define BUSBASE "/sys/bus/pci/devices/%04x:%02x:%02x.%x/"
 
 #define UIONUM     "uio%u"
 
@@ -268,11 +268,11 @@ read_sysfs(int *err, const char *fileformat, ...)
 /* location of UIO entries in sysfs tree
  *
  * circa 2.6.28
- * in /sys/bus/pci/devices/0000:%02x:%02x.%1x/
+ * in /sys/bus/pci/devices/%04x:%02x:%02x.%x/
  * called uio:uio#
  *
  * circa 2.6.32
- * in /sys/bus/pci/devices/0000:%02x:%02x.%1x/uio/
+ * in /sys/bus/pci/devices/%04x:%02x:%02x.%x/uio/
  * called uio#
  */
 static const
@@ -336,7 +336,7 @@ find_uio_number(const struct osdPCIDevice* osd)
     {
         free(devdir);
 
-        devdir=allocPrintf(curloc->dir, osd->dev.bus, osd->dev.device, osd->dev.function);
+        devdir=allocPrintf(curloc->dir, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!devdir)
             goto fail;
 
@@ -357,13 +357,13 @@ find_uio_number(const struct osdPCIDevice* osd)
         errlogPrintf("After looking:\n");
         for(curloc=locations; curloc->dir; ++curloc)
         {
-            devdir=allocPrintf(curloc->dir, osd->dev.bus, osd->dev.device, osd->dev.function);
+            devdir=allocPrintf(curloc->dir, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             errlogPrintf("in %s for %s\n",devdir,curloc->name);
             free(devdir);
         }
         devdir=NULL;
-        errlogPrintf("Failed to find device %u:%u.%u\n",
-                     osd->dev.bus, osd->dev.device, osd->dev.function);
+        errlogPrintf("Failed to find PCI device %04x:%02x:%02x.%x\n",
+                     osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
     }
 
     /* ret set by sscanf */
@@ -514,15 +514,15 @@ int linuxDevPCIInit(void)
         osd->dev.id.revision=0;
 
         if (fail) {
-            errlogPrintf("Warning: Failed to read some attributes of PCI %u:%u.%u\n"
+            errlogPrintf("Warning: Failed to read some attributes of PCI device %04x:%02x:%02x.%x\n"
                          "         This may cause some searches to fail\n",
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             fail=0;
         }
 
         if(devPCIDebug>=1) {
-            errlogPrintf("linuxDevPCIInit found %d.%d.%d\n",
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf("linuxDevPCIInit found %04x:%02x:%02x.%x\n",
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             errlogPrintf(" as pri %04x:%04x sub %04x:%04x cls %06x\n",
                          osd->dev.id.vendor, osd->dev.id.device,
                          osd->dev.id.sub_vendor, osd->dev.id.sub_device,
@@ -542,7 +542,7 @@ int linuxDevPCIInit(void)
         }
         file=fopen(filename, "r");
         if (!file) {
-            printf("Could not open resource file %s!\n", filename);
+            errlogPrintf("Could not open resource file %s!\n", filename);
             free(filename);
             continue;
         }
@@ -550,7 +550,7 @@ int linuxDevPCIInit(void)
             match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
         
             if (match != 3) {
-                printf("Could not parse %s line %i\n", filename, i+1);
+                errlogPrintf("Could not parse line %i of %s\n", i+1, filename);
                 continue;
             }
 
@@ -565,9 +565,9 @@ int linuxDevPCIInit(void)
             osd->len[i] = (start || stop ) ? (stop - start + 1) : 0;
         }
         /* rom */
-        match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
+        match = fscanf(file, "%llx %llx %llx\n", &start, &stop, &flags);
         if (match != 3) {
-            printf("Could not parse %s line %i\n", filename, i+1);
+            errlogPrintf("Could not parse line %i of %s\n", i+1, filename);
             start = 0;
             stop = 0;
         }
@@ -752,8 +752,8 @@ linuxDevPCIToLocalAddr(
     if (!osd->base[bar]) {
 
         if ( osd->dev.bar[bar].ioport ) {
-            errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u -- mapping of IOPORTS is not possible\n", bar,
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             epicsMutexUnlock(osd->devLock);
             return S_dev_addrMapFail;
         }
@@ -788,8 +788,8 @@ linuxDevPCIToLocalAddr(
                               mapfd, mapno*pagesize);
         if (osd->base[bar]==MAP_FAILED) {
             perror("Failed to map BAR");
-            errlogPrintf("Failed to MMAP BAR %u of %u:%u.%u\n", bar,
-                         osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x\n", bar,
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             epicsMutexUnlock(osd->devLock);
             return S_dev_addrMapFail;
         }
