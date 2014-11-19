@@ -395,6 +395,8 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
                    dev->bar[i].below1M?" Below 1M":"",
                    len, u);
         }
+        /* 64 bit bars use 2 entries */
+        if (dev->bar[i].addr64) i++;
     }
 }
 
