@@ -118,7 +118,7 @@ sharedDevPCIInit(void)
           pci_read_config_byte(b,d,f,PCI_INTERRUPT_LINE, &val8);
           next->dev.irq = val8;
 
-          ellInsert(&devices,NULL,&next->node);
+          ellInsert(&devices,ellLast(&devices),&next->node);
 
 	  if (f == 0 && !(header & PCI_HEADER_MULTI_FUNC))
           {

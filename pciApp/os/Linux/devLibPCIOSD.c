@@ -590,7 +590,7 @@ int linuxDevPCIInit(void)
 
         osd->devLock = epicsMutexMustCreate();
 
-        ellAdd(&devices, &osd->node);
+        ellInsert(&devices, NULL, &osd->node);
         osd=NULL;
     }
     if (sysfsPci_dir)
