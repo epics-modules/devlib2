@@ -362,16 +362,17 @@ void
 devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
+
     errlogPrintf("PCI %04x:%02x:%02x.%x IRQ %u\n"
-           "  vendor:device %04x:%04x\n",
+           "  vendor:device %04x:%04x rev %02x\n",
            dev->domain, dev->bus, dev->device, dev->function, dev->irq,
-           dev->id.vendor, dev->id.device);
+           dev->id.vendor, dev->id.device, dev->id.revision);
     if(lvl<1)
         return;
     errlogPrintf("  subved:subdev %04x:%04x\n"
-           "  class %06x rev %02x %s\n",
+           "  class %06x %s\n",
            dev->id.sub_vendor, dev->id.sub_device,
-           dev->id.pci_class, dev->id.revision,
+           dev->id.pci_class,
            devPCIDeviceClassToString(dev->id.pci_class));
     if (dev->driver) errlogPrintf("  driver %s\n",
            dev->driver);
