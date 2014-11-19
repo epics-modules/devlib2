@@ -36,9 +36,10 @@ struct osdPCIDevice {
   epicsPCIDevice dev; /* "public" data */
 
   /* Can be used to cache values */
-  volatile void *base[PCIBARCOUNT];
-  epicsUInt32    len[PCIBARCOUNT];
-  volatile void *erom;
+  /* (PCI bus addresses are not program space pointers!) */
+  epicsUInt32 base[PCIBARCOUNT];
+  epicsUInt32 len[PCIBARCOUNT];
+  epicsUInt32 erom;
 
   ELLNODE node;
 
