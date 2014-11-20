@@ -343,8 +343,7 @@ find_uio_number(const struct osdPCIDevice* osd)
             if(errno==ENOENT)
                 continue;
 
-            errlogPrintf("find_uio_number: Search of %s failed\n",devdir);
-            perror("opendir");
+            errlogPrintf("find_uio_number: Search of %s failed: %s\n",devdir, strerror(errno));
             goto fail;
 
         } else
@@ -388,8 +387,6 @@ open_uio(struct osdPCIDevice* osd)
     osd->fd=open(devname,O_RDWR);
     if (osd->fd==-1) {
         /* TODO: try to create? */
-        perror("Failed to open UIO device file");
-        errlogPrintf("Could not open device file %s.\n",devname);
         goto fail;
     }
 
@@ -415,7 +412,6 @@ open_res(struct osdPCIDevice *osd, int bar)
         goto fail;
 
     if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
-        errlogPrintf("Unable to open resource file '%s': %s\n", fname, strerror(errno));
         goto fail;
     }
 
@@ -740,6 +736,8 @@ linuxDevPCIToLocalAddr(
     epicsMutexMustLock(osd->devLock);
 
     if (open_res(osd, bar) && open_uio(osd)) {
+        errlogPrintf("Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %i\n",
+            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
         epicsMutexUnlock(osd->devLock);
         return S_dev_addrMapFail;
     }
@@ -782,9 +780,9 @@ linuxDevPCIToLocalAddr(
                               PROT_READ|PROT_WRITE, MAP_SHARED,
                               mapfd, mapno*pagesize);
         if (osd->base[bar]==MAP_FAILED) {
-            perror("Failed to map BAR");
-            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x\n", bar,
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x: %s\n", bar,
+                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function,
+                         strerror(errno));
             epicsMutexUnlock(osd->devLock);
             return S_dev_addrMapFail;
         }
