@@ -84,7 +84,7 @@ the width and order of accesses.
 @li Add the pciconfread() iocsh function.
 @li Add devPCIEnableInterrupt() and devPCIDisableInterrupt().
     Linux: invoke the UIO irqcontrol callback function with a 1 or 0.
-    vxWorks: call intEnable or intDisable.
+    vxWorks: call intEnable or intDisable (enabled by default). (Dirk Zimoch)
 @li devLibPCIRegisterDriver()  is now a macro wrapping devLibPCIRegisterDriver2()
     which performs a consistency check on the size of the devLibPCI structure.
 @li provide bswap16() and bswap32() for RTEMS PPC targets.  Previously omitted.
@@ -96,6 +96,7 @@ the width and order of accesses.
 @li Rework of the vxWorks/RTEMS PCI bus scan to allow wildcards in device search.
     This allows devPCIShow for all PCI devices like in Linux. (Dirk Zimoch)
 @li Fixes for 64 bit BARs. (Dirk Zimoch)
+@li vxWorks: use BAR address directly if sysBusToLocalAdrs does not support PCI. (Dirk Zimoch)
 @li Changes in devPCIShow to get nicer output. (Dirk Zimoch)
 
 @subsection ver25 2.5 (May 2014)
