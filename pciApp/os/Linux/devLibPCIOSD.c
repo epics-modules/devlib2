@@ -431,6 +431,7 @@ int linuxDevPCIInit(void)
     int i;
     osdPCIDevice *osd=NULL;
     pciLock = epicsMutexMustCreate();
+    int host_is_first = 0;
 
     pagesize=sysconf(_SC_PAGESIZE);
     if (pagesize==-1) {
@@ -478,7 +479,7 @@ int linuxDevPCIInit(void)
                              osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_device=read_sysfs(&fail, BUSBASE "subsystem_device",
                              osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
-        osd->dev.id.pci_class= read_sysfs(&fail, BUSBASE "class",
+        osd->dev.id.pci_class=read_sysfs(&fail, BUSBASE "class",
                              osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.irq=read_sysfs(&fail, BUSBASE "irq",
                              osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
@@ -563,7 +564,11 @@ int linuxDevPCIInit(void)
 
         osd->devLock = epicsMutexMustCreate();
 
-        ellInsert(&devices, NULL, &osd->node);
+        if (!ellCount(&devices))
+        {
+            host_is_first = (osd->dev.bus == 0 && osd->dev.device == 0);
+        }
+        ellInsert(&devices,host_is_first?ellLast(&devices):NULL,&osd->node);
         osd=NULL;
     }
     if (sysfsPci_dir)
