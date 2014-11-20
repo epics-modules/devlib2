@@ -250,7 +250,7 @@ const epicsPCIDevice **found,
   return 0;
 }
 
-/* for backward compatilility: search domain 0 only */
+/* for backward compatilility: b=domain*0x100+bus */
 epicsShareFunc
 int devPCIFindBDF(
      const epicsPCIID *idlist,
@@ -261,7 +261,7 @@ const epicsPCIDevice **found,
      unsigned int      opt
 )
 {
-    return devPCIFindDBDF(idlist, 0, b, d, f, found, opt);
+    return devPCIFindDBDF(idlist, b>>8, b&0xff, d, f, found, opt);
 }
 
 int
