@@ -233,12 +233,12 @@ int vxworksPCIToLocalAddr(const epicsPCIDevice* dev,
 #endif
 
   if(space) {
-      if(CallSysBusToLocalAdrs(space, (char*)pci, (char**)loc))
-      return -1;
-  } else {
-    *loc=pci;
+      ret = CallSysBusToLocalAdrs(space, (char*)pci, (char**)loc); 
+      if(ret == 0) return 0;
+      /* sysBusToLocalAdrs may be needless/unsupported for PCI. Fall through */
   }
 
+  *loc=pci;
   return 0;
 }
 
