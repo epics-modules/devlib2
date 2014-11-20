@@ -66,11 +66,7 @@ sharedDevPCIInit(void)
           next->dev.id.vendor = val32&0xffff;
           next->dev.id.device = val32>>16;
 
-          pci_read_config_dword(b,d,f,PCI_VENDOR_ID, &val32);
-          next->dev.id.vendor = val32&0xffff;
-          next->dev.id.device = val32>>16;
-
-          pci_read_config_dword(b,d,f,PCI_SUBSYSTEM_ID, &val32);
+          pci_read_config_dword(b,d,f,PCI_SUBSYSTEM_VENDOR_ID, &val32);
           next->dev.id.sub_vendor = val32&0xffff;
           next->dev.id.sub_device = val32>>16;
 
