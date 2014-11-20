@@ -168,7 +168,7 @@ int vxworksDevPCIConnectInterrupt(
     if(status)
         return S_dev_vecInstlFail;
 
-    return 0;
+    return intEnable(VXPCIINTOFFSET+dev->irq);
 }
 
 /* Disconnect ISR from its PCI interrupt vector. */
