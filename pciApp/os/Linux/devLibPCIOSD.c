@@ -332,40 +332,17 @@ find_uio_number(const struct osdPCIDevice* osd)
 
     for(curloc=locations; curloc->dir; ++curloc)
     {
-        free(devdir);
-
         devdir=allocPrintf(curloc->dir, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!devdir)
-            goto fail;
-
-        ret=find_uio_number2(devdir, curloc->name);
-        if (ret<0) {
-            if(errno==ENOENT)
-                continue;
-
-            errlogPrintf("find_uio_number: Search of %s failed: %s\n",devdir, strerror(errno));
-            goto fail;
-
-        } else
             break;
-    }
+        ret = find_uio_number2(devdir, curloc->name);
+        free (devdir);
 
-    if (ret==-1) {
-        errlogPrintf("After looking:\n");
-        for(curloc=locations; curloc->dir; ++curloc)
-        {
-            devdir=allocPrintf(curloc->dir, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
-            errlogPrintf("in %s for %s\n",devdir,curloc->name);
-            free(devdir);
-        }
-        devdir=NULL;
-        errlogPrintf("Failed to find PCI device %04x:%02x:%02x.%x\n",
-                     osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+        if (ret == 0)
+            return 0;
     }
-
-    /* ret set by sscanf */
-fail:
-    free(devdir);
+    errlogPrintf("Failed to open uio device for PCI device %04x:%02x:%02x.%x: %s\n",
+                 osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
     return ret;
 }
 
