@@ -80,9 +80,9 @@ sharedDevPCIInit(void)
                          next->dev.id.sub_vendor, next->dev.id.sub_device,
                          next->dev.id.pci_class);
 
-	  pci_read_config_byte(b,d,f,PCI_CFG_HEADER_TYPE, &header);
+	  pci_read_config_byte(b,d,f,PCI_HEADER_TYPE, &header);
           for (bar=0;bar<PCIBARCOUNT;bar++) {
-            if (bar>=2 && (header & PCI_HEADER_TYPE_MASK) == PCI_HEADER_PCI_PCI)
+            if (bar>=2 && (header & PCI_HEADER_TYPE_MASK) == PCI_HEADER_TYPE_BRIDGE)
             {
               if(devPCIDebug>=1)
                   errlogPrintf(" bridge device\n");

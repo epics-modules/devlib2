@@ -10,4 +10,12 @@
 
 #define UINT32 uint32_t
 
+#ifndef PCI_HEADER_TYPE_MASK
+#  define PCI_HEADER_TYPE_MASK 0x3
+#endif
+
+#ifndef PCI_HEADER_MULTI_FUNC
+#  define PCI_HEADER_MULTI_FUNC 0x80
+#endif
+
 #endif /* OSDPCI_H_INC */
