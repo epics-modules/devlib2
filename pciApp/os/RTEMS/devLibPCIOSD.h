@@ -8,7 +8,7 @@
 /* 0 <= N <= 5 */
 #define PCI_BASE_ADDRESS(N) ( PCI_BASE_ADDRESS_0 + 4*(N) )
 
-#define UINT32 uint32_t
+typedef uint32_t PCIUINT32;
 
 #ifndef PCI_HEADER_TYPE_MASK
 #  define PCI_HEADER_TYPE_MASK 0x3

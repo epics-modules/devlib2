@@ -30,7 +30,7 @@ sharedDevPCIInit(void)
     int b, d, f, bar;
     osdPCIDevice *next;
     uint8_t val8, header;
-    UINT32 val32;
+    PCIUINT32 val32;
 
     /*
      * Ensure all entries for the requested device/vendor pairs
@@ -54,7 +54,7 @@ sharedDevPCIInit(void)
               break;
 
           if (devPCIDebug >= 1)
-            errlogPrintf("sharedDevPCIInit found %d.%d.%d: %08x\n",b,d,f, val32);
+            errlogPrintf("sharedDevPCIInit found %d.%d.%d: %08x\n",b,d,f, (unsigned)val32);
 
           next=calloc(1,sizeof(osdPCIDevice));
           if (!next)
@@ -245,7 +245,7 @@ sharedDevPCIBarLen(
 {
   struct osdPCIDevice *osd=pcidev2osd(dev);
   int b=dev->bus, d=dev->device, f=dev->function;
-  UINT32 start, max, mask;
+  PCIUINT32 start, max, mask;
   long iflag;
 
   if(!osd->base[bar])
