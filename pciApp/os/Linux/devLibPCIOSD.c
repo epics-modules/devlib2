@@ -9,6 +9,7 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <signal.h>
+#include <libgen.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -32,7 +33,7 @@
  *
  * Full implementation of devLibPCI interface (search, mapping, ISR).
  *
- * Searching is general for all PCI devices (via proc and sysfs).
+ * Searching is general for all PCI devices (sysfs).
  *
  * MMIO and connecting ISRs requires a UIO kernel driver.
  *
@@ -145,8 +146,6 @@ epicsMutexId pciLock=NULL;
 
 static
 long pagesize;
-
-#define DEVLIST "/proc/bus/pci/devices"
 
 #define BUSBASE "/sys/bus/pci/devices/0000:%02x:%02x.%1x/"
 
@@ -457,8 +456,10 @@ close_uio(struct osdPCIDevice* osd)
 static
 int linuxDevPCIInit(void)
 {
-    FILE* dlist=NULL;
-    int line=0, colnum, i;
+
+    DIR* sysfsPci_dir=NULL;
+    struct dirent* dir;
+    int i;
     osdPCIDevice *osd=NULL;
     pciLock = epicsMutexMustCreate();
 
@@ -468,22 +469,21 @@ int linuxDevPCIInit(void)
         goto fail;
     }
 
-    dlist=fopen(DEVLIST,"r");
-    if (!dlist) {
-        errlogPrintf("Failed to read device list : " DEVLIST " does not exist\n");
-        goto fail;
+    sysfsPci_dir = opendir("/sys/bus/pci/devices");
+    if (!sysfsPci_dir){
+    	errlogPrintf("Could not open /sys/bus/pci/devices!\n");
+    	goto fail;
     }
 
-    while(1) {
-        unsigned int bdf;
-        unsigned int vendor_device;
-        unsigned int irq;
-        unsigned int bar;
-        unsigned int blen;
+    while ((dir=readdir(sysfsPci_dir))) {
+        char* filename;
+        FILE* file;
         int fail=0;
-        char dname[101];
+        int match;
+        unsigned long long int start,stop,flags;
+        char dname[80];
 
-        line++;colnum=1;
+    	if (!dir->d_name || dir->d_name[0]=='.') continue; /* Skip invalid entries */
 
         osd=calloc(1, sizeof(osdPCIDevice));
         if (!osd) {
@@ -495,26 +495,23 @@ int linuxDevPCIInit(void)
         for ( i=0; i<sizeof(osd->rfd)/sizeof(osd->rfd[0]); i++ )
             osd->rfd[i] = -1;
 
-        int matched=fscanf(dlist, "%4x %8x %2x",
-                           &bdf, &vendor_device, &irq);
-        if (matched==EOF || feof(dlist))
-            break;
-        if (matched!=3 || ferror(dlist)) {
-            colnum+=matched;
-            goto badline;
+	match = sscanf(dir->d_name,"0000:%2x:%2x.%x",
+                                            &osd->dev.bus,&osd->dev.device,&osd->dev.function);
+        if (match != 4){
+            errlogPrintf("Could not decode PCI device directory %s\n", dir->d_name);
         }
-
-        osd->dev.bus=bdf>>8;
-        osd->dev.device=(bdf>>3)&0x1f;
-        osd->dev.function=bdf&0x7;
-        osd->dev.id.vendor=(vendor_device>>16)&0xffff;
-        osd->dev.id.device=vendor_device&0xffff;
-        osd->dev.irq=irq;
+ 
+        osd->dev.id.vendor=read_sysfs(&fail, BUSBASE "vendor",
+                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+        osd->dev.id.device=read_sysfs(&fail, BUSBASE "device",
+                                              osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_vendor=read_sysfs(&fail, BUSBASE "subsystem_vendor",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_device=read_sysfs(&fail, BUSBASE "subsystem_device",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.pci_class= read_sysfs(&fail, BUSBASE "class",
+                                              osd->dev.bus, osd->dev.device, osd->dev.function);
+        osd->dev.irq=read_sysfs(&fail, BUSBASE "irq",
                                               osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.revision=0;
 
@@ -538,50 +535,62 @@ int linuxDevPCIInit(void)
         /* Read BAR info */
 
         /* Base address */
-        for (i=0; i<PCIBARCOUNT; i++) {
-            colnum++;
-            matched=fscanf(dlist,"%8x", &bar);
-            if (matched!=1 || fbad(dlist)) goto badline;
-
-            osd->dev.bar[i].ioport=(bar & PCI_BASE_ADDRESS_SPACE)==PCI_BASE_ADDRESS_SPACE_IO;
-            if(osd->dev.bar[i].ioport){
-                /* This BAR is I/O ports */
-                osd->dev.bar[i].below1M=0;
-                osd->dev.bar[i].addr64=0;
-                osd->displayBAR[i] = bar&PCI_BASE_ADDRESS_IO_MASK;
-            }else{
-                /* This BAR is memory mapped */
-                osd->dev.bar[i].below1M=!!(bar&PCI_BASE_ADDRESS_MEM_TYPE_1M);
-                osd->dev.bar[i].addr64=!!(bar&PCI_BASE_ADDRESS_MEM_TYPE_64);
-                osd->displayBAR[i] = bar&PCI_BASE_ADDRESS_MEM_MASK;
+        
+        filename = allocPrintf(BUSBASE "resource",
+                         osd->dev.bus, osd->dev.device, osd->dev.function);
+        if (!filename) {
+            errMessage(S_dev_noMemory, "Out of memory");
+            goto fail;
+        }
+        file=fopen(filename, "r");
+        if (!file) {
+            printf("Could not open resource file %s!\n", filename);
+            free(filename);
+            continue;
+        }
+        for (i=0; i<PCIBARCOUNT; i++) { /* read 6 BARs */
+            match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
+        
+            if (match != 3) {
+                printf("Could not parse %s line %i\n", filename, i+1);
+                continue;
             }
+
+            osd->dev.bar[i].ioport = (flags & PCI_BASE_ADDRESS_SPACE)==PCI_BASE_ADDRESS_SPACE_IO;
+            osd->dev.bar[i].below1M = !!(flags&PCI_BASE_ADDRESS_MEM_TYPE_1M);
+            osd->dev.bar[i].addr64 = !!(flags&PCI_BASE_ADDRESS_MEM_TYPE_64);
+            osd->displayBAR[i] = start;
+
             /* offset from start of page to start of BAR */
-            osd->offset[i]=osd->displayBAR[i]&(pagesize-1);
+            osd->offset[i] = osd->displayBAR[i]&(pagesize-1);
+            /* region length */
+            osd->len[i] = (start || stop ) ? (stop - start + 1) : 0;
+        }
+        /* rom */
+        match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
+        if (match != 3) {
+            printf("Could not parse %s line %i\n", filename, i+1);
+            start = 0;
+            stop = 0;
         }
 
-        colnum++;
-        matched=fscanf(dlist,"%8x", &bar);
-        if (matched!=1 || fbad(dlist)) goto badline;
-        osd->displayErom = bar;
-
-        /* region length */
-        for (i=0; i<PCIBARCOUNT; i++) {
-            colnum++;
-            matched=fscanf(dlist,"%8x", &blen);
-            if (matched!=1 || fbad(dlist)) goto badline;
-            osd->len[i] = blen;
+        osd->displayErom = start;
+        osd->eromlen = (start || stop ) ? (stop - start + 1) : 0;
+        
+        fclose(file);
+        free(filename);
+        
+        /* driver name */
+        filename = allocPrintf(BUSBASE "driver",
+                         osd->dev.bus, osd->dev.device, osd->dev.function);
+        if (!filename) {
+            errMessage(S_dev_noMemory, "Out of memory");
+            goto fail;
         }
-
-        colnum++;
-        matched=fscanf(dlist,"%8x", &blen);
-        if (matched!=1 || fbad(dlist)) goto badline;
-        osd->eromlen = blen;
-
-        colnum++;
-        if (!fgets(dname, NELEMENTS(dname), dlist)) goto badline;
-        /* fgets always adds a null */
-
-        osd->linuxDriver = epicsStrDup(dname);
+        memset (dname, 0, sizeof(dname));
+        if (readlink(filename, dname, sizeof(dname)-1) != -1)
+            osd->linuxDriver = epicsStrDup(basename(dname));
+        free(filename);
         if (!osd->linuxDriver)
             errlogPrintf("Warning: Failed to copy driver name\n");
 
@@ -589,18 +598,13 @@ int linuxDevPCIInit(void)
 
         ellAdd(&devices, &osd->node);
         osd=NULL;
-
-        continue;
-    badline:
-        errlogPrintf("Failed to parse line %u column %u of "DEVLIST"\n", line, colnum);
-        if(osd) free(osd->linuxDriver);
-        free(osd);
-        goto fail;
     }
-
+    if (sysfsPci_dir)
+        closedir(sysfsPci_dir);
     return 0;
 fail:
-    if (dlist) fclose(dlist);
+    if (sysfsPci_dir)
+        closedir(sysfsPci_dir);
     epicsMutexDestroy(pciLock);
     return S_dev_badInit;
 }
