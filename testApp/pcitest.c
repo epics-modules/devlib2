@@ -73,8 +73,8 @@ MAIN(pcitest) {
     devLibPCIUse(NULL);
     testDiag("Using driver: %s", devLibPCIDriverName());
     /*testDiag("Enumerate PCI devices\n");
-    devPCIShow(1,0,0,0);*/
-    errlogFlush();
+    devPCIShow(1,0,0,0);
+    errlogFlush();*/
     classStrings();
     findRootBridge();
     return testDone();

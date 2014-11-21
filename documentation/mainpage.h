@@ -12,9 +12,9 @@ library (devLib v1) found in the 3.14.x series.
 The v2 library is an overlay and extension to the v1 library and
 not a replacement.
 It is planned that the v2 library will be merged with the v1 library
-for the 3.15.x series.
+for the 3.16.x series.
 After that point devlib2 will continue to exist as a location for backports
-and bug fixes for the 3.14.x series.
+and bug fixes for the 3.14.x and 3.15.x series.
 
 @section whereis Source
 
@@ -78,26 +78,40 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver26 2.6 (November 2014)
+@subsection ver26 2.6 (UNRELEASED)
+
+@li Increment API version to 1.2 (was 1.0)
+@li epicsMMIO.h included in EPICS Base 3.15.1, not installed by this module.
+
+Work by Andrew Johnson
+
+@li Import support for vxWorks 5.5 on m68k and powerpc from EPICS Base.
+
+Work by Till Straumann
 
 @li Add PCI Config space access functions devPCIConfigRead##() and devPCIConfigWrite##()
-@li Add the pciconfread() iocsh function.
 @li Add devPCIEnableInterrupt() and devPCIDisableInterrupt().
-    Linux: invoke the UIO irqcontrol callback function with a 1 or 0.
-    vxWorks: call intEnable or intDisable (enabled by default). (Dirk Zimoch)
+    - Linux: invoke the UIO irqcontrol callback function with a 1 or 0.
+    - vxWorks: call intEnable or intDisable (enabled by default). (Dirk Zimoch)
+
+Work by Dirk Zimoch
+
+@li Rework of the Linux PCI bus scan to support PCI domains.
+    Previously domain 0 was used implicitly.
+@li Rework of the vxWorks/RTEMS PCI bus scan to allow wildcards in device search.
+    This allows devPCIShow for all PCI devices like in Linux.
+@li Fixes for 64 bit BARs.
+@li vxWorks: use BAR address directly if sysBusToLocalAdrs does not support PCI.
+@li Changes in devPCIShow to get nicer output.
+
+Work by Michael Davidsaver
+
+@li Add the pciconfread() iocsh function.
 @li devLibPCIRegisterDriver()  is now a macro wrapping devLibPCIRegisterDriver2()
     which performs a consistency check on the size of the devLibPCI structure.
 @li provide bswap16() and bswap32() for RTEMS PPC targets.  Previously omitted.
-@li Increment API version to 1.1 (previously 1.0)
 @li Change name format of Linux user "ISR" thread to include PCI BDF.
-@li Rework of the Linux PCI bus scan. Use only /sys instead of /sys and /proc.
-    This allows to support PCI domains other than 0. (Dirk Zimoch)
-@li Increment API version to 1.2 (Dirk Zimoch)
-@li Rework of the vxWorks/RTEMS PCI bus scan to allow wildcards in device search.
-    This allows devPCIShow for all PCI devices like in Linux. (Dirk Zimoch)
-@li Fixes for 64 bit BARs. (Dirk Zimoch)
-@li vxWorks: use BAR address directly if sysBusToLocalAdrs does not support PCI. (Dirk Zimoch)
-@li Changes in devPCIShow to get nicer output. (Dirk Zimoch)
+
 
 @subsection ver25 2.5 (May 2014)
 
@@ -147,6 +161,7 @@ the width and order of accesses.
 
 @author Michael Davidsaver <mdavidsaver@bnl.gov>
 @author Till Straumann <strauman@slac.stanford.edu>
+@author Dirk Zimoch <dirk.zimoch@psi.ch>
 
 */
 
