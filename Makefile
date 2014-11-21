@@ -5,6 +5,7 @@ DIRS := $(DIRS) $(filter-out $(DIRS), configure)
 DIRS := $(DIRS) $(filter-out $(DIRS), common)
 DIRS := $(DIRS) $(filter-out $(DIRS), pciApp)
 DIRS := $(DIRS) $(filter-out $(DIRS), vmeApp)
+DIRS := $(DIRS) $(filter-out $(DIRS), testApp)
 
 # 3.14.10 style directory dependencies
 # previous versions will just ignore them
@@ -18,6 +19,7 @@ iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
 
 pciApp_DEPEND_DIRS += common
 vmeApp_DEPEND_DIRS += common
+testApp_DEPEND_DIRS += pciApp
 
 include $(TOP)/configure/RULES_TOP
 
