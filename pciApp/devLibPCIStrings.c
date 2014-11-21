@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <epicsAssert.h>
 #define epicsExportSharedSymbols
 #include "devLibPCI.h"
 
@@ -131,12 +132,12 @@ const char* devPCIDeviceClassToString(int classId)
       { 0x0e80, "generic intelligent controller" },
       { 0x0eff, "unknown intelligent controller" },
 
-      { 0x0f01, "sattelite TV controller" },
-      { 0x0f02, "sattelite audio controller" },
-      { 0x0f03, "sattelite video controller" },
-      { 0x0f04, "sattelite data communications controller" },
-      { 0x0f80, "generic sattelite communications controller" },
-      { 0x0fff, "unknown sattelite communications controller" },
+      { 0x0f01, "satellite TV controller" },
+      { 0x0f02, "satellite audio controller" },
+      { 0x0f03, "satellite video controller" },
+      { 0x0f04, "satellite data communications controller" },
+      { 0x0f80, "generic satellite communications controller" },
+      { 0x0fff, "unknown satellite communications controller" },
 
       { 0x1000, "network and computing encryption device" },
       { 0x1001, "entertainment encryption device" },
@@ -161,22 +162,30 @@ const char* devPCIDeviceClassToString(int classId)
       { 0xffff, "unknown device class" }
     };
     
-    int n = 0;
-    int m = sizeof(classes)/sizeof(classes[0])-1;
-    int i;
+    unsigned int n = 0;
+    const unsigned int nument = sizeof(classes)/sizeof(classes[0])-1;
+    unsigned int m = nument;
+    unsigned int i;
     
     classId >>= 8;
 
-    /* binary sarch */ 
-    while (m>=n)
+    /* binary search */
+    while (m>n)
     {
         i = (n+m)>>1;
+        assert(i>=0 && i<nument);
         if (classes[i].classId == classId) return classes[i].name;
         if (classes[i].classId < classId) n=i+1;
-        if (classes[i].classId > classId) m=i-1;
+        if (classes[i].classId > classId) m=i;
     }
-    /* unknown device class linear search */ 
-    classId |= 0xff;
-    while (classes[++i].classId < classId);
-    return classes[i].name;
+    if(i<nument-1) {
+        /* unknown device class linear search */
+        classId |= 0xff;
+        assert(i>=0 && i<nument-1);
+        while (classes[++i].classId < classId);
+        return classes[i].name;
+    } else {
+        /* unknown device class */
+        return classes[nument].name;
+    }
 }
