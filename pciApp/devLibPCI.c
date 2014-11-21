@@ -337,6 +337,7 @@ searchandprint(void* praw,const epicsPCIDevice* dev)
     searchinfo *pinfo=praw;
     pinfo->matched++;
     devPCIShowDevice(pinfo->lvl,dev);
+    errlogFlush(); /* avoid truncation for long device lists */
     return 0;
 }
 
