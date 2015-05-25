@@ -78,8 +78,9 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver26 2.6 (UNRELEASED)
+@subsection ver26 2.6 (May 2015)
 
+@li VCS repository moved to github.com
 @li Increment API version to 1.2 (was 1.0)
 @li epicsMMIO.h included in EPICS Base 3.15.1, not installed by this module.
 
