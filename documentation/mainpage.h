@@ -78,6 +78,8 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver27 2.7 (UNRELEASED)
+
 @subsection ver26 2.6 (May 2015)
 
 @li VCS repository moved to github.com
