@@ -201,10 +201,10 @@ this is the only piece of information required to access the card.
 Below is an example implementation of myPCICardSetup().
 
 @code
-static const struct VMECSRID mydevids[] = {...}
+static const epicsPCIID mydevids[] = {...}
 
 int
-myVMECardSetup(const char* port,
+myPCICardSetup(const char* port,
                int b,
                int d,
                int f)
