@@ -21,11 +21,11 @@ and bug fixes for the 3.14.x and 3.15.x series.
 Releases can be found at @url http://sourceforge.net/projects/epics/files/devlib2/
 
 This module is versioned with Mercurial and can be viewed at
-@url http://epics.hg.sourceforge.net/hgweb/epics/devlib2/
+@url https://github.com/epics-modules/devlib2
 
 Or checked out with
 
-hg clone http://epics.hg.sourceforge.net:8000/hgroot/epics/devlib2
+git clone https://github.com/epics-modules/devlib2.git
 
 The canonical version of this page is @url http://epics.sourceforge.net/devlib2/
 
