@@ -20,7 +20,7 @@ and bug fixes for the 3.14.x and 3.15.x series.
 
 Releases can be found at @url http://sourceforge.net/projects/epics/files/devlib2/
 
-This module is versioned with Mercurial and can be viewed at
+VCS source browser
 @url https://github.com/epics-modules/devlib2
 
 Or checked out with
