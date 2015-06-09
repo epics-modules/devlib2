@@ -15,6 +15,10 @@
  * equivalent.
  */
 
+#ifndef PCIUINT32
+  typedef uint32_t PCIUINT32;
+#endif
+
 #define pci_find_device pciFindDevice
 
 #define pci_read_config_byte  pciConfigInByte
@@ -26,7 +30,9 @@
 #define pci_write_config_dword pciConfigOutLong
 
 #define PCI_HEADER_TYPE PCI_CFG_HEADER_TYPE
-#define PCI_HEADER_TYPE_BRIDGE PCI_HEADER_PCI_PCI
+#ifndef PCI_HEADER_TYPE_BRIDGE
+#  define PCI_HEADER_TYPE_BRIDGE PCI_HEADER_PCI_PCI
+#endif
 
 /* 0 <= N <= 5 */
 #define PCI_BASE_ADDRESS(N) ( PCI_CFG_BASE_ADDRESS_0 + 4*(N) )
