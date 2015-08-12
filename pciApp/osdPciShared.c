@@ -21,6 +21,14 @@
 #define epicsExportSharedSymbols
 #include "osdPciShared.h"
 
+#ifndef PCI_MEM_OFFSET
+# define PCI_MEM_OFFSET 0
+#endif
+
+#ifndef PCI_IO_OFFSET
+# define PCI_IO_OFFSET 0
+#endif
+
 /* List of osdPCIDevice */
 static ELLLIST devices;
 
@@ -92,12 +100,12 @@ sharedDevPCIInit(void)
             next->dev.bar[bar].ioport = (val32 & PCI_BASE_ADDRESS_SPACE) == PCI_BASE_ADDRESS_SPACE_IO;
             if (next->dev.bar[bar].ioport) {
               /* This BAR is I/O ports */
-              next->base[bar] = val32 & PCI_BASE_ADDRESS_IO_MASK;
+              next->base[bar] = PCI_IO_OFFSET + (val32 & PCI_BASE_ADDRESS_IO_MASK);
             } else {
               /* This BAR is memory mapped */
               next->dev.bar[bar].below1M = !!(val32&PCI_BASE_ADDRESS_MEM_TYPE_1M);
               next->dev.bar[bar].addr64 = !!(val32&PCI_BASE_ADDRESS_MEM_TYPE_64);
-              next->base[bar] = val32 & PCI_BASE_ADDRESS_MEM_MASK;
+              next->base[bar] = PCI_MEM_OFFSET + (val32 & PCI_BASE_ADDRESS_MEM_MASK);
               /* TODO: Take care of 64 bit BARs! */
               if (next->dev.bar[bar].addr64)
               {
