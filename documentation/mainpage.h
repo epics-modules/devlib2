@@ -80,6 +80,11 @@ the width and order of accesses.
 
 @subsection ver27 2.7 (UNRELEASED)
 
+@li Fix compile failure on vxWorks (Eric Bjorklund)
+@li RTEMS: handle BSPs with offset PCI addresses
+@li pci/linux: devPCIDebug>1 enables more debug output when searching/matching PCI devices.
+@li pci/linux: fix error preventing use of uio devices other than uio0.
+
 @subsection ver26 2.6 (May 2015)
 
 @li VCS repository moved to github.com
