@@ -283,31 +283,26 @@ struct locations_t {
 };
 
 static
-int match_uio(const char *pat, const struct dirent *ent)
-{
-    unsigned int X;
-    /* poor mans regexp... */
-    return sscanf(ent->d_name, pat, &X)==1;
-}
-
-static
 int find_uio_number2(const char* dname, const char* pat)
 {
     int ret=-1;
     DIR *d;
     struct dirent *ent;
 
+    if(devPCIDebug>2)
+        errlogPrintf("Looking for UIO dir in %s with %s\n", dname, pat);
+
     d=opendir(dname);
     if (!d)
         return ret;
 
     while ((ent=readdir(d))!=NULL) {
-        if (!match_uio(pat, ent))
-            continue;
-        if (sscanf(ent->d_name, pat, &ret)==1) {
+        int num, sts = sscanf(ent->d_name, pat, &num);
+        errlogPrintf(" Check %s gives %d %d\n", ent->d_name, sts, num);
+        if (sts==1) {
+            ret = num;
             break;
         }
-        ret=-1;
     }
 
     closedir(d);
@@ -338,12 +333,12 @@ find_uio_number(const struct osdPCIDevice* osd)
         ret = find_uio_number2(devdir, curloc->name);
         free (devdir);
 
-        if (ret == 0)
-            return 0;
+        if (ret != -1)
+            return ret;
     }
     errlogPrintf("Failed to open uio device for PCI device %04x:%02x:%02x.%x: %s\n",
                  osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
-    return ret;
+    return -1;
 }
 
 static
