@@ -298,7 +298,7 @@ int find_uio_number2(const char* dname, const char* pat)
 
     while ((ent=readdir(d))!=NULL) {
         int num, sts = sscanf(ent->d_name, pat, &num);
-        errlogPrintf(" Check %s gives %d %d\n", ent->d_name, sts, num);
+        if(devPCIDebug>2) errlogPrintf(" Check %s gives %d %d\n", ent->d_name, sts, num);
         if (sts==1) {
             ret = num;
             break;
