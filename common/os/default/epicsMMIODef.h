@@ -27,7 +27,7 @@
 
 /** @brief Read a single byte.
  */
-INLINE
+static INLINE
 epicsUInt8
 ioread8(volatile void* addr)
 {
@@ -36,7 +36,7 @@ ioread8(volatile void* addr)
 
 /** @brief Write a single byte.
  */
-INLINE
+static INLINE
 void
 iowrite8(volatile void* addr, epicsUInt8 val)
 {
@@ -46,7 +46,7 @@ iowrite8(volatile void* addr, epicsUInt8 val)
 /** @brief Read two bytes in host order.
  * Not byte swapping
  */
-INLINE
+static INLINE
 epicsUInt16
 nat_ioread16(volatile void* addr)
 {
@@ -56,7 +56,7 @@ nat_ioread16(volatile void* addr)
 /** @brief Write two byte in host order.
  * Not byte swapping
  */
-INLINE
+static INLINE
 void
 nat_iowrite16(volatile void* addr, epicsUInt16 val)
 {
@@ -66,7 +66,7 @@ nat_iowrite16(volatile void* addr, epicsUInt16 val)
 /** @brief Read four bytes in host order.
  * Not byte swapping
  */
-INLINE
+static INLINE
 epicsUInt32
 nat_ioread32(volatile void* addr)
 {
@@ -76,7 +76,7 @@ nat_ioread32(volatile void* addr)
 /** @brief Write four byte in host order.
  * Not byte swapping
  */
-INLINE
+static INLINE
 void
 nat_iowrite32(volatile void* addr, epicsUInt32 val)
 {
