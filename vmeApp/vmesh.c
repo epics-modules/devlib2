@@ -9,25 +9,23 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 
 #include <epicsVersion.h>
 #include <epicsAssert.h>
 #include <epicsTypes.h>
-#include <epicsExport.h>
+#include <epicsInterrupt.h>
 #include <errlog.h>
 #include <iocsh.h>
+#include <epicsExport.h>
 #include <devcsr.h>
 
-void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
+static
+int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile void** mptr)
 {
   epicsUInt32 tval;
   epicsAddressType atype;
-  volatile void* mptr;
-  volatile char* dptr;
   short dbytes;
-  int i;
-
-  if(count<1) count=1;
 
   switch(dmod){
   case 8:
@@ -36,7 +34,7 @@ void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
       break;
   default:
     epicsPrintf("Invalid data width %d\n",dmod);
-    return;
+    return 1;
   }
 
   switch(amod){
@@ -45,7 +43,7 @@ void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
   case 32: atype=atVMEA32; break;
   default:
     epicsPrintf("Invalid address width %d\n",amod);
-    return;
+    return 1;
   }
 
   dbytes=dmod/8;
@@ -53,25 +51,23 @@ void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
     dbytes++;
   if(dbytes <=0 || dbytes>4){
     epicsPrintf("Invalid data width\n");
-    return;
+    return 1;
   }
 
   if( (addr > ((1<<amod)-1)) ||
       (addr+count*dbytes >= ((1<<amod)-1))) {
       epicsPrintf("Address/count out of range\n");
-      return;
+      return 1;
   }
-
-  epicsPrintf("Reading from 0x%08x A%d D%d\n",addr,amod,dmod);
 
   if( devBusToLocalAddr(
-    atype, addr, &mptr
+    atype, addr, mptr
   ) ){
     epicsPrintf("Invalid register address\n");
-    return;
+    return 1;
   }
 
-  epicsPrintf("Mapped to 0x%08lx for %d bytes\n",(unsigned long)mptr,dbytes*count);
+  epicsPrintf("Mapped to 0x%08lx\n",(unsigned long)*mptr);
 
   if( devReadProbe(
     dbytes,
@@ -79,10 +75,31 @@ void vmeread(epicsUInt32 addr, int amod, int dmod, int count)
     &tval
   ) ){
     epicsPrintf("Test read failed\n");
-    return;
+    return 1;
   }
 
+  return 0;
+}
+
+void vmeread(int rawaddr, int amod, int dmod, int count)
+{
+  epicsUInt32 addr = rawaddr;
+  volatile void* mptr;
+  volatile char* dptr;
+  short dbytes;
+  int i;
+
+  if(count<1) count=1;
+
+  epicsPrintf("Reading from 0x%08x A%d D%d\n",addr,amod,dmod);
+
+  if(validate_widths(addr, amod, dmod, count, &mptr))
+    return;
+
+  dbytes=dmod/8;
+
   for(i=0, dptr=mptr; i<count; i++, dptr+=dbytes) {
+      epicsUInt32 tval;
       if ((i*dbytes)%16==0)
           printf("\n0x%08x ",i*dbytes);
       else if ((i*dbytes)%4==0)
@@ -103,7 +120,7 @@ static const iocshArg vmereadArg2 = { "dmod",iocshArgInt};
 static const iocshArg vmereadArg3 = { "count",iocshArgInt};
 static const iocshArg * const vmereadArgs[4] =
     {&vmereadArg0,&vmereadArg1,&vmereadArg2,&vmereadArg3};
-static const iocshFuncDef vmereadeFuncDef =
+static const iocshFuncDef vmereadFuncDef =
     {"vmeread",4,vmereadArgs};
 
 static void vmereadCall(const iocshArgBuf *args)
@@ -111,9 +128,133 @@ static void vmereadCall(const iocshArgBuf *args)
     vmeread(args[0].ival, args[1].ival, args[2].ival, args[3].ival);
 }
 
+void vmewrite(int rawaddr, int amod, int dmod, int rawvalue)
+{
+  epicsUInt32 addr = rawaddr, value = rawvalue;
+  volatile void* mptr;
+
+  epicsPrintf("Writing to 0x%08x A%d D%d value 0x%08x\n",addr,amod,dmod, (unsigned)value);
+
+  if(validate_widths(addr, amod, dmod, 1, &mptr))
+    return;
+
+  switch(dmod){
+    case 8: iowrite8(mptr, value); break;
+    case 16: nat_iowrite16(mptr, value); break;
+    case 32: nat_iowrite32(mptr, value); break;
+  }
+}
+
+static const iocshArg vmewriteArg0 = { "address",iocshArgInt};
+static const iocshArg vmewriteArg1 = { "amod",iocshArgInt};
+static const iocshArg vmewriteArg2 = { "dmod",iocshArgInt};
+static const iocshArg vmewriteArg3 = { "count",iocshArgInt};
+static const iocshArg * const vmewriteArgs[4] =
+    {&vmewriteArg0,&vmewriteArg1,&vmewriteArg2,&vmewriteArg3};
+static const iocshFuncDef vmewriteFuncDef =
+    {"vmewrite",4,vmewriteArgs};
+
+static void vmewriteCall(const iocshArgBuf *args)
+{
+    vmewrite(args[0].ival, args[1].ival, args[2].ival, args[3].ival);
+}
+
+static volatile epicsUInt8 vmeautodisable[256];
+
+static const char hexchars[] = "0123456789ABCDEF";
+
+static
+void vmesh_handler(void *raw)
+{
+  volatile epicsUInt8 *ent = raw;
+  unsigned vect = ent-vmeautodisable;
+  char msg[] = "VME IRQ on vector 0xXY\n";
+  unsigned I = sizeof(msg)-3;
+
+  msg[I--] = hexchars[vect&0xf];
+  vect>>=4;
+  msg[I--] = hexchars[vect&0xf];
+  epicsInterruptContextMessage(msg);
+
+  if(*ent && devDisableInterruptLevelVME(*ent))
+    epicsInterruptContextMessage("oops, can't disable level");
+}
+
+void vmeirqattach(int level, int vector, const char *itype)
+{
+  int acktype;
+  if(strcmp(itype, "rora")==0) {
+    acktype = 1;
+  } else if(strcmp(itype, "roak")==0) {
+    acktype = 0;
+  } else {
+    epicsPrintf("Unknown IRQ ack method '%s' (must be \"rora\" or \"roak\")\n", itype);
+    return;
+  }
+  if(level<1 || level>7) {
+    epicsPrintf("IRQ level %d out of range (1-7)\n", level);
+    return;
+  }
+  if(vector>255) {
+    epicsPrintf("IRQ vector %d out of range (1-7)\n", vector);
+    return;
+  }
+  if(vmeautodisable[vector]) {
+    epicsPrintf("Vector already in use\n");
+    return;
+  }
+  if(acktype)
+    iowrite8(&vmeautodisable[vector], level);
+  if(devConnectInterruptVME(vector, &vmesh_handler, (void*)&vmeautodisable[vector]))
+    epicsPrintf("Failed to install ISR\n");
+}
+
+static const iocshArg vmeirqattachArg0 = { "level",iocshArgInt};
+static const iocshArg vmeirqattachArg1 = { "vector",iocshArgInt};
+static const iocshArg vmeirqattachArg2 = { "acktype",iocshArgString};
+static const iocshArg * const vmeirqattachArgs[3] =
+    {&vmeirqattachArg0,&vmeirqattachArg1,&vmeirqattachArg2};
+static const iocshFuncDef vmeirqattachFuncDef =
+    {"vmeirqattach",3,vmeirqattachArgs};
+
+static void vmeirqattachCall(const iocshArgBuf *args)
+{
+    vmeirqattach(args[0].ival, args[1].ival, args[2].sval);
+}
+
+void vmeirq(int level, int act)
+{
+  if(level<1 || level>7) {
+    epicsPrintf("IRQ level %d out of range (1-7)\n", level);
+    return;
+  }
+  if(act) {
+    if(devEnableInterruptLevelVME(level))
+      epicsPrintf("Failed to enable level\n");
+  } else {
+    if(devDisableInterruptLevelVME(level))
+      epicsPrintf("Failed to disable level\n");
+  }
+}
+
+static const iocshArg vmeirqArg0 = { "level",iocshArgInt};
+static const iocshArg vmeirqArg1 = { "en/disable",iocshArgInt};
+static const iocshArg * const vmeirqArgs[2] =
+    {&vmeirqArg0,&vmeirqArg1};
+static const iocshFuncDef vmeirqFuncDef =
+    {"vmeirq",2,vmeirqArgs};
+
+static void vmeirqCall(const iocshArgBuf *args)
+{
+    vmeirq(args[0].ival, args[1].ival);
+}
+
 static void vmesh(void)
 {
-    iocshRegister(&vmereadeFuncDef,vmereadCall);
+    iocshRegister(&vmereadFuncDef,vmereadCall);
+    iocshRegister(&vmewriteFuncDef,vmewriteCall);
+    iocshRegister(&vmeirqattachFuncDef,vmeirqattachCall);
+    iocshRegister(&vmeirqFuncDef,vmeirqCall);
 #if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10
     devReplaceVirtualOS();
 #endif
