@@ -1,7 +1,7 @@
 devLib2 - Library for direct MMIO access to PCI and VME64x
 ==========================================================
 
-Michael Davidsaver <mdavidsaver@bnl.gov>
+Michael Davidsaver <mdavidsaver@gmail.com>
 
 [Documentation and example](http://epics.sourceforge.net/devlib2/)
 
