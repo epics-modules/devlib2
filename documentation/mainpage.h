@@ -81,6 +81,8 @@ the width and order of accesses.
 @subsection ver27 2.7 (UNRELEASED)
 
 @li Fix compile failure on vxWorks (Eric Bjorklund)
+@li Add missing extern "C" in epicsMMIO.h for vxWorks (Eric Bjorklund)
+@li In epicsMMIODef.h replace 'inline' with 'static inline' for C compatibility.
 @li RTEMS: handle BSPs with offset PCI addresses
 @li pci/linux: devPCIDebug>1 enables more debug output when searching/matching PCI devices.
 @li pci/linux: fix error preventing use of uio devices other than uio0.
