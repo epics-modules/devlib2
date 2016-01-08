@@ -41,7 +41,7 @@
 extern "C" {
 
 #  ifndef INLINE
-#    define INLINE static inline
+#    define INLINE inline
 #  endif
 #endif
 
