@@ -78,6 +78,8 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver28 2.8 (UNRELEASED)
+
 @subsection ver27 2.7 (Jan. 2016)
 
 @li configure: optionally include \$(TOP)/configure/RELEASE.local and \$(TOP)/../RELEASE.local.
