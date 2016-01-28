@@ -78,14 +78,19 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver27 2.7 (UNRELEASED)
+@subsection ver27 2.7 (Jan. 2016)
 
+@li configure: optionally include \$(TOP)/configure/RELEASE.local and \$(TOP)/../RELEASE.local.
+    \$(EPICS_BASE) is no longer defined by default in configure/RELEASE and must
+    be explicitly set in one of the possible RELEASE* files.
 @li Fix compile failure on vxWorks (Eric Bjorklund)
 @li Add missing extern "C" in epicsMMIO.h for vxWorks (Eric Bjorklund)
 @li In epicsMMIODef.h replace 'inline' with 'static inline' for C compatibility.
 @li RTEMS: handle BSPs with offset PCI addresses
 @li pci/linux: devPCIDebug>1 enables more debug output when searching/matching PCI devices.
 @li pci/linux: fix error preventing use of uio devices other than uio0.
+@li vme: add vmewrite(), vmeirqattach(), and vmeirq() iocsh commands
+    for debugging/development with VME devices.
 
 @subsection ver26 2.6 (May 2015)
 
