@@ -82,6 +82,13 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
   return 0;
 }
 
+/** Read some consecutive VME addresses and print to screen
+ *
+ * @param rawaddr The first VME address to read
+ * @param amod Address width either 8, 16, or 32
+ * @param dmod Data width either 8, 16, or 32
+ * @param count Number of read operations
+ */
 void vmeread(int rawaddr, int amod, int dmod, int count)
 {
   epicsUInt32 addr = rawaddr;
@@ -129,6 +136,13 @@ static void vmereadCall(const iocshArgBuf *args)
     vmeread(args[0].ival, args[1].ival, args[2].ival, args[3].ival);
 }
 
+/** Write an integer value to a VME address
+ *
+ * @param rawaddr The first VME address to read
+ * @param amod Address width either 8, 16, or 32
+ * @param dmod Data width either 8, 16, or 32
+ * @param rawvalue The value to write
+ */
 void vmewrite(int rawaddr, int amod, int dmod, int rawvalue)
 {
   epicsUInt32 addr = rawaddr, value = rawvalue;
@@ -181,6 +195,19 @@ void vmesh_handler(void *raw)
     epicsInterruptContextMessage("oops, can't disable level");
 }
 
+/** Attach a dummy interrupt handler which prints a message to screen
+ *
+ * @param level The interrupt level (1-7)
+ * @param vector The vector code (0-255)
+ * @param itype Either "rora" or "roak" acknowledgement type
+ *
+ * In "roak" (Release On AcKnowledge) the interrupt level
+ * is left active when the interrupt occurs.
+ * In "rora" (Release On Register Access) the interrupt level
+ * is disabled each time the given vector is interrupted.
+ * For "rora" vmeirq() should be called after each interrupt to
+ * re-enabled the level.
+ */
 void vmeirqattach(int level, int vector, const char *itype)
 {
   int acktype;
@@ -223,6 +250,11 @@ static void vmeirqattachCall(const iocshArgBuf *args)
     vmeirqattach(args[0].ival, args[1].ival, args[2].sval);
 }
 
+/** En/Disable a VME interrupt level
+ *
+ * @param level The interrupt level (1-7)
+ * @param act 0 - disable, 1 - enable the given level.
+ */
 void vmeirq(int level, int act)
 {
   if(level<1 || level>7) {
