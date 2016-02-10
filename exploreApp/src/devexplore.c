@@ -15,6 +15,7 @@
 #include <menuFtype.h>
 #include <epicsExit.h>
 #include <cantProceed.h>
+#include <ellLib.h>
 #include <iocsh.h>
 
 #include <dbCommon.h>
@@ -37,13 +38,43 @@ static const epicsPCIID anypci[] = {
 };
 
 typedef struct {
+    ELLNODE node;
+    epicsMutexId mutex;
+    volatile char *base;
+} device;
+
+static
+ELLLIST explorepcis;
+
+typedef struct {
     const char *addr;
     unsigned bar;
     unsigned offset;
 
-    const epicsPCIDevice *dev;
+    const epicsPCIDevice *pcidev;
     volatile char *base;
+    device *dev;
 } priv;
+
+static
+device *getDev(volatile char *base)
+{
+    device *ret;
+    ELLNODE *cur;
+
+    for(cur=ellFirst(&explorepcis); cur; cur=ellNext(cur))
+    {
+        device *dev = CONTAINER(cur, device, node);
+        if(dev->base==base)
+            return dev;
+    }
+
+    ret = callocMustSucceed(1, sizeof(*ret), "explore getDev");
+    ret->base = base;
+    ret->mutex = epicsMutexMustCreate();
+    ellAdd(&explorepcis, &ret->node);
+    return ret;
+}
 
 static
 int procLink(dbCommon *prec, priv *P, const char *link)
@@ -71,17 +102,17 @@ int procLink(dbCommon *prec, priv *P, const char *link)
     return -1;
 
 findcard:
-    if(devPCIFindDBDF(anypci, DM, B, D, F, &P->dev, 0)) {
+    if(devPCIFindDBDF(anypci, DM, B, D, F, &P->pcidev, 0)) {
         printf("%s: no device %x:%x:%x.%x\n", prec->name, DM, B, D, F);
         return -1;
     }
 
-    if(devPCIToLocalAddr(P->dev, P->bar, (volatile void **)&P->base, 0)) {
+    if(devPCIToLocalAddr(P->pcidev, P->bar, (volatile void **)&P->base, 0)) {
         printf("%s: %x:%x:%x.%x failed to map bar %u\n", prec->name, DM, B, D, F, P->bar);
         return -1;
     }
 
-    if(devPCIBarLen(P->dev, P->bar, &len)==0 && len<=P->offset) {
+    if(devPCIBarLen(P->pcidev, P->bar, &len)==0 && len<=P->offset) {
         printf("%s: %x:%x:%x.%x base %x out of range for bar %u\n", prec->name, DM, B, D, F, P->offset, P->bar);
         return -1;
     }
@@ -100,6 +131,7 @@ long init_record_li(longinRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -116,6 +148,7 @@ long init_record_mbbidirect(mbbiDirectRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -132,6 +165,7 @@ long init_record_mbbi(mbbiRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -148,6 +182,7 @@ long init_record_bi(biRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -164,6 +199,7 @@ long init_record_lo(longoutRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -185,6 +221,7 @@ long init_record_wf(waveformRecord *prec)
         free(P);
         return 0;
     }
+    P->dev = getDev(P->base);
 
     prec->dpvt = P;
     return 0;
@@ -196,7 +233,9 @@ long read_li(longinRecord *prec)
     priv *P = prec->dpvt;
     if(!P) return 0;
 
+    epicsMutexMustLock(P->dev->mutex);
     prec->val = le_ioread32(P->base+P->offset);
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -206,8 +245,10 @@ long read_mbbidirect(mbbiDirectRecord *prec)
     priv *P = prec->dpvt;
     if(!P) return 0;
 
+    epicsMutexMustLock(P->dev->mutex);
     prec->val = le_ioread32(P->base+P->offset) & prec->mask;
     prec->val >>= prec->shft;
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -217,7 +258,10 @@ long read_mbbi(mbbiRecord *prec)
     priv *P = prec->dpvt;
     if(!P) return 0;
 
+    epicsMutexMustLock(P->dev->mutex);
     prec->val = le_ioread32(P->base+P->offset) & prec->mask;
+    prec->val >>= prec->shft;
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -227,7 +271,10 @@ long read_bi(mbbiRecord *prec)
     priv *P = prec->dpvt;
     if(!P) return 0;
 
+    epicsMutexMustLock(P->dev->mutex);
     prec->val = le_ioread32(P->base+P->offset) & prec->mask;
+    prec->val >>= prec->shft;
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -237,8 +284,10 @@ long write_lo(longoutRecord *prec)
     priv *P = prec->dpvt;
     if(!P) return 0;
 
+    epicsMutexMustLock(P->dev->mutex);
     le_iowrite32(P->base+P->offset, prec->val);
     prec->val = le_ioread32(P->base+P->offset);
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -251,9 +300,11 @@ long read_wf(waveformRecord *prec)
 
     addr = (epicsUInt32*)(P->base+P->offset);
 
+    epicsMutexMustLock(P->dev->mutex);
     for(; cnt; cnt--, buf++, addr++) {
         *buf = le_ioread32(addr);
     }
+    epicsMutexUnlock(P->dev->mutex);
     prec->nord = cnt;
     return 0;
 }
