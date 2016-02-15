@@ -294,14 +294,14 @@ long write_lo(longoutRecord *prec)
 static
 long read_wf(waveformRecord *prec)
 {
-    epicsUInt32 *buf = prec->bptr, cnt = prec->nelm, *addr;
+    epicsUInt32 *buf = prec->bptr, cnt = prec->nelm, *addr, i;
     priv *P = prec->dpvt;
     if(!P) return 0;
 
     addr = (epicsUInt32*)(P->base+P->offset);
 
     epicsMutexMustLock(P->dev->mutex);
-    for(; cnt; cnt--, buf++, addr++) {
+    for(i=cnt; i; i--, buf++, addr++) {
         *buf = le_ioread32(addr);
     }
     epicsMutexUnlock(P->dev->mutex);
