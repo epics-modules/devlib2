@@ -15,6 +15,7 @@ DBD += explore.dbd
 # explore.dbd will be made up from these files:
 explore_DBD += base.dbd
 explore_DBD += system.dbd
+explore_DBD += epicspci.dbd
 explore_DBD += exploreSupport.dbd
 
 # explore_registerRecordDeviceDriver.cpp derives from explore.dbd
