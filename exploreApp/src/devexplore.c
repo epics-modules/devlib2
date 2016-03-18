@@ -119,6 +119,7 @@ findcard:
         return -1;
     }
 
+    printf("%s: %x:%x:%x.%x %x %x\n", prec->name, DM, B, D, F, P->bar, P->offset);
     return 0;
 }
 
@@ -248,10 +249,11 @@ long read_mbbidirect(mbbiDirectRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->val = le_ioread32(P->base+P->offset) & prec->mask;
+    prec->val = le_ioread32(P->base+P->offset);
     prec->val >>= prec->shft;
+    if(prec->mask) prec->val &= prec->mask;
     epicsMutexUnlock(P->dev->mutex);
-    return 0;
+    return 2;
 }
 
 static
