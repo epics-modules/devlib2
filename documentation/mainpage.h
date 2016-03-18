@@ -8,13 +8,8 @@
 @section whatisit What is it?
 
 devLib2 is an extension to the EPICS OS independent VME bus access
-library (devLib v1) found in the 3.14.x series.
-The v2 library is an overlay and extension to the v1 library and
-not a replacement.
-It is planned that the v2 library will be merged with the v1 library
-for the 3.16.x series.
-After that point devlib2 will continue to exist as a location for backports
-and bug fixes for the 3.14.x and 3.15.x series.
+library  found in the EPICS Base.
+The @ref mmio "MMIO API" is included in EPICS Base >=3.15.0.2
 
 @section whereis Source
 
@@ -43,7 +38,7 @@ and memory mapped I/O (MMIO) operations.
 @subsection pcisec PCI Bus
 
 The PCI bus access interface is entirely new.  It is currently implemented for
-RTEMS and vxWorks.  An implementation for userspace Linux is also @ref pcilinux "under development."
+RTEMS, vxWorks, and Linux (with @ref pcilinux "some limitations").
 The PCI interface provides functions for: searching the bus, mapping devices
 into process memory, and (dis)connecting interrupts.
 
@@ -403,18 +398,11 @@ in another address space.
 @page pcilinux PCI Access in Linux
 
 The PCI bus implementation for Linux uses the Userspace IO kernel API to access the bus.
-To support this an additional small kernel module must be written for each device
-being supported.
-The main purpose of the kernel module is to provide an interrupt handler in kernel context
-to silence the interrupt.
-The UIO framework then notifies the userspace application that an interrupt has occurred.
-Once serviced the interrupt must be reenabled by the application.
-
-A UIO kernel module will expose several memory regions.
-These can be MMIO or main memory.
-The devLib2 PCI driver treats each as a PCI BAR.
-
-@note Support for Linux is considered beta quality.  All testing result (positive or negative) are welcomed.
+Devices needing only memory mapped I/O access do not require a kernel driver.
+To support PCI style interrupts a minimal kernel module using the Linux UIO framework is required.
+Devices which implement generic interrupt enable/disable via the PCI control register
+may user the generic 'uio_pci_generic' kernel module.
+Otherwise this must either be written for each device to be supported.
 
 @section shouldi When to Use
 
@@ -437,15 +425,67 @@ This makes it difficult to perform read-modify-write operations
 on shared registers.  This can be an intractable problem
 for a device which implements its interrupt enable register as a bit mask.
 
-When evaluating hardware for the suitability look for a single register
-which can disable/enable interrupts without resetting interrupt active
-flags.
+When evaluating hardware for the suitability look for an
+interrupt mask register and status register.
 
 This should not be an issue for devices having a single interrupt condition.
 Devices using PCI to local bus bridges like the PLX PCI9030 should be usable.
 Also, devices supporting version 2.3 or greater of PCI standard can make use
 of the standard master interrupt enable/status bits in the control and status
 registers.
+
+@section udev UDEV rules
+
+To allow IOCs to run with minimal privlages it is advisable to change the permissions
+of the special files use by devlib2.
+This can be done either manually, or by configuring the UDEV daemon.
+
+When attempting to make use of a PCI devices, devlib2 will attempt to access several files.
+
+@li /sys/bus/pci/devices/000:BB:DD.F/resource#
+
+The "resource*" files exist one for each BAR.
+devPCIToLocalAddr() will first attempt to open the corresponding file.
+
+@li /sys/bus/pci/devices/000:BB:DD.F/uio:uio#  (Linux <= 2.6.28)
+@li /sys/bus/pci/devices/000:BB:DD.F/uio/uio#  (Linux >= 2.6.32)
+
+These are possible locations of symlinks to "/dev/uio#".
+devPCIToLocalAddr() will next attempt to open each in turn,
+then map the a region corresponding to the BAR number,
+or the number of mappings when the DEVLIB_MAP_UIOCOMPACT flag is given.
+
+In this example, the permissions of /resource0 are changed.
+
+@code
+SUBSYSTEM=="pci", ATTR{vendor}=="0x1234", ATTR{device}=="0x1234", RUN+="/bin/chmod a+rw %S%p/resource0"
+@endcode
+
+And for a UIO device
+
+@code
+SUBSYSTEM=="pci", ATTR{vendor}=="0x1234", ATTR{device}=="0x1234", MODE="0666"
+@endcode
+
+To discover possible attributes for matching use "udevadm info" and look for the first
+SUBSYSTEM=="pci" paragraph.
+
+@code
+udevadm info -a -p $(udevadm info -q path -n /dev/uio0) --attribute-walk
+@endcode
+
+If not device file exists, then the PCI geographic address can be used
+
+@code
+udevadm info -a -p /bus/pci/devices/0000:0b:00.0 --attribute-walk
+@endcode
+
+The effects of a new rules file can be tested with "udevadm -a add test".
+
+@code
+udevadm test -a add /bus/pci/devices/0000:0b:00.0
+udevadm test -a add $(udevadm info -q path -n /dev/uio0)
+@endcode
 
 @section linuxrefs References
 
