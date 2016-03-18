@@ -112,6 +112,26 @@ static int check_args(int dmod, int offset, int count)
     return 0;
 }
 
+void pciwrite(int dmod, int offset, int value)
+{
+  epicsUInt32 tval = value;
+  volatile char* dptr = diagbase + offset;
+
+  if(!diagbase) {
+      printf("Run pcidiagset first\n");
+      return;
+  }
+
+  if(check_args(dmod, offset, 1))
+      return;
+
+  switch(dmod){
+  case 8: iowrite8(dptr, tval); break;
+  case 16: nat_iowrite16(dptr, tval); break;
+  case 32: nat_iowrite32(dptr, tval); break;
+  }
+}
+
 void pciread(int dmod, int offset, int count)
 {
   epicsUInt32 tval;
@@ -200,6 +220,19 @@ static void pcidiagsetCall(const iocshArgBuf *args)
     pcidiagset(args[0].ival, args[1].ival, args[2].ival, args[3].ival, args[4].ival, args[5].ival, args[6].ival);
 }
 
+static const iocshArg pciwriteArg0 = { "data width (8,16,32)",iocshArgInt};
+static const iocshArg pciwriteArg1 = { "offset",iocshArgInt};
+static const iocshArg pciwriteArg2 = { "value",iocshArgInt};
+static const iocshArg * const pciwriteArgs[3] =
+    {&pciwriteArg0,&pciwriteArg1,&pciwriteArg2};
+static const iocshFuncDef pciwriteFuncDef =
+    {"pciwrite",3,pciwriteArgs};
+
+static void pciwriteCall(const iocshArgBuf *args)
+{
+    pciwrite(args[0].ival, args[1].ival, args[2].ival);
+}
+
 static const iocshArg pcireadArg0 = { "data width (8,16,32)",iocshArgInt};
 static const iocshArg pcireadArg1 = { "offset",iocshArgInt};
 static const iocshArg pcireadArg2 = { "count",iocshArgInt};
@@ -228,6 +261,7 @@ static void pciconfreadCall(const iocshArgBuf *args)
 
 static void pcish(void)
 {
+    iocshRegister(&pciwriteFuncDef,pciwriteCall);
     iocshRegister(&pcireadFuncDef,pcireadCall);
     iocshRegister(&pciconfreadFuncDef,pciconfreadCall);
     iocshRegister(&pcidiagsetFuncDef,pcidiagsetCall);
