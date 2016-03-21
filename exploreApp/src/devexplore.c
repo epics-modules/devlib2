@@ -79,29 +79,31 @@ device *getDev(volatile char *base)
 static
 int procLink(dbCommon *prec, priv *P, const char *link)
 {
-    unsigned DM=0, B=0, D=0, F=0;
+    unsigned DM=0, B=0, D=0, F=0, extra=0;
     int ret;
     epicsUInt32 len;
 
     P->bar = P->offset = 0;
 
-    ret = sscanf(link, "%x:%x:%x.%x %x %x", &DM, &B, &D, &F, &P->bar, &P->offset);
+    ret = sscanf(link, "%x:%x:%x.%x %x %x %x", &DM, &B, &D, &F, &P->bar, &P->offset, &extra);
     if(ret>=4) goto findcard;
 
-    DM = B = D = F = 0;
+    DM = B = D = F = extra = 0;
 
-    ret = sscanf(link, "%x:%x.%x %x %x", &B, &D, &F, &P->bar, &P->offset);
+    ret = sscanf(link, "%x:%x.%x %x %x %x", &B, &D, &F, &P->bar, &P->offset, &extra);
     if(ret>=3) goto findcard;
 
-    DM = B = D = F = 0;
+    DM = B = D = F = extra = 0;
 
-    ret = sscanf(link, "%x:%x %x %x", &B, &D, &P->bar, &P->offset);
+    ret = sscanf(link, "%x:%x %x %x %x", &B, &D, &P->bar, &P->offset, &extra);
     if(ret>=2) goto findcard;
 
     printf("%s: Invalid link \"%s\"\n", prec->name, link);
     return -1;
 
 findcard:
+    P->offset += extra;
+
     if(devPCIFindDBDF(anypci, DM, B, D, F, &P->pcidev, 0)) {
         printf("%s: no device %x:%x:%x.%x\n", prec->name, DM, B, D, F);
         return -1;
