@@ -24,6 +24,8 @@
 #include <mbbiDirectRecord.h>
 #include <mbbiRecord.h>
 #include <biRecord.h>
+#include <aiRecord.h>
+#include <aoRecord.h>
 #include <waveformRecord.h>
 #include <devSup.h>
 #include <epicsExport.h>
@@ -124,6 +126,23 @@ findcard:
 }
 
 static
+long init_record_ai(aiRecord *prec)
+{
+    priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
+
+    assert(prec->inp.type==INST_IO);
+
+    if(procLink((dbCommon*)prec, P, prec->inp.value.instio.string)) {
+        free(P);
+        return 0;
+    }
+    P->dev = getDev(P->base);
+
+    prec->dpvt = P;
+    return 0;
+}
+
+static
 long init_record_li(longinRecord *prec)
 {
     priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
@@ -192,6 +211,23 @@ long init_record_bi(biRecord *prec)
 }
 
 static
+long init_record_ao(aoRecord *prec)
+{
+    priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
+
+    assert(prec->out.type==INST_IO);
+
+    if(procLink((dbCommon*)prec, P, prec->out.value.instio.string)) {
+        free(P);
+        return 0;
+    }
+    P->dev = getDev(P->base);
+
+    prec->dpvt = P;
+    return 0;
+}
+
+static
 long init_record_lo(longoutRecord *prec)
 {
     priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
@@ -227,6 +263,18 @@ long init_record_wf(waveformRecord *prec)
     P->dev = getDev(P->base);
 
     prec->dpvt = P;
+    return 0;
+}
+
+static
+long read_ai(aiRecord *prec)
+{
+    priv *P = prec->dpvt;
+    if(!P) return 0;
+
+    epicsMutexMustLock(P->dev->mutex);
+    prec->rval = le_ioread32(P->base+P->offset);
+    epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
@@ -283,6 +331,19 @@ long read_bi(mbbiRecord *prec)
 }
 
 static
+long write_ao(aoRecord *prec)
+{
+    priv *P = prec->dpvt;
+    if(!P) return 0;
+
+    epicsMutexMustLock(P->dev->mutex);
+    le_iowrite32(P->base+P->offset, prec->rval);
+    //prec->rval = le_ioread32(P->base+P->offset);
+    epicsMutexUnlock(P->dev->mutex);
+    return 0;
+}
+
+static
 long write_lo(longoutRecord *prec)
 {
     priv *P = prec->dpvt;
@@ -327,6 +388,7 @@ typedef struct {
     {6, NULL, NULL, INITREC, IOINTR, RW, NULL}; \
 epicsExportAddress(dset, NAME)
 
+DSET(devExplorePCIReadAI, init_record_ai, NULL, read_ai);
 DSET(devExplorePCIReadLI, init_record_li, NULL, read_li);
 DSET(devExplorePCIReadMBBIDIRECT, init_record_mbbidirect, NULL, read_mbbidirect);
 DSET(devExplorePCIReadMBBI, init_record_mbbi, NULL, read_mbbi);
@@ -334,3 +396,4 @@ DSET(devExplorePCIReadBI, init_record_bi, NULL, read_bi);
 DSET(devExplorePCIReadWF, init_record_wf, NULL, read_wf);
 
 DSET(devExplorePCIWriteLO, init_record_lo, NULL, write_lo);
+DSET(devExplorePCIWriteAO, init_record_ao, NULL, write_ao);
