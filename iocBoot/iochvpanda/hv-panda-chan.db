@@ -1,17 +1,17 @@
 
-record(bo, "$(P)CH0:ENA") {
+record(bo, "$(P)ENA") {
   field(ZNAM, "Disabled")
   field(ONAM, "Enabled")
-  field(OUT, "$(P)CH0:ENA_")
+  field(OUT, "$(P)ENA_ PP")
   field(PINI, "YES")
 }
 
-record(longout, "$(P)CH0:ENA_") {
+record(longout, "$(P)ENA_") {
   field(DTYP, "Explore PCI Write32")
   field(OUT , "@$(DEV) 0 100 $(OFFSET)")
 }
 
-record(bi, "$(P)CH0:ENA_STS") {
+record(bi, "$(P)ENA_STS") {
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 110 $(OFFSET)")
   field(MASK, "1")
@@ -20,14 +20,14 @@ record(bi, "$(P)CH0:ENA_STS") {
   field(SCAN, ".1 second")
 }
 
-record(ai, "$(P)CH0:I") {
+record(ai, "$(P)I") {
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 10c $(OFFSET)")
   field(EGU , "A")
   field(SCAN, ".1 second")
 }
 
-record(ai, "$(P)CH0:V") {
+record(ai, "$(P)V") {
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 108 $(OFFSET)")
   field(ASLO, "0.1")
@@ -35,7 +35,7 @@ record(ai, "$(P)CH0:V") {
   field(SCAN, ".1 second")
 }
 
-record(ao, "$(P)CH0:V_SET") {
+record(ao, "$(P)V_SET") {
   field(DTYP, "Explore PCI Write32")
   field(OUT , "@$(DEV) 0 104 $(OFFSET)")
   field(ASLO, "0.1")
@@ -43,7 +43,7 @@ record(ao, "$(P)CH0:V_SET") {
   field(PINI, "YES")
 }
 
-record(ao, "$(P)CH0:RUP_SET") {
+record(ao, "$(P)RUP_SET") {
   field(DTYP, "Explore PCI Write32")
   field(OUT , "@$(DEV) 0 114 $(OFFSET)")
   field(EGU , "V/s")
@@ -51,7 +51,7 @@ record(ao, "$(P)CH0:RUP_SET") {
   field(PINI, "YES")
 }
 
-record(ao, "$(P)CH0:RDN_SET") {
+record(ao, "$(P)RDN_SET") {
   field(DTYP, "Explore PCI Write32")
   field(OUT , "@$(DEV) 0 118 $(OFFSET)")
   field(EGU , "V/s")
