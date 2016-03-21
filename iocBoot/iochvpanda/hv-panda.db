@@ -2,20 +2,85 @@
 # ai
 # VAL = (RVAL+ROFF)*ASLO+AOFF
 
-record(longin, "$(P)FWVER") {
+record(longin, "$(P)FWVER_RD") {
+  field(DISV, "-1")
+  field(SDIS, "$(P)FAIL_ NPP MSI")
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 0")
   field(SCAN, "10 second")
 }
 
-record(longin, "$(P)WD") {
+# watchdog counter
+record(longin, "$(P)WD_RD") {
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 4")
   field(SCAN, ".1 second")
 }
 
-record(mbbiDirect, "$(P)POL") {
+record(calc, "$(P)WD:RATE_RD") {
+  field(INPA, "$(P)WD_RD NPP")
+  field(INPD, "4294967295") # assume rollover at 32-bits
+  field(CALC, "C:=(A-B)&D;B:=A;C")
+  field(SCAN, "1 second")
+  field(EGU , "cnt/s")
+  # observed rate ~= 1k
+  field(HIGH, "1500")
+  field(LOW , "500")
+  field(HSV , "MAJOR")
+  field(LSV , "MAJOR")
+  field(FLNK, "$(P)FAIL_")
+}
+
+# This is used internally to fan out an INVALID
+# alarm when the watchdog counter stops (maybe card removed)
+record(bi, "$(P)FAIL_") {
+  field(DTYP, "Raw Soft Channel")
+  field(INP , "$(P)WD:RATE_RD.SEVR NPP")
+  field(ZNAM, "OK")
+  field(ONAM, "FAIL")
+  field(OSV , "INVALID")
+}
+
+record(bi, "$(P)CH0:POL_RSTS") {
+  field(DISV, "-1")
+  field(SDIS, "$(P)FAIL_ NPP MSI")
   field(DTYP, "Explore PCI Read32")
   field(INP , "@$(DEV) 0 20")
   field(SCAN, "10 second")
+  field(MASK, "0x8")
+  field(ZNAM, "Positive")
+  field(ONAM, "Negative")
+}
+
+record(bi, "$(P)CH1:POL_RSTS") {
+  field(DISV, "-1")
+  field(SDIS, "$(P)FAIL_ NPP MSI")
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 20")
+  field(SCAN, "10 second")
+  field(MASK, "0x4")
+  field(ZNAM, "Positive")
+  field(ONAM, "Negative")
+}
+
+record(bi, "$(P)CH2:POL_RSTS") {
+  field(DISV, "-1")
+  field(SDIS, "$(P)FAIL_ NPP MSI")
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 20")
+  field(SCAN, "10 second")
+  field(MASK, "0x2")
+  field(ZNAM, "Positive")
+  field(ONAM, "Negative")
+}
+
+record(bi, "$(P)CH3:POL_RSTS") {
+  field(DISV, "-1")
+  field(SDIS, "$(P)FAIL_ NPP MSI")
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 20")
+  field(SCAN, "10 second")
+  field(MASK, "0x1")
+  field(ZNAM, "Positive")
+  field(ONAM, "Negative")
 }
