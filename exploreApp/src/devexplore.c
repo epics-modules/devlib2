@@ -34,6 +34,8 @@
 
 #include "devLibPCI.h"
 
+int pciexploredebug=1;
+
 static const epicsPCIID anypci[] = {
     DEVPCI_DEVICE_VENDOR(DEVPCI_ANY_DEVICE, DEVPCI_ANY_VENDOR),
     DEVPCI_END
@@ -57,6 +59,21 @@ typedef struct {
     volatile char *base;
     device *dev;
 } priv;
+
+static
+epicsUInt32 priv_read32(priv *P, dbCommon *prec)
+{
+    epicsUInt32 ret = le_ioread32(P->base+P->offset);
+    if(pciexploredebug>1) fprintf(stderr, "%s: %x -> %x\n", prec->name, P->offset, (unsigned)ret);
+    return ret;
+}
+
+static
+void priv_write32(priv *P, dbCommon *prec, epicsUInt32 val)
+{
+    if(pciexploredebug>1) fprintf(stderr, "%s: %x <- %x\n", prec->name, P->offset, (unsigned)val);
+    le_iowrite32(P->base+P->offset, val);
+}
 
 static
 device *getDev(volatile char *base)
@@ -121,7 +138,8 @@ findcard:
         return -1;
     }
 
-    printf("%s: %x:%x:%x.%x %x %x\n", prec->name, DM, B, D, F, P->bar, P->offset);
+    if(pciexploredebug>0)
+        printf("%s: %x:%x:%x.%x %x %x\n", prec->name, DM, B, D, F, P->bar, P->offset);
     return 0;
 }
 
@@ -273,7 +291,7 @@ long read_ai(aiRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->rval = le_ioread32(P->base+P->offset);
+    prec->rval = priv_read32(P, (dbCommon*)prec);
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
@@ -285,7 +303,7 @@ long read_li(longinRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->val = le_ioread32(P->base+P->offset);
+    prec->val = priv_read32(P, (dbCommon*)prec);
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
@@ -297,7 +315,7 @@ long read_mbbidirect(mbbiDirectRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->val = le_ioread32(P->base+P->offset);
+    prec->val = priv_read32(P, (dbCommon*)prec);
     prec->val >>= prec->shft;
     if(prec->mask) prec->val &= prec->mask;
     epicsMutexUnlock(P->dev->mutex);
@@ -311,21 +329,20 @@ long read_mbbi(mbbiRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->val = le_ioread32(P->base+P->offset) & prec->mask;
+    prec->val = priv_read32(P, (dbCommon*)prec) & prec->mask;
     prec->val >>= prec->shft;
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
 
 static
-long read_bi(mbbiRecord *prec)
+long read_bi(biRecord *prec)
 {
     priv *P = prec->dpvt;
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    prec->val = le_ioread32(P->base+P->offset) & prec->mask;
-    prec->val >>= prec->shft;
+    prec->rval = priv_read32(P, (dbCommon*)prec) & prec->mask;
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
@@ -337,8 +354,7 @@ long write_ao(aoRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    le_iowrite32(P->base+P->offset, prec->rval);
-    //prec->rval = le_ioread32(P->base+P->offset);
+    priv_write32(P, (dbCommon*)prec, prec->rval);
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
@@ -350,7 +366,7 @@ long write_lo(longoutRecord *prec)
     if(!P) return 0;
 
     epicsMutexMustLock(P->dev->mutex);
-    le_iowrite32(P->base+P->offset, prec->val);
+    priv_write32(P, (dbCommon*)prec, prec->val);
     prec->val = le_ioread32(P->base+P->offset);
     epicsMutexUnlock(P->dev->mutex);
     return 0;
