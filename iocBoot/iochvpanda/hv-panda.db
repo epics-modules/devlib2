@@ -1,0 +1,21 @@
+
+# ai
+# VAL = (RVAL+ROFF)*ASLO+AOFF
+
+record(longin, "$(P)FWVER") {
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 0")
+  field(SCAN, "10 second")
+}
+
+record(longin, "$(P)WD") {
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 4")
+  field(SCAN, ".1 second")
+}
+
+record(mbbiDirect, "$(P)POL") {
+  field(DTYP, "Explore PCI Read32")
+  field(INP , "@$(DEV) 0 20")
+  field(SCAN, "10 second")
+}
