@@ -47,6 +47,12 @@ record(ao, "$(P)$(CH)V_CSET") {
   field(ASLO, "0.1")
   field(EGU , "V")
   field(PINI, "YES")
+  field(HOPR, "4000")
+  field(DRVH, "4001")
+  field(DRVL, "0")
+  field(HIGH, "4000")
+  field(HSV, "INVALID")
+  field(IVOA, "Don't drive outputs")
 }
 
 record(ao, "$(P)$(CH)RUP_CSET") {
@@ -55,6 +61,12 @@ record(ao, "$(P)$(CH)RUP_CSET") {
   field(EGU , "V/s")
   field(RVAL , "500")
   field(PINI, "YES")
+  field(HOPR, "700")
+  field(DRVH, "701")
+  field(DRVL, "0")
+  field(HIGH, "700")
+  field(HSV, "INVALID")
+  field(IVOA, "Don't drive outputs")
 }
 
 record(ao, "$(P)$(CH)RDN_CSET") {
@@ -63,4 +75,10 @@ record(ao, "$(P)$(CH)RDN_CSET") {
   field(EGU , "V/s")
   field(RVAL , "500")
   field(PINI, "YES")
+  field(HOPR, "700")
+  field(DRVH, "701")
+  field(DRVL, "0")
+  field(HIGH, "700")
+  field(HSV, "INVALID")
+  field(IVOA, "Don't drive outputs")
 }
