@@ -25,6 +25,7 @@
 #include <mbbiRecord.h>
 #include <biRecord.h>
 #include <aiRecord.h>
+#include <boRecord.h>
 #include <aoRecord.h>
 #include <waveformRecord.h>
 #include <devSup.h>
@@ -263,6 +264,23 @@ long init_record_lo(longoutRecord *prec)
 }
 
 static
+long init_record_bo(boRecord *prec)
+{
+    priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
+
+    assert(prec->out.type==INST_IO);
+
+    if(procLink((dbCommon*)prec, P, prec->out.value.instio.string)) {
+        free(P);
+        return 0;
+    }
+    P->dev = getDev(P->base);
+
+    prec->dpvt = P;
+    return 0;
+}
+
+static
 long init_record_wf(waveformRecord *prec)
 {
     priv *P = callocMustSucceed(1, sizeof(*P), "explore priv");
@@ -373,6 +391,24 @@ long write_lo(longoutRecord *prec)
 }
 
 static
+long write_bo(boRecord *prec)
+{
+    epicsUInt32 val = 0;
+    priv *P = prec->dpvt;
+    if(!P) return 0;
+
+    epicsMutexMustLock(P->dev->mutex);
+
+    if(prec->mask) val = le_ioread32(P->base+P->offset) & (~prec->mask);
+    val |= prec->rval;
+
+    priv_write32(P, (dbCommon*)prec, val);
+
+    epicsMutexUnlock(P->dev->mutex);
+    return 0;
+}
+
+static
 long read_wf(waveformRecord *prec)
 {
     epicsUInt32 *buf = prec->bptr, cnt = prec->nelm, *addr, i;
@@ -413,3 +449,4 @@ DSET(devExplorePCIReadWF, init_record_wf, NULL, read_wf);
 
 DSET(devExplorePCIWriteLO, init_record_lo, NULL, write_lo);
 DSET(devExplorePCIWriteAO, init_record_ao, NULL, write_ao);
+DSET(devExplorePCIWriteBO, init_record_bo, NULL, write_bo);
