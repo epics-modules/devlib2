@@ -373,6 +373,7 @@ long write_ao(aoRecord *prec)
 
     epicsMutexMustLock(P->dev->mutex);
     priv_write32(P, (dbCommon*)prec, prec->rval);
+    prec->rbv = le_ioread32(P->base+P->offset);
     epicsMutexUnlock(P->dev->mutex);
     return 0;
 }
