@@ -16,6 +16,11 @@ TESTS += pcitest
 pcitest_SRCS += pcitest.c
 pcitest_LIBS += epicspci
 
+TESTPROD_IOC += epicsMMIOTest
+TESTS += epicsMMIOTest
+
+epicsMMIOTest_SRCS += epicsMMIOTest.c
+
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 #===========================
