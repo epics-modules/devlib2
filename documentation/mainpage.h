@@ -75,6 +75,14 @@ the width and order of accesses.
 
 @subsection ver28 2.8 (UNRELEASED)
 
+@li Fixes an bug with epicsMMIO.h for some targets where a single read
+    macro expands to either 2 (16 bit) or 4 (32 bit) loads in situations
+    where a byte swap is necessary.
+    Effects all targets except RTEMS on powerpc to some degree.
+    On Linux be_*() or le_*() are effected (depending on target byte order).
+    On vxWorks nat_*() and le_* are effected on big endian targets,
+    and le_*() on little endian targets.
+
 @subsection ver27 2.7 (Jan. 2016)
 
 @li configure: optionally include \$(TOP)/configure/RELEASE.local and \$(TOP)/../RELEASE.local.
