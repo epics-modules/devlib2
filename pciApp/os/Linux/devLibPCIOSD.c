@@ -174,17 +174,17 @@ vallocPrintf(const char *format, va_list args)
     va_end(nargs);
 
     if (size<=0) {
-        errlogPrintf("vaprintf: Failed to convert format '%s'\n",format);
+        fprintf(stderr, "vaprintf: Failed to convert format '%s'\n",format);
         goto fail;
     }
     ret=malloc(size+1);
     if (!ret) {
-        errlogPrintf("vaprintf: Failed to allocate memory for format '%s'\n",format);
+        fprintf(stderr, "vaprintf: Failed to allocate memory for format '%s'\n",format);
         goto fail;
     }
     size2=vsnprintf(ret,size+1,format,args);
     if (size!=size2) {
-        errlogPrintf("vaprintf: Format yielded different size %d %d : %s\n",size,size2,format);
+        fprintf(stderr, "vaprintf: Format yielded different size %d %d : %s\n",size,size2,format);
         goto fail;
     }
 
@@ -231,12 +231,12 @@ vread_sysfs(int *err, const char *fileformat, va_list args)
 
     fd=fopen(scratch, "r");
     if (!fd) {
-        errlogPrintf("vread_sysfs: Failed to open %s\n",scratch);
+        fprintf(stderr, "vread_sysfs: Failed to open %s\n",scratch);
         goto done;
     }
     size=fscanf(fd, "%li",&ret);
     if(size!=1 || ferror(fd)) {
-        errlogPrintf("vread_sysfs: Failed to read %s\n",scratch);
+        fprintf(stderr, "vread_sysfs: Failed to read %s\n",scratch);
         goto done;
     }
 
@@ -290,7 +290,7 @@ int find_uio_number2(const char* dname, const char* pat)
     struct dirent *ent;
 
     if(devPCIDebug>2)
-        errlogPrintf("Looking for UIO dir in %s with %s\n", dname, pat);
+        fprintf(stderr, "Looking for UIO dir in %s with %s\n", dname, pat);
 
     d=opendir(dname);
     if (!d)
@@ -298,7 +298,7 @@ int find_uio_number2(const char* dname, const char* pat)
 
     while ((ent=readdir(d))!=NULL) {
         int num, sts = sscanf(ent->d_name, pat, &num);
-        if(devPCIDebug>2) errlogPrintf(" Check %s gives %d %d\n", ent->d_name, sts, num);
+        if(devPCIDebug>2) fprintf(stderr, " Check %s gives %d %d\n", ent->d_name, sts, num);
         if (sts==1) {
             ret = num;
             break;
@@ -336,7 +336,7 @@ find_uio_number(const struct osdPCIDevice* osd)
         if (ret != -1)
             return ret;
     }
-    errlogPrintf("Failed to open uio device for PCI device %04x:%02x:%02x.%x: %s\n",
+    fprintf(stderr, "Failed to open uio device for PCI device %04x:%02x:%02x.%x: %s\n",
                  osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
     return -1;
 }
@@ -436,7 +436,7 @@ int linuxDevPCIInit(void)
 
     sysfsPci_dir = opendir("/sys/bus/pci/devices");
     if (!sysfsPci_dir){
-    	errlogPrintf("Could not open /sys/bus/pci/devices!\n");
+        fprintf(stderr, "Could not open /sys/bus/pci/devices!\n");
     	goto fail;
     }
 
@@ -463,7 +463,7 @@ int linuxDevPCIInit(void)
 	match = sscanf(dir->d_name,"%x:%x:%x.%x",
                              &osd->dev.domain,&osd->dev.bus,&osd->dev.device,&osd->dev.function);
         if (match != 4){
-            errlogPrintf("Could not decode PCI device directory %s\n", dir->d_name);
+            fprintf(stderr, "Could not decode PCI device directory %s\n", dir->d_name);
         }
  
         osd->dev.id.vendor=read_sysfs(&fail, BUSBASE "vendor",
@@ -481,20 +481,19 @@ int linuxDevPCIInit(void)
         osd->dev.id.revision=0;
 
         if (fail) {
-            errlogPrintf("Warning: Failed to read some attributes of PCI device %04x:%02x:%02x.%x\n"
+            fprintf(stderr, "Warning: Failed to read some attributes of PCI device %04x:%02x:%02x.%x\n"
                          "         This may cause some searches to fail\n",
                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             fail=0;
         }
 
         if(devPCIDebug>=1) {
-            errlogPrintf("linuxDevPCIInit found %04x:%02x:%02x.%x\n",
+            fprintf(stderr, "linuxDevPCIInit found %04x:%02x:%02x.%x\n",
                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
-            errlogPrintf(" as pri %04x:%04x sub %04x:%04x cls %06x\n",
+            fprintf(stderr, " as pri %04x:%04x sub %04x:%04x cls %06x\n",
                          osd->dev.id.vendor, osd->dev.id.device,
                          osd->dev.id.sub_vendor, osd->dev.id.sub_device,
                          osd->dev.id.pci_class);
-            errlogFlush();
         }
 
         /* Read BAR info */
@@ -509,7 +508,7 @@ int linuxDevPCIInit(void)
         }
         file=fopen(filename, "r");
         if (!file) {
-            errlogPrintf("Could not open resource file %s!\n", filename);
+            fprintf(stderr, "Could not open resource file %s!\n", filename);
             free(filename);
             continue;
         }
@@ -517,7 +516,7 @@ int linuxDevPCIInit(void)
             match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
         
             if (match != 3) {
-                errlogPrintf("Could not parse line %i of %s\n", i+1, filename);
+                fprintf(stderr, "Could not parse line %i of %s\n", i+1, filename);
                 continue;
             }
 
@@ -534,7 +533,7 @@ int linuxDevPCIInit(void)
         /* rom */
         match = fscanf(file, "%llx %llx %llx\n", &start, &stop, &flags);
         if (match != 3) {
-            errlogPrintf("Could not parse line %i of %s\n", i+1, filename);
+            fprintf(stderr, "Could not parse line %i of %s\n", i+1, filename);
             start = 0;
             stop = 0;
         }
@@ -727,7 +726,7 @@ linuxDevPCIToLocalAddr(
     epicsMutexMustLock(osd->devLock);
 
     if (open_res(osd, bar) && open_uio(osd)) {
-        errlogPrintf("Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %i\n",
+        fprintf(stderr, "Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %i\n",
             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
         epicsMutexUnlock(osd->devLock);
         return S_dev_addrMapFail;
@@ -736,7 +735,7 @@ linuxDevPCIToLocalAddr(
     if (!osd->base[bar]) {
 
         if ( osd->dev.bar[bar].ioport ) {
-            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
+            fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             epicsMutexUnlock(osd->devLock);
             return S_dev_addrMapFail;
@@ -771,7 +770,7 @@ linuxDevPCIToLocalAddr(
                               PROT_READ|PROT_WRITE, MAP_SHARED,
                               mapfd, mapno*pagesize);
         if (osd->base[bar]==MAP_FAILED) {
-            errlogPrintf("Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x: %s\n", bar,
+            fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x: %s\n", bar,
                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function,
                          strerror(errno));
             epicsMutexUnlock(osd->devLock);
@@ -836,7 +835,7 @@ int linuxDevPCIConnectInterrupt(
         other=CONTAINER(cur,osdISR,node);
         if (other->fptr==isr->fptr && other->param==isr->param) {
             epicsMutexUnlock(osd->devLock);
-            errlogPrintf("ISR already registered\n");
+            fprintf(stderr, "ISR already registered\n");
             goto error;
         }
     }
@@ -855,7 +854,7 @@ int linuxDevPCIConnectInterrupt(
                                     );
     if (!isr->waiter) {
         epicsMutexUnlock(osd->devLock);
-        errlogPrintf("Failed to create ISR thread %s\n", name);
+        fprintf(stderr, "Failed to create ISR thread %s\n", name);
         goto error;
     }
 
@@ -1011,10 +1010,10 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
             goto bail;
         }
         if ( (osd->cfd = open(scratch, O_RDWR, 0)) < 0 ) {
-            errlogPrintf("devLibPCIOSD: Unable to open configuration space for writing: %s\n", strerror(errno));
+            fprintf(stderr, "devLibPCIOSD: Unable to open configuration space for writing: %s\n", strerror(errno));
             /* try readonly */
             if ( (osd->cfd = open(scratch, O_RDONLY, 0)) < 0 ) {
-                errlogPrintf("devLibPCIOSD: Unable to open configuration space for read-only: %s\n", strerror(errno));
+                fprintf(stderr, "devLibPCIOSD: Unable to open configuration space for read-only: %s\n", strerror(errno));
                 rval = S_dev_badRequest;
                 osd->cmode = CMODE_NONE;
                 goto bail;
@@ -1040,7 +1039,7 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
 
     if ( CFG_ACC_WIDTH(mode) != st ) {
         if ( st < 0 )
-            errlogPrintf("devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
+            fprintf(stderr, "devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
                          CFG_ACC_WRITE(mode) ? "write" : "read",
                          CFG_ACC_WIDTH(mode),
                          CFG_ACC_WRITE(mode) ? "to" : "from",

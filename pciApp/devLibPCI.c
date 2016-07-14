@@ -64,7 +64,7 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
     if (!drv->name) return 1;
 
     if(drvsize!=sizeof(*drv)) {
-        errlogPrintf("devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
+        fprintf(stderr, "devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
                      "expect %lu but given %lu\n"
                      "Please do a clean rebuild of devLib2 and any code with custom PCI OS structs\n",
                      (unsigned long)sizeof(*drv),
@@ -79,7 +79,7 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
     for(cur=ellFirst(&pciDrivers); cur; cur=ellNext(cur)) {
         devLibPCI *other=CONTAINER(cur, devLibPCI, node);
         if (strcmp(drv->name, other->name)==0) {
-            errlogPrintf("Failed to register PCI bus driver: name already taken\n");
+            fprintf(stderr, "Failed to register PCI bus driver: name already taken\n");
             ret=1;
             break;
         }
@@ -108,7 +108,7 @@ devLibPCIUse(const char* use)
 
     if (pdevLibPCI) {
         epicsMutexUnlock(pciDriversLock);
-        errlogPrintf("PCI bus driver already selected. Can't change selection\n");
+        fprintf(stderr, "PCI bus driver already selected. Can't change selection\n");
         return 1;
     }
 
@@ -121,7 +121,7 @@ devLibPCIUse(const char* use)
         }
     }
     epicsMutexUnlock(pciDriversLock);
-    errlogPrintf("PCI bus driver '%s' not found\n",use);
+    fprintf(stderr, "PCI bus driver '%s' not found\n",use);
     return 1;
 }
 
@@ -337,7 +337,6 @@ searchandprint(void* praw,const epicsPCIDevice* dev)
     searchinfo *pinfo=praw;
     pinfo->matched++;
     devPCIShowDevice(pinfo->lvl,dev);
-    errlogFlush(); /* avoid truncation for long device lists */
     return 0;
 }
 
@@ -356,7 +355,7 @@ devPCIShow(int lvl, int vendor, int device, int exact)
     if (device==0 && !exact) ids[0].device=DEVPCI_ANY_DEVICE;
 
     devPCIFindCB(ids,&searchandprint, &info, 0);
-    errlogPrintf("Matched %d devices\n", info.matched);
+    printf("Matched %d devices\n", info.matched);
 }
 
 void
@@ -364,18 +363,18 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
 
-    errlogPrintf("PCI %04x:%02x:%02x.%x IRQ %u\n"
+    printf("PCI %04x:%02x:%02x.%x IRQ %u\n"
            "  vendor:device %04x:%04x rev %02x\n",
            dev->domain, dev->bus, dev->device, dev->function, dev->irq,
            dev->id.vendor, dev->id.device, dev->id.revision);
     if(lvl<1)
         return;
-    errlogPrintf("  subved:subdev %04x:%04x\n"
+    printf("  subved:subdev %04x:%04x\n"
            "  class %06x %s\n",
            dev->id.sub_vendor, dev->id.sub_device,
            dev->id.pci_class,
            devPCIDeviceClassToString(dev->id.pci_class));
-    if (dev->driver) errlogPrintf("  driver %s\n",
+    if (dev->driver) printf("  driver %s\n",
            dev->driver);
     if(lvl<2)
         return;
@@ -390,7 +389,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
             if (len >= 1024) { len >>= 10; u = "M"; }
             if (len >= 1024) { len >>= 10; u = "G"; }
 
-            errlogPrintf("  BAR %u %s-bit %s%s %3u %sB\n",i,
+            printf("  BAR %u %s-bit %s%s %3u %sB\n",i,
                    dev->bar[i].addr64?"64":"32",
                    dev->bar[i].ioport?"IO Port":"MMIO   ",
                    dev->bar[i].below1M?" Below 1M":"",
