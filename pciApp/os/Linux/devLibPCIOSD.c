@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <unistd.h>
 #include <dirent.h>
@@ -16,6 +17,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 
+#include <cantProceed.h>
 #include <epicsStdio.h>
 #include <errlog.h>
 #include <epicsString.h>
@@ -417,6 +419,8 @@ close_uio(struct osdPCIDevice* osd)
     }
 }
 
+static const char linuxslotsdir[] = "/sys/bus/pci/slots";
+
 static
 int linuxDevPCIInit(void)
 {
@@ -569,6 +573,62 @@ int linuxDevPCIInit(void)
     }
     if (sysfsPci_dir)
         closedir(sysfsPci_dir);
+
+    sysfsPci_dir = opendir(linuxslotsdir);
+    if (sysfsPci_dir){
+        while ((dir=readdir(sysfsPci_dir))) {
+            unsigned long slot;
+            unsigned dom, B, D;
+            char *end = NULL;
+            char *fullname;
+            FILE *fp;
+
+            if (!dir->d_name || dir->d_name[0]=='.') continue; /* Skip invalid entries */
+            if(devPCIDebug>4)
+                fprintf(stderr, "examine /slots entry '%s'\n", dir->d_name);
+
+            errno = 0;
+            slot = strtoul(dir->d_name, &end, 0);
+            if(slot==ULONG_MAX && errno==ERANGE) {
+                if(devPCIDebug>1)
+                    fprintf(stderr, "Unknown entry in slots directory '%s'\n", dir->d_name);
+                continue;
+            }
+
+            fullname = allocPrintf("%s/%s/address", linuxslotsdir, dir->d_name);
+
+            if(devPCIDebug>3)
+                fprintf(stderr, "found slot %lu -> '%s'\n", slot, fullname);
+
+            if((fp=fopen(fullname, "r"))!=NULL) {
+
+                if(fscanf(fp, "%x:%x:%x", &dom, &B, &D)==3) {
+                    ELLNODE *cur;
+                    if(devPCIDebug>2)
+                        fprintf(stderr, "found slot %lu with %04u:%02u:%02u.*\n", slot, dom, B, D);
+
+                    for(cur=ellFirst(&devices); cur; cur=ellNext(cur)) {
+                        osdPCIDevice *osd = CONTAINER(cur, osdPCIDevice, node);
+                        if(osd->dev.domain!=dom || osd->dev.bus!=B || osd->dev.device!=D)
+                            continue;
+                        if(osd->dev.slot==DEVPCI_NO_SLOT) {
+                            osd->dev.slot = slot;
+                        } else {
+                            fprintf(stderr, "Duplicate slot %lu\n", slot);
+                        }
+                    }
+                }
+
+                fclose(fp);
+            }
+            free(fullname);
+        }
+        closedir(sysfsPci_dir);
+    } else if(devPCIDebug>0) {
+        fprintf(stderr, "/sys does not provide PCI slots listing\n");
+    }
+
+
     return 0;
 fail:
     if (sysfsPci_dir)
