@@ -21,6 +21,10 @@ TESTS += epicsMMIOTest
 
 epicsMMIOTest_SRCS += epicsMMIOTest.c
 
+TESTPROD_HOST += lspcix
+lspcix_SRCS += lspcix.c
+lspcix_LIBS += epicspci
+
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 #===========================
