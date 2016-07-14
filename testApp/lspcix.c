@@ -13,6 +13,9 @@ int main(int argc, char *argv[])
     if(argc>2)
         devPCIDebug = atoi(argv[2]);
     devLibPCIRegisterBaseDefault();
-    devPCIShow(lvl, 0, 0, 0);
+    if(argc>3)
+        devPCIShowMatch(lvl, argv[3], 0, 0);
+    else
+        devPCIShow(lvl, 0, 0, 0);
     return 0;
 }

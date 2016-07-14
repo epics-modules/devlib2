@@ -453,6 +453,25 @@ devPCIShow(int lvl, int vendor, int device, int exact)
 }
 
 void
+devPCIShowMatch(int lvl, const char *spec, int vendor, int device)
+{
+    epicsPCIID ids[] = {
+        DEVPCI_DEVICE_VENDOR(device,vendor),
+        DEVPCI_END
+    };
+    const epicsPCIDevice *found = NULL;
+
+    if (vendor==0) ids[0].vendor=DEVPCI_ANY_VENDOR;
+    if (device==0) ids[0].device=DEVPCI_ANY_DEVICE;
+
+    if(!devPCIFindSpec(ids, spec, &found, 0)) {
+        devPCIShowDevice(lvl, found);
+    } else {
+        printf("No match\n");
+    }
+}
+
+void
 devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;

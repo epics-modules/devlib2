@@ -330,6 +330,10 @@ devPCIShow(int lvl, int vendor, int device, int exact);
 
 epicsShareFunc
 void
+devPCIShowMatch(int lvl, const char *spec, int vendor, int device);
+
+epicsShareFunc
+void
 devPCIShowDevice(int lvl, const epicsPCIDevice *dev);
 
 /** @brief Select driver implementation.
