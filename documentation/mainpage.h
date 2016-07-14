@@ -82,6 +82,13 @@ the width and order of accesses.
     On Linux be_*() or le_*() are effected (depending on target byte order).
     On vxWorks nat_*() and le_* are effected on big endian targets,
     and le_*() on little endian targets.
+@li pci: Bump API version to 1.3
+@li pci: Add PCI ID match macro DEVPCI_DEVICE_ANY()
+@li pci: Add member epicsPCIDevice::slot and macro DEVPCI_NO_SLOT
+@li pci/linux: Look at /sys/bus/pci/slots/*/address to populate slot member.
+@li pci: Add function devPCIFindSpec() to search by text string.
+    Understands PCI bus address, slot number, and/or instance number
+@li Add devPCIShowMatch() variant of devPCIShow() using devPCIFindSpec().
 
 @subsection ver27 2.7 (Jan. 2016)
 
