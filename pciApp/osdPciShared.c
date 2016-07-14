@@ -68,6 +68,7 @@ sharedDevPCIInit(void)
           if (!next)
             return S_dev_noMemory;
 
+          next->dev.slot = DEVPCI_NO_SLOT;
           next->dev.bus = b;
           next->dev.device = d;
           next->dev.function = f;

@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <ellLib.h>
 #include <errlog.h>
@@ -186,25 +187,116 @@ int devPCIFindCB(
 
 struct bdfmatch
 {
+  unsigned int matchaddr:1;
+  unsigned int matchslot:1;
+
   unsigned int domain,b,d,f;
+  unsigned int slot;
+  unsigned int sofar, stopat;
+
   const epicsPCIDevice* found;
 };
 
 static
-int bdfsearch(void* ptr, const epicsPCIDevice* cur)
+int devmatch(void* ptr, const epicsPCIDevice* cur)
 {
   struct bdfmatch *mt=ptr;
 
-  if( cur->domain==mt->domain &&
-      cur->bus==mt->b &&
-      cur->device==mt->d &&
-      cur->function==mt->f )
+  unsigned match = 1;
+
+  if(mt->matchaddr)
+      match &= cur->domain==mt->domain &&
+               cur->bus==mt->b &&
+               cur->device==mt->d &&
+               cur->function==mt->f;
+
+  if(mt->matchslot)
+      match &= cur->slot==DEVPCI_NO_SLOT ? 0 : cur->slot==mt->slot;
+
+  if(match && mt->sofar++==mt->stopat)
   {
     mt->found=cur;
     return 1;
   }
 
   return 0;
+}
+
+epicsShareFunc
+int devPCIFindSpec(
+        const epicsPCIID *idlist,
+        const char *spec,
+        const epicsPCIDevice **found,
+        unsigned int opt
+)
+{
+    int err;
+    struct bdfmatch find;
+    memset(&find, 0, sizeof(find));
+
+    if(!found || !spec)
+      return S_dev_badArgument;
+
+    /* parse the spec. string */
+    {
+        char *save, *alloc, *tok;
+
+        alloc = strdup(spec);
+        if(!alloc) return S_dev_noMemory;
+
+        for(tok = strtok_r(alloc, " ", &save);
+            tok;
+            tok=strtok_r(NULL, " ", &save))
+        {
+            unsigned dom, bus, dev, func=0;
+
+            if(sscanf(tok, "%u:%u:%u.%u", &dom, &bus, &dev, &func)>=3) {
+                find.matchaddr = 1;
+                find.domain = dom;
+                find.b = bus;
+                find.d = dev;
+                find.f = func;
+
+            } else if(sscanf(tok, "%u:%u.%u", &bus, &dev, &func)>=2) {
+                find.matchaddr = 1;
+                find.domain = 0;
+                find.b = bus;
+                find.d = dev;
+                find.f = func;
+
+            } else if(sscanf(tok, "slot=%u", &dom)==1) {
+                find.matchslot = 1;
+                find.slot = dom;
+
+            } else if(sscanf(tok, "instance=%u", &dom)==1) {
+                find.stopat = dom==0 ? 0 : dom-1;
+
+            } else if(sscanf(tok, "inst=%u", &dom)==1) {
+                find.stopat = dom==0 ? 0 : dom-1;
+
+            } else {
+                fprintf(stderr, "Ignoring unknown spec '%s'\n", tok);
+            }
+        }
+
+        free(alloc);
+    }
+
+    /* PCIINIT is called by devPCIFindCB()  */
+
+    err=devPCIFindCB(idlist,&devmatch,&find, opt);
+    if(err!=0){
+      /* Search failed? */
+      return err;
+    }
+
+    if(!find.found){
+      /* Not found */
+      return S_dev_noDevice;
+    }
+
+    *found=find.found;
+    return 0;
 }
 
 /*
@@ -225,8 +317,10 @@ const epicsPCIDevice **found,
   struct bdfmatch find;
 
   if(!found)
-    return 2;
+    return S_dev_badArgument;
 
+  memset(&find, 0, sizeof(find));
+  find.matchaddr = 1;
   find.domain=domain;
   find.b=b;
   find.d=d;
@@ -235,7 +329,7 @@ const epicsPCIDevice **found,
 
   /* PCIINIT is called by devPCIFindCB()  */
 
-  err=devPCIFindCB(idlist,&bdfsearch,&find, opt);
+  err=devPCIFindCB(idlist,&devmatch,&find, opt);
   if(err!=0){
     /* Search failed? */
     return err;
@@ -374,6 +468,8 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
            dev->id.sub_vendor, dev->id.sub_device,
            dev->id.pci_class,
            devPCIDeviceClassToString(dev->id.pci_class));
+    if(dev->slot!=DEVPCI_NO_SLOT)
+        printf("  slot: %d\n", dev->slot);
     if (dev->driver) printf("  driver %s\n",
            dev->driver);
     if(lvl<2)
