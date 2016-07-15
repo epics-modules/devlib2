@@ -92,7 +92,7 @@ DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 { dev, vend, sdev, svend, \
 pclass, revision }
 
-#define DEVPCI_NO_SLOT -1
+#define DEVPCI_NO_SLOT NULL
 
 struct PCIBar {
   unsigned int ioport:1; /**< 0 memory, 1 I/O */
@@ -114,7 +114,8 @@ typedef struct {
   unsigned int bus;
   unsigned int device;
   unsigned int function;
-  int slot; //!< Chassis slot number or DEVPCI_NO_SLOT if not supported
+  //!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported
+  const char* slot;
   struct PCIBar bar[6];
   epicsUInt8 irq;
   unsigned int domain;

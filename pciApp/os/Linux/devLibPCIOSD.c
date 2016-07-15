@@ -577,9 +577,7 @@ int linuxDevPCIInit(void)
     sysfsPci_dir = opendir(linuxslotsdir);
     if (sysfsPci_dir){
         while ((dir=readdir(sysfsPci_dir))) {
-            unsigned long slot;
             unsigned dom, B, D;
-            char *end = NULL;
             char *fullname;
             FILE *fp;
 
@@ -587,34 +585,26 @@ int linuxDevPCIInit(void)
             if(devPCIDebug>4)
                 fprintf(stderr, "examine /slots entry '%s'\n", dir->d_name);
 
-            errno = 0;
-            slot = strtoul(dir->d_name, &end, 0);
-            if(slot==ULONG_MAX && errno==ERANGE) {
-                if(devPCIDebug>1)
-                    fprintf(stderr, "Unknown entry in slots directory '%s'\n", dir->d_name);
-                continue;
-            }
-
             fullname = allocPrintf("%s/%s/address", linuxslotsdir, dir->d_name);
 
             if(devPCIDebug>3)
-                fprintf(stderr, "found slot %lu -> '%s'\n", slot, fullname);
+                fprintf(stderr, "found '%s'\n", fullname);
 
             if((fp=fopen(fullname, "r"))!=NULL) {
 
                 if(fscanf(fp, "%x:%x:%x", &dom, &B, &D)==3) {
                     ELLNODE *cur;
                     if(devPCIDebug>2)
-                        fprintf(stderr, "found slot %lu with %04u:%02u:%02u.*\n", slot, dom, B, D);
+                        fprintf(stderr, "found slot %s with %04u:%02u:%02u.*\n", dir->d_name, dom, B, D);
 
                     for(cur=ellFirst(&devices); cur; cur=ellNext(cur)) {
                         osdPCIDevice *osd = CONTAINER(cur, osdPCIDevice, node);
                         if(osd->dev.domain!=dom || osd->dev.bus!=B || osd->dev.device!=D)
                             continue;
                         if(osd->dev.slot==DEVPCI_NO_SLOT) {
-                            osd->dev.slot = slot;
+                            osd->dev.slot = strdup(dir->d_name); // return NULL would mean slot remains unlabeled
                         } else {
-                            fprintf(stderr, "Duplicate slot %lu\n", slot);
+                            fprintf(stderr, "Duplicate slot address for %s\n", dir->d_name);
                         }
                     }
                 }

@@ -191,7 +191,7 @@ struct bdfmatch
   unsigned int matchslot:1;
 
   unsigned int domain,b,d,f;
-  unsigned int slot;
+  char slot[11];
   unsigned int sofar, stopat;
 
   const epicsPCIDevice* found;
@@ -211,7 +211,7 @@ int devmatch(void* ptr, const epicsPCIDevice* cur)
                cur->function==mt->f;
 
   if(mt->matchslot)
-      match &= cur->slot==DEVPCI_NO_SLOT ? 0 : cur->slot==mt->slot;
+      match &= cur->slot==DEVPCI_NO_SLOT ? 0 : strcmp(cur->slot, mt->slot)==0;
 
   if(match && mt->sofar++==mt->stopat)
   {
@@ -264,9 +264,10 @@ int devPCIFindSpec(
                 find.d = dev;
                 find.f = func;
 
-            } else if(sscanf(tok, "slot=%u", &dom)==1) {
+            } else if(sscanf(tok, "slot=%10s", find.slot)==1) {
+                if(strlen(find.slot)==10)
+                    fprintf(stderr, "Slot label '%s' truncated?\n", find.slot);
                 find.matchslot = 1;
-                find.slot = dom;
 
             } else if(sscanf(tok, "instance=%u", &dom)==1) {
                 find.stopat = dom==0 ? 0 : dom-1;
@@ -488,7 +489,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
            dev->id.pci_class,
            devPCIDeviceClassToString(dev->id.pci_class));
     if(dev->slot!=DEVPCI_NO_SLOT)
-        printf("  slot: %d\n", dev->slot);
+        printf("  slot: %s\n", dev->slot);
     if (dev->driver) printf("  driver %s\n",
            dev->driver);
     if(lvl<2)
