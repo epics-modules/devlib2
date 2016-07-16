@@ -586,6 +586,7 @@ int linuxDevPCIInit(void)
                 fprintf(stderr, "examine /slots entry '%s'\n", dir->d_name);
 
             fullname = allocPrintf("%s/%s/address", linuxslotsdir, dir->d_name);
+            if(!fullname) continue;
 
             if(devPCIDebug>3)
                 fprintf(stderr, "found '%s'\n", fullname);
