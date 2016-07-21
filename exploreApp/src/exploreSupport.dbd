@@ -4,6 +4,7 @@ device(mbbiDirect, INST_IO, devExplorePCIReadMBBIDIRECT, "Explore PCI Read32")
 device(mbbi, INST_IO, devExplorePCIReadMBBI, "Explore PCI Read32")
 device(bi, INST_IO, devExplorePCIReadBI, "Explore PCI Read32")
 device(waveform, INST_IO, devExplorePCIReadWF, "Explore PCI Read32")
+device(waveform, INST_IO, devExplorePCIReadWF64, "Explore PCI Read64")
 
 device(ao, INST_IO, devExplorePCIWriteAO, "Explore PCI Write32")
 device(longout, INST_IO, devExplorePCIWriteLO, "Explore PCI Write32")

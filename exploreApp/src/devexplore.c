@@ -427,6 +427,33 @@ long read_wf(waveformRecord *prec)
     return 0;
 }
 
+static inline
+epicsUInt64 le_ioread64x(volatile void* addr)
+{
+    return *(volatile epicsUInt64*)addr;
+}
+
+static
+long read_wf64(waveformRecord *prec)
+{
+    epicsUInt32 *buf = prec->bptr, cnt = prec->nelm/2, i;
+    epicsUInt64 *addr;
+    priv *P = prec->dpvt;
+    if(!P) return 0;
+
+    addr = (epicsUInt64*)(P->base+P->offset);
+
+    epicsMutexMustLock(P->dev->mutex);
+    for(i=cnt; i; i--, buf+=2, addr++) {
+        epicsUInt64 val = le_ioread64x(addr);
+        buf[1] = val>>32;
+        buf[0] = val&0xffffffff;
+    }
+    epicsMutexUnlock(P->dev->mutex);
+    prec->nord = prec->nelm;
+    return 0;
+}
+
 typedef struct {
     long N;
     DEVSUPFUN report;
@@ -447,6 +474,7 @@ DSET(devExplorePCIReadMBBIDIRECT, init_record_mbbidirect, NULL, read_mbbidirect)
 DSET(devExplorePCIReadMBBI, init_record_mbbi, NULL, read_mbbi);
 DSET(devExplorePCIReadBI, init_record_bi, NULL, read_bi);
 DSET(devExplorePCIReadWF, init_record_wf, NULL, read_wf);
+DSET(devExplorePCIReadWF64, init_record_wf, NULL, read_wf64);
 
 DSET(devExplorePCIWriteLO, init_record_lo, NULL, write_lo);
 DSET(devExplorePCIWriteAO, init_record_ao, NULL, write_ao);
