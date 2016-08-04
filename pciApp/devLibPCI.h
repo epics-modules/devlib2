@@ -28,7 +28,7 @@ extern "C" {
 #endif
 
 #define DEVLIBPCI_MAJOR 1 /**< @brief API major version */
-#define DEVLIBPCI_MINOR 2 /**< @brief API minor version */
+#define DEVLIBPCI_MINOR 3 /**< @brief API minor version */
 
 /** @brief PCI device identifier
  *
@@ -71,6 +71,11 @@ typedef struct {
 /** @brief The last item in a list of PCI IDS */
 #define DEVPCI_END {DEVPCI_LAST_DEVICE,0,0,0,0,0}
 
+#define DEVPCI_DEVICE_ANY() \
+{ DEVPCI_ANY_DEVICE, DEVPCI_ANY_VENDOR, \
+  DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
+DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
+
 #define DEVPCI_DEVICE_VENDOR(dev,vend) \
 { dev, vend, DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
 DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
@@ -86,6 +91,8 @@ DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 #define DEVPCI_SUBDEVICE_SUBVENDOR_CLASS(dev,vend,sdev,svend,revision,pclass) \
 { dev, vend, sdev, svend, \
 pclass, revision }
+
+#define DEVPCI_NO_SLOT NULL
 
 struct PCIBar {
   unsigned int ioport:1; /**< 0 memory, 1 I/O */
@@ -107,6 +114,8 @@ typedef struct {
   unsigned int bus;
   unsigned int device;
   unsigned int function;
+  //!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported
+  const char* slot;
   struct PCIBar bar[6];
   epicsUInt8 irq;
   unsigned int domain;
@@ -148,6 +157,32 @@ int devPCIFindCB(
      devPCISearchFn searchfn,
      void *arg,
      unsigned int opt /* always 0 */
+);
+
+/** @brief PCI bus search by specification string
+ *
+ * Search for a device on the bus matching the given specification string,
+ * which is a space seperated list of the following:
+ *
+ * # "<bus#>:<device#>[.<function#>]"
+ * # "<domain#>:<bus#>:<device#>[.<function#>]"
+ * # "slot=<slot#>"
+ * # "inst[ance]=<instance#>"
+ *
+ * Some targets do not support some match types (eg. only Linux matches slot numbers).
+ *
+ @param idlist List of PCI identifiers
+ @param spec specification string
+ @param[out] found On success the result is stored here
+ @param opt Modifiers.  Currently unused
+ @returns 0 on success or an EPICS error code on failure.
+ */
+epicsShareFunc
+int devPCIFindSpec(
+        const epicsPCIID *idlist,
+        const char *spec,
+        const epicsPCIDevice **found,
+        unsigned int opt /* always 0 */
 );
 
 /** @brief PCI bus probe
@@ -293,6 +328,10 @@ int devPCIDisconnectInterrupt(
 epicsShareFunc
 void
 devPCIShow(int lvl, int vendor, int device, int exact);
+
+epicsShareFunc
+void
+devPCIShowMatch(int lvl, const char *spec, int vendor, int device);
 
 epicsShareFunc
 void

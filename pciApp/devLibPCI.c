@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <ellLib.h>
 #include <errlog.h>
@@ -64,7 +65,7 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
     if (!drv->name) return 1;
 
     if(drvsize!=sizeof(*drv)) {
-        errlogPrintf("devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
+        fprintf(stderr, "devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
                      "expect %lu but given %lu\n"
                      "Please do a clean rebuild of devLib2 and any code with custom PCI OS structs\n",
                      (unsigned long)sizeof(*drv),
@@ -79,7 +80,7 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
     for(cur=ellFirst(&pciDrivers); cur; cur=ellNext(cur)) {
         devLibPCI *other=CONTAINER(cur, devLibPCI, node);
         if (strcmp(drv->name, other->name)==0) {
-            errlogPrintf("Failed to register PCI bus driver: name already taken\n");
+            fprintf(stderr, "Failed to register PCI bus driver: name already taken\n");
             ret=1;
             break;
         }
@@ -108,7 +109,7 @@ devLibPCIUse(const char* use)
 
     if (pdevLibPCI) {
         epicsMutexUnlock(pciDriversLock);
-        errlogPrintf("PCI bus driver already selected. Can't change selection\n");
+        fprintf(stderr, "PCI bus driver already selected. Can't change selection\n");
         return 1;
     }
 
@@ -121,7 +122,7 @@ devLibPCIUse(const char* use)
         }
     }
     epicsMutexUnlock(pciDriversLock);
-    errlogPrintf("PCI bus driver '%s' not found\n",use);
+    fprintf(stderr, "PCI bus driver '%s' not found\n",use);
     return 1;
 }
 
@@ -186,25 +187,117 @@ int devPCIFindCB(
 
 struct bdfmatch
 {
+  unsigned int matchaddr:1;
+  unsigned int matchslot:1;
+
   unsigned int domain,b,d,f;
+  char slot[11];
+  unsigned int sofar, stopat;
+
   const epicsPCIDevice* found;
 };
 
 static
-int bdfsearch(void* ptr, const epicsPCIDevice* cur)
+int devmatch(void* ptr, const epicsPCIDevice* cur)
 {
   struct bdfmatch *mt=ptr;
 
-  if( cur->domain==mt->domain &&
-      cur->bus==mt->b &&
-      cur->device==mt->d &&
-      cur->function==mt->f )
+  unsigned match = 1;
+
+  if(mt->matchaddr)
+      match &= cur->domain==mt->domain &&
+               cur->bus==mt->b &&
+               cur->device==mt->d &&
+               cur->function==mt->f;
+
+  if(mt->matchslot)
+      match &= cur->slot==DEVPCI_NO_SLOT ? 0 : strcmp(cur->slot, mt->slot)==0;
+
+  if(match && mt->sofar++==mt->stopat)
   {
     mt->found=cur;
     return 1;
   }
 
   return 0;
+}
+
+epicsShareFunc
+int devPCIFindSpec(
+        const epicsPCIID *idlist,
+        const char *spec,
+        const epicsPCIDevice **found,
+        unsigned int opt
+)
+{
+    int err;
+    struct bdfmatch find;
+    memset(&find, 0, sizeof(find));
+
+    if(!found || !spec)
+      return S_dev_badArgument;
+
+    /* parse the spec. string */
+    {
+        char *save, *alloc, *tok;
+
+        alloc = strdup(spec);
+        if(!alloc) return S_dev_noMemory;
+
+        for(tok = strtok_r(alloc, " ", &save);
+            tok;
+            tok=strtok_r(NULL, " ", &save))
+        {
+            unsigned dom, bus, dev, func=0;
+
+            if(sscanf(tok, "%u:%u:%u.%u", &dom, &bus, &dev, &func)>=3) {
+                find.matchaddr = 1;
+                find.domain = dom;
+                find.b = bus;
+                find.d = dev;
+                find.f = func;
+
+            } else if(sscanf(tok, "%u:%u.%u", &bus, &dev, &func)>=2) {
+                find.matchaddr = 1;
+                find.domain = 0;
+                find.b = bus;
+                find.d = dev;
+                find.f = func;
+
+            } else if(sscanf(tok, "slot=%10s", find.slot)==1) {
+                if(strlen(find.slot)==10)
+                    fprintf(stderr, "Slot label '%s' truncated?\n", find.slot);
+                find.matchslot = 1;
+
+            } else if(sscanf(tok, "instance=%u", &dom)==1) {
+                find.stopat = dom==0 ? 0 : dom-1;
+
+            } else if(sscanf(tok, "inst=%u", &dom)==1) {
+                find.stopat = dom==0 ? 0 : dom-1;
+
+            } else {
+                fprintf(stderr, "Ignoring unknown spec '%s'\n", tok);
+            }
+        }
+
+        free(alloc);
+    }
+
+    /* PCIINIT is called by devPCIFindCB()  */
+
+    err=devPCIFindCB(idlist,&devmatch,&find, opt);
+    if(err!=0){
+      /* Search failed? */
+      return err;
+    }
+
+    if(!find.found){
+      /* Not found */
+      return S_dev_noDevice;
+    }
+
+    *found=find.found;
+    return 0;
 }
 
 /*
@@ -225,8 +318,10 @@ const epicsPCIDevice **found,
   struct bdfmatch find;
 
   if(!found)
-    return 2;
+    return S_dev_badArgument;
 
+  memset(&find, 0, sizeof(find));
+  find.matchaddr = 1;
   find.domain=domain;
   find.b=b;
   find.d=d;
@@ -235,7 +330,7 @@ const epicsPCIDevice **found,
 
   /* PCIINIT is called by devPCIFindCB()  */
 
-  err=devPCIFindCB(idlist,&bdfsearch,&find, opt);
+  err=devPCIFindCB(idlist,&devmatch,&find, opt);
   if(err!=0){
     /* Search failed? */
     return err;
@@ -337,7 +432,6 @@ searchandprint(void* praw,const epicsPCIDevice* dev)
     searchinfo *pinfo=praw;
     pinfo->matched++;
     devPCIShowDevice(pinfo->lvl,dev);
-    errlogFlush(); /* avoid truncation for long device lists */
     return 0;
 }
 
@@ -356,7 +450,26 @@ devPCIShow(int lvl, int vendor, int device, int exact)
     if (device==0 && !exact) ids[0].device=DEVPCI_ANY_DEVICE;
 
     devPCIFindCB(ids,&searchandprint, &info, 0);
-    errlogPrintf("Matched %d devices\n", info.matched);
+    printf("Matched %d devices\n", info.matched);
+}
+
+void
+devPCIShowMatch(int lvl, const char *spec, int vendor, int device)
+{
+    epicsPCIID ids[] = {
+        DEVPCI_DEVICE_VENDOR(device,vendor),
+        DEVPCI_END
+    };
+    const epicsPCIDevice *found = NULL;
+
+    if (vendor==0) ids[0].vendor=DEVPCI_ANY_VENDOR;
+    if (device==0) ids[0].device=DEVPCI_ANY_DEVICE;
+
+    if(!devPCIFindSpec(ids, spec, &found, 0)) {
+        devPCIShowDevice(lvl, found);
+    } else {
+        printf("No match\n");
+    }
 }
 
 void
@@ -364,18 +477,20 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
     int i;
 
-    errlogPrintf("PCI %04x:%02x:%02x.%x IRQ %u\n"
+    printf("PCI %04x:%02x:%02x.%x IRQ %u\n"
            "  vendor:device %04x:%04x rev %02x\n",
            dev->domain, dev->bus, dev->device, dev->function, dev->irq,
            dev->id.vendor, dev->id.device, dev->id.revision);
     if(lvl<1)
         return;
-    errlogPrintf("  subved:subdev %04x:%04x\n"
+    printf("  subved:subdev %04x:%04x\n"
            "  class %06x %s\n",
            dev->id.sub_vendor, dev->id.sub_device,
            dev->id.pci_class,
            devPCIDeviceClassToString(dev->id.pci_class));
-    if (dev->driver) errlogPrintf("  driver %s\n",
+    if(dev->slot!=DEVPCI_NO_SLOT)
+        printf("  slot: %s\n", dev->slot);
+    if (dev->driver) printf("  driver %s\n",
            dev->driver);
     if(lvl<2)
         return;
@@ -390,7 +505,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
             if (len >= 1024) { len >>= 10; u = "M"; }
             if (len >= 1024) { len >>= 10; u = "G"; }
 
-            errlogPrintf("  BAR %u %s-bit %s%s %3u %sB\n",i,
+            printf("  BAR %u %s-bit %s%s %3u %sB\n",i,
                    dev->bar[i].addr64?"64":"32",
                    dev->bar[i].ioport?"IO Port":"MMIO   ",
                    dev->bar[i].below1M?" Below 1M":"",
