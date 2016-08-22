@@ -1,0 +1,8 @@
+# Copy as /etc/udev/rules.d/99-hv-panda.rules
+# Change USERNAME as approprate
+
+ACTION=="add", SUBSYSTEM=="pci", \
+ATTR{vendor}=="0x1172", ATTR{device}=="0x1234", \
+ATTR{subsystem_device}=="0x0000", ATTR{subsystem_vendor}=="0x0000", \
+RUN+="/bin/chown USERNAME %S%p/resource0", \
+RUN+="/bin/chmod 0600 %S%p/resource0"
