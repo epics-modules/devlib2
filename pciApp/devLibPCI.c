@@ -283,6 +283,15 @@ int devPCIFindSpec(
         free(alloc);
     }
 
+    if(devPCIDebug>4) {
+        if(find.matchaddr)
+            fprintf(stderr, " Match BDF %u:%u:%u.%u\n",
+                    find.domain, find.b, find.d, find.f);
+        if(find.matchslot)
+            fprintf(stderr, " Match slot %s\n", find.slot);
+        fprintf(stderr, " Instance %u\n", find.stopat);
+    }
+
     /* PCIINIT is called by devPCIFindCB()  */
 
     err=devPCIFindCB(idlist,&devmatch,&find, opt);
