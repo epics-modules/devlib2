@@ -73,7 +73,7 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver28 2.8 (UNRELEASED)
+@subsection ver28 2.8 (Sept. 2016)
 
 @li Fixes an bug with epicsMMIO.h for some targets where a single read
     macro expands to either 2 (16 bit) or 4 (32 bit) loads in situations
