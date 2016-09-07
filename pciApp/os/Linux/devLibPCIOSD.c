@@ -603,7 +603,7 @@ int linuxDevPCIInit(void)
                         if(osd->dev.domain!=dom || osd->dev.bus!=B || osd->dev.device!=D)
                             continue;
                         if(osd->dev.slot==DEVPCI_NO_SLOT) {
-                            osd->dev.slot = strdup(dir->d_name); // return NULL would mean slot remains unlabeled
+                            osd->dev.slot = strdup(dir->d_name); /* return NULL would mean slot remains unlabeled */
                         } else {
                             fprintf(stderr, "Duplicate slot address for %s\n", dir->d_name);
                         }

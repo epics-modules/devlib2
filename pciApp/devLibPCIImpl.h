@@ -71,8 +71,8 @@ devLibPCIRegisterDriver2(devLibPCI*, size_t);
 
 #define devLibPCIRegisterDriver(TPTR) devLibPCIRegisterDriver2(TPTR, sizeof(*(TPTR)))
 
-//! Register default implementation
-//! Not needed by IOCs
+/*! Register default implementation */
+/*! Not needed by IOCs */
 void devLibPCIRegisterBaseDefault(void);
 
 #ifdef __cplusplus

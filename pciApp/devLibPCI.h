@@ -114,7 +114,7 @@ typedef struct {
   unsigned int bus;
   unsigned int device;
   unsigned int function;
-  //!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported
+  /*!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported*/
   const char* slot;
   struct PCIBar bar[6];
   epicsUInt8 irq;
