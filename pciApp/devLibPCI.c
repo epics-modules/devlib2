@@ -35,6 +35,11 @@
 # endif
 #endif
 
+#if defined(vxWorks) && !defined(_WRS_VXWORKS_MAJOR)
+/* vxWorks 5 has no strdup */
+#define strdup(x) ({char*s=malloc(strlen(x)+1);s?strcpy(s,x):s;})
+#endif
+
 int devPCIDebug = 0;
 
 static ELLLIST pciDrivers;
