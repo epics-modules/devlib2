@@ -37,6 +37,7 @@ ifeq ($(EPICS_VERSION)$(EPICS_REVISION),315)
 ifneq ($(findstring $(EPICS_MODIFICATION),1 2),)
 TESTPROD_HOST = testexplore
 DBD += testexplore.dbd
+TESTS += testexplore
 
 testexplore_DBD += base.dbd
 testexplore_DBD += epicspci.dbd
@@ -48,6 +49,8 @@ testexplore_SRCS += devexplore.c
 testexplore_SRCS += devexplore2.cpp
 testexplore_LIBS += epicspci
 testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
+
+TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 endif
 endif

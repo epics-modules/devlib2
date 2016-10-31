@@ -186,7 +186,7 @@ struct priv {
             V &= vmask;
             V |= readraw<epicsUInt32>(off)&(~vmask);
         }
-        std::cerr<<"WWW "<<std::hex<<V<<"\n";
+
         switch(valsize) {
         case 1: iowrite8(addr, V); break;
         case 2: switch(ord) {
@@ -561,19 +561,20 @@ long explore_init_record_wf(waveformRecord *prec)
 
 
 template<typename REC>
-struct dset5 {
+struct dset6 {
     long nsup;
     long (*report)(int);
     long (*init)(int);
     long (*init_record)(REC*);
     long (*get_ioint_info)(int dir, REC*, IOSCANPVT*);
     long (*readwrite)(REC*);
+    long (*unused)();
 };
 
 } // namespace
 
-#define SUP(NAME, REC, OP, DIR, SIZE, END) static dset5<REC##Record> NAME = \
-  {5, NULL, NULL, &explore_init_record_##OP<REC##Record,SIZE,END>, NULL, &explore_##DIR##_##OP<REC##Record>}; \
+#define SUP(NAME, REC, OP, DIR, SIZE, END) static dset6<REC##Record> NAME = \
+  {6, NULL, NULL, &explore_init_record_##OP<REC##Record,SIZE,END>, NULL, &explore_##DIR##_##OP<REC##Record>, NULL}; \
     epicsExportAddress(dset, NAME)
 
 SUP(devExploreLiReadU8,     longin, int_val, read, 1, priv::NAT);
@@ -663,8 +664,8 @@ SUP(devExploreAoWriteF32LSB, ao, real_val, write, 4, priv::LE);
 SUP(devExploreAoWriteF32MSB, ao, real_val, write, 4, priv::BE);
 
 #undef SUP
-#define SUP(NAME, DIR, SIZE, END) static dset5<waveformRecord> NAME = \
-  {5, NULL, NULL, &explore_init_record_wf<SIZE,END>, NULL, &explore_##DIR##_wf}; \
+#define SUP(NAME, DIR, SIZE, END) static dset6<waveformRecord> NAME = \
+  {6, NULL, NULL, &explore_init_record_wf<SIZE,END>, NULL, &explore_##DIR##_wf, NULL}; \
     epicsExportAddress(dset, NAME)
 
 SUP(devExploreWfReadU8,     read, 1, priv::NAT);

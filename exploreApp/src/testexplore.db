@@ -17,12 +17,10 @@ record(longin, "longin8_x") {
 record(longout, "longout8") {
   field(DTYP, "Explore PCI Write8")
   field(OUT , "@test offset=0")
-  field(TPRO, "2")
 }
 record(longout, "longout8_1") {
   field(DTYP, "Explore PCI Write8")
   field(OUT , "@test offset=0 mask=0xf0 shift=4")
-  field(TPRO, "2")
 }
 
 record(longin, "longin16") {
@@ -36,17 +34,14 @@ record(longin, "longin16_1") {
 record(longout, "longout16") {
   field(DTYP, "Explore PCI Write16 MSB")
   field(OUT , "@test offset=2")
-  field(TPRO, "2")
 }
 record(longout, "longout16_1") {
   field(DTYP, "Explore PCI Write16 LSB")
   field(OUT , "@test offset=2")
-  field(TPRO, "2")
 }
 record(longout, "longout16_2") {
   field(DTYP, "Explore PCI Write16 MSB")
-  field(OUT , "@test offset=2 mask=0xff00 shift=8")
-  field(TPRO, "2")
+  field(OUT , "@test offset=2 mask=0x0ff0 shift=4")
 }
 
 record(longin, "longin32") {
@@ -60,10 +55,45 @@ record(longin, "longin32_1") {
 record(longout, "longout32") {
   field(DTYP, "Explore PCI Write32 MSB")
   field(OUT , "@test offset=4")
-  field(TPRO, "2")
 }
 record(longout, "longout32_1") {
   field(DTYP, "Explore PCI Write32 LSB")
   field(OUT , "@test offset=4")
-  field(TPRO, "2")
 }
+
+
+record(ai, "floatin32") {
+  field(DTYP, "Explore PCI ReadF32 MSB")
+  field(INP , "@test offset=4")
+}
+record(ao, "floatout32") {
+  field(DTYP, "Explore PCI WriteF32 MSB")
+  field(OUT , "@test offset=4")
+}
+
+record(waveform, "wfin32") {
+  field(DTYP, "Explore PCI Read32 MSB")
+  field(INP , "@test offset=4 step=4")
+  field(NELM, "2")
+  field(FTVL, "ULONG")
+}
+record(waveform, "wfin32_1") {
+  field(DTYP, "Explore PCI Read32 MSB")
+  field(INP , "@test offset=4 step=0")
+  field(NELM, "2")
+  field(FTVL, "ULONG")
+}
+
+record(waveform, "wfout32") {
+  field(DTYP, "Explore PCI Write32 MSB")
+  field(INP , "@test offset=4 step=4")
+  field(NELM, "2")
+  field(FTVL, "ULONG")
+}
+record(waveform, "wfout32_1") {
+  field(DTYP, "Explore PCI Write32 MSB")
+  field(INP , "@test offset=4 step=0")
+  field(NELM, "2")
+  field(FTVL, "ULONG")
+}
+
