@@ -52,11 +52,7 @@ testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
-else
-$(error x$(findstring $(EPICS_REVISION)$(EPICS_MODIFICATION),151 152))
 endif
-else
-$(error y$(EPICS_VERSION)$(EPICS_REVISION))
 endif
 
 #===========================
