@@ -10,13 +10,13 @@ include $(TOP)/configure/CONFIG
 
 PROD_LIBS += Com
 
-TESTPROD_IOC += pcitest
+TESTPROD_HOST += pcitest
 TESTS += pcitest
 
 pcitest_SRCS += pcitest.c
 pcitest_LIBS += epicspci
 
-TESTPROD_IOC += epicsMMIOTest
+TESTPROD_HOST += epicsMMIOTest
 TESTS += epicsMMIOTest
 
 epicsMMIOTest_SRCS += epicsMMIOTest.c
