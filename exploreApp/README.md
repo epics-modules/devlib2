@@ -19,7 +19,8 @@ A space seperated list of the following may follow.
 * "offset=#" in bytes (default: 0)
 * "mask=#" bit mask (default: 0 aka. no mask)
 * "shift=#" in bits (default: 0)
-* "step=#" in bytes (default: 0)
+* "step=#" in bytes (default: read size.  eg Read32 defaults to step=4)
+* "initread=1|0" bool (default: 1.  read once on startup)
 
 ```
   field(INP , "@8:0.0 bar=1 offset=0x14")

@@ -266,6 +266,7 @@ priv *parseLink(dbCommon *prec, const DBEntry& ent, unsigned vsize, priv::ORD or
 {
     std::auto_ptr<priv> pvt(new priv);
     pvt->valsize = vsize;
+    pvt->step = vsize;
     pvt->ord = ord;
 
     DBLINK *link = ent.getDevLink();
