@@ -164,8 +164,8 @@ struct priv {
     template<typename VAL>
     unsigned readArray(VAL *val, unsigned count) const
     {
-        epicsUInt32 addr = offset,
-                    end  = barsize;
+        epicsUInt32 addr = 0,
+                    end  = barsize-offset;
         unsigned i;
         for(i=0; i<count && addr<end && addr>=0; i++, addr+=step)
         {
@@ -207,8 +207,8 @@ struct priv {
     template<typename VAL>
     unsigned writeArray(const VAL *val, unsigned count)
     {
-        epicsUInt32 addr = offset,
-                    end  = barsize;
+        epicsUInt32 addr = 0,
+                    end  = barsize-offset;
 
         unsigned i;
         for(i=0; i<count && addr<end && addr>=0; i++, addr+=step)

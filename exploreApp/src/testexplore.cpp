@@ -166,8 +166,8 @@ void testInitial()
         chan.get_int32(val);
         testOk1(val.size()==2);
         val.resize(2);
-        testEqual(val[0], 0xf8f9fafb, "");
-        testEqual(val[1], 0xfcfdfeff, "");
+        testEqual(val[0], 0xf4f5f6f7, "");
+        testEqual(val[1], 0xf8f9fafb, "");
     }
     {
         std::vector<epicsUInt32> val;
@@ -178,8 +178,8 @@ void testInitial()
         chan.get_int32(val);
         testOk1(val.size()==2);
         val.resize(2);
-        testEqual(val[0], 0xf8f9fafb, "");
-        testEqual(val[1], 0xf8f9fafb, "");
+        testEqual(val[0], 0xf4f5f6f7, "");
+        testEqual(val[1], 0xf4f5f6f7, "");
     }
     {
         std::vector<epicsUInt32> val;
@@ -190,8 +190,8 @@ void testInitial()
         chan.get_int32(val);
         testOk1(val.size()==2);
         val.resize(2);
-        testEqual(val[0], 0xf8f9fafb, "");
-        testEqual(val[1], 0xfcfdfeff, "");
+        testEqual(val[0], 0xf4f5f6f7, "");
+        testEqual(val[1], 0xf8f9fafb, "");
     }
     {
         std::vector<epicsUInt32> val;
@@ -202,8 +202,8 @@ void testInitial()
         chan.get_int32(val);
         testOk1(val.size()==2);
         val.resize(2);
-        testEqual(val[0], 0xf8f9fafb, "");
-        testEqual(val[1], 0xf8f9fafb, "");
+        testEqual(val[0], 0xf4f5f6f7, "");
+        testEqual(val[1], 0xf4f5f6f7, "");
     }
 }
 
