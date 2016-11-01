@@ -141,6 +141,8 @@ findcard:
 
     if(pciexploredebug>0)
         printf("%s: %x:%x:%x.%x %x %x\n", prec->name, DM, B, D, F, P->bar, P->offset);
+
+    printf("%s: deprecated DTYP\n", prec->name);
     return 0;
 }
 

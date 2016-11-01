@@ -297,7 +297,7 @@ void testWF()
 
 MAIN(testexplore)
 {
-    testPlan(0);
+    testPlan(71);
 
     {
         volatile char *base = (volatile char*)exploreTestBase;

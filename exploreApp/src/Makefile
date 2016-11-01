@@ -33,8 +33,8 @@ explore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 # if VER >= 3.15.3
 #  do real IOC testing
-ifeq ($(EPICS_VERSION)$(EPICS_REVISION),315)
-ifneq ($(findstring $(EPICS_MODIFICATION),1 2),)
+ifneq ($(EPICS_VERSION)$(EPICS_REVISION),314)
+ifeq ($(findstring $(EPICS_REVISION)$(EPICS_MODIFICATION),151 152),)
 TESTPROD_HOST = testexplore
 DBD += testexplore.dbd
 TESTS += testexplore
@@ -52,7 +52,11 @@ testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
+else
+$(error x$(findstring $(EPICS_REVISION)$(EPICS_MODIFICATION),151 152))
 endif
+else
+$(error y$(EPICS_VERSION)$(EPICS_REVISION))
 endif
 
 #===========================
@@ -60,4 +64,3 @@ endif
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
