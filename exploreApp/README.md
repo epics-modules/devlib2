@@ -20,7 +20,7 @@ A space seperated list of the following may follow.
 * "mask=#" bit mask (default: 0 aka. no mask)
 * "shift=#" in bits (default: 0)
 * "step=#" in bytes (default: read size.  eg Read32 defaults to step=4)
-* "initread=1|0" bool (default: 1.  read once on startup)
+* "initread=1|0" bool (default: 1 for .OUT recordtypes, 0 otherwise)
 
 ```
   field(INP , "@8:0.0 bar=1 offset=0x14")

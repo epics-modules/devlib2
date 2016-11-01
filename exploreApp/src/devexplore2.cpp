@@ -9,6 +9,7 @@
 #include <memory>
 #include <sstream>
 
+#include <string.h>
 #include <errno.h>
 
 #include <epicsVersion.h>
@@ -190,7 +191,7 @@ struct priv {
 
     bool initread;
 
-    priv() :bar(0u), offset(0u), step(0), valsize(1), ord(NAT), vshift(0u), vmask(0u), initread(true) {}
+    priv() :bar(0u), offset(0u), step(0), valsize(1), ord(NAT), vshift(0u), vmask(0u), initread(false) {}
 
     template<typename VAL>
     VAL readraw(epicsUInt32 off=0) const
@@ -284,8 +285,8 @@ struct priv {
 
 class DBEntry {
     DBENTRY entry;
-    DBENTRY *pentry() const { return const_cast<DBENTRY*>(&entry); }
 public:
+    DBENTRY *pentry() const { return const_cast<DBENTRY*>(&entry); }
     DBEntry(dbCommon *prec) {
         dbInitEntry(pdbbase, &entry);
         if(dbFindRecord(&entry, prec->name))
@@ -335,6 +336,9 @@ priv *parseLink(dbCommon *prec, const DBEntry& ent, unsigned vsize, priv::ORD or
     DBLINK *link = ent.getDevLink();
     if(link->type!=INST_IO)
         throw std::logic_error("No INST_IO");
+
+    // auto read on initialization for output records
+    pvt->initread = strcmp(ent.pentry()->pflddes->name, "OUT")==0;
 
     std::string linkstr(link->value.instio.string);
 

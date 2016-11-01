@@ -1,18 +1,18 @@
 record(longin, "longin8") {
   field(DTYP, "Explore Read8")
-  field(INP , "@test offset=1")
+  field(INP , "@test offset=1 initread=1")
 }
 record(longin, "longin8_1") {
   field(DTYP, "Explore Read8")
-  field(INP , "@test offset=1 mask=0xffffff8f")
+  field(INP , "@test offset=1 initread=1 mask=0xffffff8f")
 }
 record(longin, "longin8_2") {
   field(DTYP, "Explore Read8")
-  field(INP , "@test offset=2 mask=0xfffffff0 shift=4")
+  field(INP , "@test offset=2 initread=1 mask=0xfffffff0 shift=4")
 }
 record(longin, "longin8_x") {
   field(DTYP, "Explore Read8")
-  field(INP , "@test offset=1 initread=0")
+  field(INP , "@test offset=1")
 }
 record(longout, "longout8") {
   field(DTYP, "Explore Write8")
@@ -25,11 +25,11 @@ record(longout, "longout8_1") {
 
 record(longin, "longin16") {
   field(DTYP, "Explore Read16 MSB")
-  field(INP , "@test offset=2")
+  field(INP , "@test offset=2 initread=1")
 }
 record(longin, "longin16_1") {
   field(DTYP, "Explore Read16 LSB")
-  field(INP , "@test offset=2")
+  field(INP , "@test offset=2 initread=1")
 }
 record(longout, "longout16") {
   field(DTYP, "Explore Write16 MSB")
@@ -46,11 +46,11 @@ record(longout, "longout16_2") {
 
 record(longin, "longin32") {
   field(DTYP, "Explore Read32 MSB")
-  field(INP , "@test offset=4")
+  field(INP , "@test offset=4 initread=1")
 }
 record(longin, "longin32_1") {
   field(DTYP, "Explore Read32 LSB")
-  field(INP , "@test offset=4")
+  field(INP , "@test offset=4 initread=1")
 }
 record(longout, "longout32") {
   field(DTYP, "Explore Write32 MSB")
@@ -64,7 +64,7 @@ record(longout, "longout32_1") {
 
 record(ai, "floatin32") {
   field(DTYP, "Explore ReadF32 MSB")
-  field(INP , "@test offset=4")
+  field(INP , "@test offset=4 initread=1")
 }
 record(ao, "floatout32") {
   field(DTYP, "Explore WriteF32 MSB")
@@ -73,26 +73,26 @@ record(ao, "floatout32") {
 
 record(waveform, "wfin32") {
   field(DTYP, "Explore Read32 MSB")
-  field(INP , "@test offset=4 step=4")
+  field(INP , "@test offset=4 step=4 initread=1")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 record(waveform, "wfin32_1") {
   field(DTYP, "Explore Read32 MSB")
-  field(INP , "@test offset=4 step=0")
+  field(INP , "@test offset=4 step=0 initread=1")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 
 record(waveform, "wfout32") {
   field(DTYP, "Explore Write32 MSB")
-  field(INP , "@test offset=4 step=4")
+  field(INP , "@test offset=4 step=4 initread=1")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 record(waveform, "wfout32_1") {
   field(DTYP, "Explore Write32 MSB")
-  field(INP , "@test offset=4 step=0")
+  field(INP , "@test offset=4 step=0 initread=1")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
