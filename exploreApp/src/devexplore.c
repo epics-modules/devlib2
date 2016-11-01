@@ -5,7 +5,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
+#include <epicsVersion.h>
 #include <devSup.h>
 #include <drvSup.h>
 #include <recGbl.h>
@@ -34,6 +36,10 @@
 #include <epicsMMIO.h>
 
 #include "devLibPCI.h"
+
+#if EPICS_REVISION==14
+typedef uint64_t epicsUInt64;
+#endif
 
 int pciexploredebug=1;
 
