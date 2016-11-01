@@ -1,97 +1,97 @@
 record(longin, "longin8") {
-  field(DTYP, "Explore PCI Read8")
+  field(DTYP, "Explore Read8")
   field(INP , "@test offset=1")
 }
 record(longin, "longin8_1") {
-  field(DTYP, "Explore PCI Read8")
+  field(DTYP, "Explore Read8")
   field(INP , "@test offset=1 mask=0xffffff8f")
 }
 record(longin, "longin8_2") {
-  field(DTYP, "Explore PCI Read8")
+  field(DTYP, "Explore Read8")
   field(INP , "@test offset=2 mask=0xfffffff0 shift=4")
 }
 record(longin, "longin8_x") {
-  field(DTYP, "Explore PCI Read8")
+  field(DTYP, "Explore Read8")
   field(INP , "@test offset=1 initread=0")
 }
 record(longout, "longout8") {
-  field(DTYP, "Explore PCI Write8")
+  field(DTYP, "Explore Write8")
   field(OUT , "@test offset=0")
 }
 record(longout, "longout8_1") {
-  field(DTYP, "Explore PCI Write8")
+  field(DTYP, "Explore Write8")
   field(OUT , "@test offset=0 mask=0xf0 shift=4")
 }
 
 record(longin, "longin16") {
-  field(DTYP, "Explore PCI Read16 MSB")
+  field(DTYP, "Explore Read16 MSB")
   field(INP , "@test offset=2")
 }
 record(longin, "longin16_1") {
-  field(DTYP, "Explore PCI Read16 LSB")
+  field(DTYP, "Explore Read16 LSB")
   field(INP , "@test offset=2")
 }
 record(longout, "longout16") {
-  field(DTYP, "Explore PCI Write16 MSB")
+  field(DTYP, "Explore Write16 MSB")
   field(OUT , "@test offset=2")
 }
 record(longout, "longout16_1") {
-  field(DTYP, "Explore PCI Write16 LSB")
+  field(DTYP, "Explore Write16 LSB")
   field(OUT , "@test offset=2")
 }
 record(longout, "longout16_2") {
-  field(DTYP, "Explore PCI Write16 MSB")
+  field(DTYP, "Explore Write16 MSB")
   field(OUT , "@test offset=2 mask=0x0ff0 shift=4")
 }
 
 record(longin, "longin32") {
-  field(DTYP, "Explore PCI Read32 MSB")
+  field(DTYP, "Explore Read32 MSB")
   field(INP , "@test offset=4")
 }
 record(longin, "longin32_1") {
-  field(DTYP, "Explore PCI Read32 LSB")
+  field(DTYP, "Explore Read32 LSB")
   field(INP , "@test offset=4")
 }
 record(longout, "longout32") {
-  field(DTYP, "Explore PCI Write32 MSB")
+  field(DTYP, "Explore Write32 MSB")
   field(OUT , "@test offset=4")
 }
 record(longout, "longout32_1") {
-  field(DTYP, "Explore PCI Write32 LSB")
+  field(DTYP, "Explore Write32 LSB")
   field(OUT , "@test offset=4")
 }
 
 
 record(ai, "floatin32") {
-  field(DTYP, "Explore PCI ReadF32 MSB")
+  field(DTYP, "Explore ReadF32 MSB")
   field(INP , "@test offset=4")
 }
 record(ao, "floatout32") {
-  field(DTYP, "Explore PCI WriteF32 MSB")
+  field(DTYP, "Explore WriteF32 MSB")
   field(OUT , "@test offset=4")
 }
 
 record(waveform, "wfin32") {
-  field(DTYP, "Explore PCI Read32 MSB")
+  field(DTYP, "Explore Read32 MSB")
   field(INP , "@test offset=4 step=4")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 record(waveform, "wfin32_1") {
-  field(DTYP, "Explore PCI Read32 MSB")
+  field(DTYP, "Explore Read32 MSB")
   field(INP , "@test offset=4 step=0")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 
 record(waveform, "wfout32") {
-  field(DTYP, "Explore PCI Write32 MSB")
+  field(DTYP, "Explore Write32 MSB")
   field(INP , "@test offset=4 step=4")
   field(NELM, "2")
   field(FTVL, "ULONG")
 }
 record(waveform, "wfout32_1") {
-  field(DTYP, "Explore PCI Write32 MSB")
+  field(DTYP, "Explore Write32 MSB")
   field(INP , "@test offset=4 step=0")
   field(NELM, "2")
   field(FTVL, "ULONG")
