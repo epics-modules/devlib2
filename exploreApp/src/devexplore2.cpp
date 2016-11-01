@@ -242,9 +242,8 @@ public:
     DBLINK *getDevLink() const {
         if(dbFindField(pentry(), "INP") && dbFindField(pentry(), "OUT"))
             throw std::logic_error(SB()<<entry.precnode->recordname<<" has no INP/OUT?!?!");
-        if(!entry.pflddes->isDevLink || (
-                    entry.pflddes->field_type!=DBF_INLINK &&
-                    entry.pflddes->field_type!=DBF_OUTLINK))
+        if(entry.pflddes->field_type!=DBF_INLINK &&
+           entry.pflddes->field_type!=DBF_OUTLINK)
             throw std::logic_error(SB()<<entry.precnode->recordname<<" not devlink or IN/OUT?!?!");
         return (DBLINK*)entry.pfield;
     }
