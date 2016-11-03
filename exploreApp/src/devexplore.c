@@ -454,8 +454,8 @@ long read_wf64(waveformRecord *prec)
     epicsMutexMustLock(P->dev->mutex);
     for(i=cnt; i; i--, buf+=2, addr++) {
         epicsUInt64 val = le_ioread64x(addr);
-        buf[1] = val>>32;
-        buf[0] = val&0xffffffff;
+        buf[0] = val>>32;
+        buf[1] = val&0xffffffff;
     }
     epicsMutexUnlock(P->dev->mutex);
     prec->nord = prec->nelm;
