@@ -19,6 +19,7 @@
 #include <drvSup.h>
 #include <recGbl.h>
 #include <alarm.h>
+#include <callback.h>
 #include <dbAccess.h>
 #include <dbStaticLib.h>
 #include <menuFtype.h>
@@ -129,10 +130,8 @@ void irq_scan_complete(void *usr, IOSCANPVT scan, int prio)
 #else
 void irq_scan_complete(CALLBACK* pcb)
 {
-    priv *pvt;
-    int prio;
-    callbackGetUser(pvt, pcb);
-    callbackGetPrio(prio, pcb);
+    priv *pvt = (priv*)pcb->user;
+    int prio = pcb->priority;
 #endif
     try {
         Guard G(pvt->lock);
