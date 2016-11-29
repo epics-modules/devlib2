@@ -114,3 +114,6 @@ device(waveform,INST_IO, devExploreWfWriteU16MSB, "Explore Write16 MSB")
 device(waveform,INST_IO, devExploreWfWriteU32NAT, "Explore Write32 NAT")
 device(waveform,INST_IO, devExploreWfWriteU32LSB, "Explore Write32 LSB")
 device(waveform,INST_IO, devExploreWfWriteU32MSB, "Explore Write32 MSB")
+
+# from devexplore_irq.cpp
+device(longin, INST_IO, devExploreLiIRQ, "Explore IRQ Count")

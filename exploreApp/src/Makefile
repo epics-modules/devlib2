@@ -24,6 +24,7 @@ explore_SRCS += explore_registerRecordDeviceDriver.cpp
 explore_SRCS += exploreMain.cpp
 explore_SRCS += devexplore.c
 explore_SRCS += devexplore2.cpp
+explore_SRCS += devexplore_irq.cpp
 
 explore_LIBS += epicspci
 
@@ -47,6 +48,7 @@ testexplore_SRCS += testexplore.cpp
 testexplore_SRCS += testexplore_registerRecordDeviceDriver.cpp
 testexplore_SRCS += devexplore.c
 testexplore_SRCS += devexplore2.cpp
+testexplore_SRCS += devexplore_irq.cpp
 testexplore_LIBS += epicspci
 testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
