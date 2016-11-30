@@ -133,6 +133,8 @@ static int probe_generic_msi(struct pci_dev *pdev,
     err = pci_enable_device(pdev);
     ERR(err, err_free, "Can't enable device\n");
 
+    pci_set_master(pdev);
+
     err = pci_enable_msi(pdev);
     ERR(err, err_disable_dev, "Device does not support MSI\n");
 
