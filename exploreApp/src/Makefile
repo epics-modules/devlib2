@@ -25,18 +25,24 @@ explore_SRCS += exploreMain.cpp
 explore_SRCS += devexplore.c
 explore_SRCS += devexplore2.cpp
 explore_SRCS += devexplore_irq.cpp
+explore_SRCS += devexplore_util.cpp
 
 explore_LIBS += epicspci
 
 # Finally link to the EPICS Base libraries
 explore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+TESTPROD_HOST += testutil
+testutil_SRCS += testutil.cpp
+testutil_SRCS += devexplore_util.cpp
+testutil_LIBS += Com
+TESTS += testutil
 
 # if VER >= 3.15.3
 #  do real IOC testing
 ifneq ($(EPICS_VERSION)$(EPICS_REVISION),314)
 ifeq ($(findstring $(EPICS_REVISION)$(EPICS_MODIFICATION),151 152),)
-TESTPROD_HOST = testexplore
+TESTPROD_HOST += testexplore
 DBD += testexplore.dbd
 TESTS += testexplore
 
@@ -49,13 +55,14 @@ testexplore_SRCS += testexplore_registerRecordDeviceDriver.cpp
 testexplore_SRCS += devexplore.c
 testexplore_SRCS += devexplore2.cpp
 testexplore_SRCS += devexplore_irq.cpp
+testexplore_SRCS += devexplore_util.cpp
 testexplore_LIBS += epicspci
 testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
-TESTSCRIPTS_HOST += $(TESTS:%=%.t)
+endif
+endif
 
-endif
-endif
+TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
 #===========================
 

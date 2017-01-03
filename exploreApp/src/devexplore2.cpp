@@ -48,66 +48,7 @@
 #include <epicsMMIO.h>
 
 #include "devLibPCI.h"
-
-#if EPICS_REVISION<=14
-
-#define M_stdlib 4242
-#define S_stdlib_noConversion (M_stdlib | 1) /* No digits to convert */
-#define S_stdlib_extraneous   (M_stdlib | 2) /* Extraneous characters */
-#define S_stdlib_underflow    (M_stdlib | 3) /* Too small to represent */
-#define S_stdlib_overflow     (M_stdlib | 4) /* Too large to represent */
-#define S_stdlib_badBase      (M_stdlib | 5) /* Number base not supported */
-
-epicsShareFunc int
-epicsParseULong(const char *str, unsigned long *to, int base, char **units)
-{
-    int c;
-    char *endp;
-    unsigned long value;
-
-    while ((c = *str) && isspace(c))
-        ++str;
-
-    errno = 0;
-    value = strtoul(str, &endp, base);
-
-    if (endp == str)
-        return S_stdlib_noConversion;
-    if (errno == EINVAL)    /* Not universally supported */
-        return S_stdlib_badBase;
-    if (errno == ERANGE)
-        return S_stdlib_overflow;
-
-    while ((c = *endp) && isspace(c))
-        ++endp;
-    if (c && !units)
-        return S_stdlib_extraneous;
-
-    *to = value;
-    if (units)
-        *units = endp;
-    return 0;
-}
-
-static int
-epicsParseUInt32(const char *str, epicsUInt32 *to, int base, char **units)
-{
-    unsigned long value;
-    int status = epicsParseULong(str, &value, base, units);
-
-    if (status)
-        return status;
-
-#if (ULONG_MAX > 0xffffffffULL)
-    if (value > 0xffffffffUL && value <= ~0xffffffffUL)
-        return S_stdlib_overflow;
-#endif
-
-    *to = (epicsUInt32) value;
-    return 0;
-}
-#endif
-
+#include "devexplore.h"
 
 extern
 volatile void * const exploreTestBase;
@@ -122,31 +63,6 @@ volatile void * const exploreTestBase = (volatile void*)exploreTestRegion;
 const epicsUInt32 exploreTestSize = sizeof(exploreTestRegion);
 
 namespace {
-
-typedef epicsGuard<epicsMutex> Guard;
-typedef epicsGuardRelease<epicsMutex> UnGuard;
-
-struct SB {
-    std::ostringstream strm;
-    operator std::string() { return strm.str(); }
-    template<typename T>
-    SB& operator<<(const T& v) {
-        strm<<v;
-        return *this;
-    }
-};
-
-epicsUInt32 parseU32(const std::string& s)
-{
-    epicsUInt32 ret;
-    int err = epicsParseUInt32(s.c_str(), &ret, 0, NULL);
-    if(err) {
-        char msg[80];
-        errSymLookup(err, msg, sizeof(msg));
-        throw std::runtime_error(SB()<<"Error parsing '"<<s<<"' : "<<msg);
-    }
-    return ret;
-}
 
 union punny32 {
     epicsUInt32 ival;
@@ -282,44 +198,6 @@ struct priv {
         return i;
     }
 };
-
-class DBEntry {
-    DBENTRY entry;
-public:
-    DBENTRY *pentry() const { return const_cast<DBENTRY*>(&entry); }
-    DBEntry(dbCommon *prec) {
-        dbInitEntry(pdbbase, &entry);
-        if(dbFindRecord(&entry, prec->name))
-            throw std::logic_error(SB()<<"getLink can't find record "<<prec->name);
-    }
-    DBEntry(const DBEntry& ent) {
-        dbCopyEntryContents(const_cast<DBENTRY*>(&ent.entry), &entry);
-    }
-    DBEntry& operator=(const DBEntry& ent) {
-        dbFinishEntry(&entry);
-        dbCopyEntryContents(const_cast<DBENTRY*>(&ent.entry), &entry);
-        return *this;
-    }
-    ~DBEntry() {
-        dbFinishEntry(&entry);
-    }
-    DBLINK *getDevLink() const {
-        if(dbFindField(pentry(), "INP") && dbFindField(pentry(), "OUT"))
-            throw std::logic_error(SB()<<entry.precnode->recordname<<" has no INP/OUT?!?!");
-        if(entry.pflddes->field_type!=DBF_INLINK &&
-           entry.pflddes->field_type!=DBF_OUTLINK)
-            throw std::logic_error(SB()<<entry.precnode->recordname<<" not devlink or IN/OUT?!?!");
-        return (DBLINK*)entry.pfield;
-    }
-    const char *info(const char *name, const char *def) const
-    {
-        if(dbFindInfo(pentry(), name))
-            return def;
-        else
-            return entry.pinfonode->string;
-    }
-};
-
 
 static const epicsPCIID anypci[] = {
     DEVPCI_DEVICE_VENDOR(DEVPCI_ANY_DEVICE, DEVPCI_ANY_VENDOR),
