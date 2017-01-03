@@ -117,3 +117,9 @@ device(waveform,INST_IO, devExploreWfWriteU32MSB, "Explore Write32 MSB")
 
 # from devexplore_irq.cpp
 device(longin, INST_IO, devExploreLiIRQ, "Explore IRQ Count")
+
+
+# from devexplore_frib.cpp
+device(waveform, INST_IO, devExploreFRIBFlashWf,   "Explore FRIB Flash")
+device(longout,  INST_IO, devExploreFRIBFlashLo,   "Explore FRIB Flash")
+device(mbbi,     INST_IO, devExploreFRIBFlashMbbi, "Explore FRIB Flash")
