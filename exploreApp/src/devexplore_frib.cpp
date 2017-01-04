@@ -95,17 +95,31 @@ struct flashProg : public epicsThreadRunable {
 
         if(devPCIToLocalAddr(pdev, bar, (volatile void**)&pci_base, 0))
             throw std::runtime_error(SB()<<" Failed to map bar "<<bar<<" of "<<pciname);
+        pci_base += pci_offset;
         epicsUInt32 barsize = 0;
         if(devPCIBarLen(pdev, bar, &barsize))
             throw std::runtime_error(SB()<<" Failed to find size of bar "<<bar);
         if(barsize<pci_offset+REGMAX)
             throw std::runtime_error(SB()<<"PCI offset + REGMAX exceeds BAR "<<bar<<" size");
 
-        epicsUInt32 id = le_ioread32(pci_base+REG_LOCKOUT);
+        epicsUInt32 id = read32(REG_LOCKOUT);
         if(id!=0xF1A54001)
-            throw std::runtime_error(SB()<<"wrong id 0x"<<std::hex<<id);
+            throw std::runtime_error(SB()<<"wrong id 0x"<<std::hex<<id<<" from 0x"<<std::hex<<(pci_base+REG_LOCKOUT));
 
         scanIoInit(&scan);
+    }
+
+    void write32(unsigned offset, epicsUInt32 val) {
+        if(debug>2)
+            printf("Write %x <- %08x\n", pci_offset+offset, (unsigned)val);
+        le_iowrite32(pci_base+offset, val);
+    }
+
+    epicsUInt32 read32(unsigned offset) {
+        epicsUInt32 ret = le_ioread32(pci_base+offset);
+        if(debug>2)
+            printf("Read %x -> %08x\n", pci_offset+offset, (unsigned)ret);
+        return ret;
     }
 
     virtual void run()
@@ -120,15 +134,28 @@ struct flashProg : public epicsThreadRunable {
             if(flash_offset&0xffff)
                 throw std::runtime_error("offset not aligned to 64k");
 
+            if((flash_offset|flash_size)&0xff000000)
+                throw std::runtime_error("Flash addresses must be 24-bit");
 
             std::vector<char> file;
             file.swap(bitfile); // consume image
 
+            // zero pad to 16 byte boundary (we write only in 16 byte blocks)
+            file.resize( ((file.size()-1u)|0xf)+1u, 0 );
+            assert((file.size()%16u==0));
+
             const epicsUInt32 fstart = flash_offset,
-                              fend  = flash_size;
+                              fend  = flash_offset + std::min(file.size(), (size_t)flash_size);
+
+            epicsUInt32 id = read32(REG_LOCKOUT);
+            if(id!=0xF1A54001)
+                throw std::runtime_error(SB()<<"wrong id 0x"<<std::hex<<id<<" from 0x"<<std::hex<<(pci_base+REG_LOCKOUT));
+
+            if(debug)
+                errlogPrintf("Will program %x -> %x\n", (unsigned)fstart, (unsigned)fend);
 
             // unlock write logic
-            le_iowrite32(pci_base+REG_LOCKOUT, 0xC001D00D);
+            write32(REG_LOCKOUT, 0xC001D00D);
 
             // erase in 64k blocks
             {
@@ -137,14 +164,15 @@ struct flashProg : public epicsThreadRunable {
                 scanIoRequest(scan);
 
                 for(lastaddr = fstart; lastaddr<fend && !abort; lastaddr+=0x10000) {
-                    le_iowrite32(pci_base+REG_CMDADDR, 0x06000000); // write enable
-                    le_iowrite32(pci_base+REG_CMDADDR, 0x06000000|lastaddr); // block erase (64k)
+
+                    write32(REG_CMDADDR, 0x06000000); // write enable
+                    write32(REG_CMDADDR, 0xD8000000|lastaddr); // block erase (64k)
 
                     // 64k block erase time is spec'd at 150ms typical, 2000ms max
                     bool ready;
                     do{
                         evt.wait(0.05);
-                        ready = le_ioread32(pci_base+REG_CMDADDR)&1;
+                        ready = read32(REG_CMDADDR)&1;
                     } while(!ready && !abort);
                 }
             }
@@ -162,20 +190,20 @@ struct flashProg : public epicsThreadRunable {
                 for(lastaddr = fstart; lastaddr<fend && !abort; lastaddr+=16, ioffset += 16) {
                     const epicsUInt32 *data = (const epicsUInt32 *)&file[ioffset];
 
-                    le_iowrite32(pci_base+REG_CMDADDR, 0x06000000); // write enable
+                    write32(REG_CMDADDR, 0x06000000); // write enable
 
-                    le_iowrite32(pci_base+REG_WDATA, data[0]);
-                    le_iowrite32(pci_base+REG_WDATA, data[1]);
-                    le_iowrite32(pci_base+REG_WDATA, data[2]);
-                    le_iowrite32(pci_base+REG_WDATA, data[3]);
+                    write32(REG_WDATA, data[3]);
+                    write32(REG_WDATA, data[2]);
+                    write32(REG_WDATA, data[1]);
+                    write32(REG_WDATA, data[0]);
 
-                    le_iowrite32(pci_base+REG_CMDADDR, 0x02000000|lastaddr);
+                    write32(REG_CMDADDR, 0x02000000|lastaddr);
 
                     // page program time is speced at 0.7ms typical, 3ms max
                     // however, this is for the whole page
                     bool ready;
                     do{
-                        ready = le_ioread32(pci_base+REG_CMDADDR)&1;
+                        ready = read32(REG_CMDADDR)&1;
                     } while(!ready && !abort);
                 }
             }
@@ -193,8 +221,14 @@ struct flashProg : public epicsThreadRunable {
                 for(lastaddr = fstart; lastaddr<fend && !abort; lastaddr+=4, ioffset += 4) {
                     const epicsUInt32 expect = *(const epicsUInt32*)&file[ioffset];
 
-                    le_iowrite32(pci_base+REG_CMDADDR, 0x03000000|lastaddr);
-                    epicsUInt32 actual = le_ioread32(pci_base+REG_RDATA);
+                    write32(REG_CMDADDR, 0x03000000|lastaddr);
+
+                    bool ready;
+                    do{
+                        ready = read32(REG_CMDADDR)&1;
+                    } while(!ready && !abort);
+
+                    epicsUInt32 actual = read32(REG_RDATA);
 
                     if(actual!=expect)
                         throw std::runtime_error(SB()<<"Verify mis-match 0x"
@@ -217,7 +251,7 @@ struct flashProg : public epicsThreadRunable {
         }
 
         // re-lock write logic
-        le_iowrite32(pci_base+REG_LOCKOUT, 0x00000000);
+        write32(REG_LOCKOUT, 0x00000000);
         scanIoRequest(scan);
 
         running = false;
@@ -262,8 +296,10 @@ long init_record_common(dbCommon *prec)
             bar = parseU32(it->second);
         }
 
+        if(prec->tpro)
+            fprintf(stderr, "%s: pcidev=%s offset=%x\n", prec->name, pciname.c_str(), (unsigned)pci_offset);
+
         flashProg *priv = NULL;
-        std::auto_ptr<flashProg> priv_own;
 
         for(progs_t::const_iterator it = progs.begin(), end = progs.end();
             it != end; ++it)
@@ -275,9 +311,10 @@ long init_record_common(dbCommon *prec)
             }
         }
         if(!priv) {
-            priv_own.reset(new flashProg(pciname, bar, pci_offset));
-            priv = priv_own.get();
+            priv = new flashProg(pciname, bar, pci_offset);
+            progs.push_back(priv);
         }
+        prec->dpvt = priv;
 
         if((it=args.find("flash_offset"))!=args.end()) {
             priv->flash_offset = parseU32(it->second);
@@ -301,6 +338,9 @@ long load_bitfile_wf(waveformRecord *prec)
     }
     try {
         std::vector<char> buf(prec->nord);
+        const char *ibuf = (const char*)prec->bptr;
+
+        std::copy(ibuf, ibuf+buf.size(), buf.begin());
 
         Guard G(priv->lock);
 
@@ -371,9 +411,7 @@ long status_mbbi(mbbiRecord *prec)
 long status_get_iointr_info(int dir, dbCommon* prec, IOSCANPVT* ppscan)
 {
     flashProg *priv = (flashProg*)prec->dpvt;
-    if(!priv) {
-        (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
-    } else {
+    if(priv) {
         *ppscan = priv->scan;
     }
     return 0;
