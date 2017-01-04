@@ -68,8 +68,6 @@ struct flashProg : public epicsThreadRunable {
     // set before worker starts, read w/o locking in worker
     unsigned debug;
 
-    bool running;
-
     enum state_t {
         Idle,
         Erase,
@@ -81,14 +79,13 @@ struct flashProg : public epicsThreadRunable {
 
     std::vector<char> bitfile;
 
-    epicsThread worker;
+    std::auto_ptr<epicsThread> worker;
 
     flashProg(const std::string& pname, unsigned bar, epicsUInt32 poffset)
         :pciname(pname), bar(bar), pdev(NULL), pci_offset(poffset)
         ,flash_offset(0), flash_size(0), flash_last(0)
-        ,abort(0) ,running(false)
+        ,abort(0)
         ,state(Idle)
-        ,worker(*this, "flasher", epicsThreadGetStackSize(epicsThreadStackSmall), epicsThreadPriorityScanLow+1)
     {
         if(devPCIFindSpec(anypci, pciname.c_str(), &pdev, 0))
             throw std::runtime_error(SB()<<" Invalid PCI device "<<pciname);
@@ -134,7 +131,8 @@ struct flashProg : public epicsThreadRunable {
             if(flash_offset&0xffff)
                 throw std::runtime_error("offset not aligned to 64k");
 
-            if((flash_offset|flash_size)&0xff000000)
+            if(debug>1) errlogPrintf("flash offset=%x size=%x\n", (unsigned)flash_offset, (unsigned)flash_size);
+            if(flash_offset>=0x1000000 || flash_size>0x1000000)
                 throw std::runtime_error("Flash addresses must be 24-bit");
 
             std::vector<char> file;
@@ -192,10 +190,10 @@ struct flashProg : public epicsThreadRunable {
 
                     write32(REG_CMDADDR, 0x06000000); // write enable
 
-                    write32(REG_WDATA, data[3]);
-                    write32(REG_WDATA, data[2]);
-                    write32(REG_WDATA, data[1]);
-                    write32(REG_WDATA, data[0]);
+                    write32(REG_WDATA, ntohl(data[3]));
+                    write32(REG_WDATA, ntohl(data[2]));
+                    write32(REG_WDATA, ntohl(data[1]));
+                    write32(REG_WDATA, ntohl(data[0]));
 
                     write32(REG_CMDADDR, 0x02000000|lastaddr);
 
@@ -219,7 +217,7 @@ struct flashProg : public epicsThreadRunable {
 
                 epicsUInt32 ioffset = 0;
                 for(lastaddr = fstart; lastaddr<fend && !abort; lastaddr+=4, ioffset += 4) {
-                    const epicsUInt32 expect = *(const epicsUInt32*)&file[ioffset];
+                    const epicsUInt32 expect = ntohl(*(const epicsUInt32*)&file[ioffset]);
 
                     write32(REG_CMDADDR, 0x03000000|lastaddr);
 
@@ -254,8 +252,10 @@ struct flashProg : public epicsThreadRunable {
         write32(REG_LOCKOUT, 0x00000000);
         scanIoRequest(scan);
 
-        running = false;
         abort = 0;
+
+        worker.reset();
+        if(debug) errlogPrintf("Worker exits\n");
     }
 };
 
@@ -365,14 +365,16 @@ long startstop_lo(longoutRecord *prec)
 
         Guard G(priv->lock);
 
-        if(prec->val && !priv->running) {
+        if(prec->val && !priv->worker.get()) {
             if(prec->tpro>1)
                 errlogPrintf("%s: start programming\n", prec->name);
-            priv->running = true;
             priv->debug = prec->tpro;
-            priv->worker.start();
+            priv->worker.reset(new epicsThread(*priv, "flasher",
+                                               epicsThreadGetStackSize(epicsThreadStackSmall),
+                                               epicsThreadPriorityScanLow+1));
+            priv->worker->start();
 
-        } else if(!prec->val && priv->running) {
+        } else if(!prec->val && priv->worker.get()) {
             if(prec->tpro>1)
                 errlogPrintf("%s: abort programming\n", prec->name);
             priv->abort = 1;
