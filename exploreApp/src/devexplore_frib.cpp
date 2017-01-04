@@ -240,7 +240,7 @@ long init_record_common(dbCommon *prec)
 
         size_t sep(lstr.find_first_of(" \t"));
         if(sep>=lstr.size())
-            throw std::runtime_error("Missing expected space in INP/OUT");
+            throw std::runtime_error(SB()<<"Missing expected space in INP/OUT \""<<lstr<<"\"");
 
         // required
         std::string pciname(lstr.substr(0, sep));
@@ -297,6 +297,7 @@ long load_bitfile_wf(waveformRecord *prec)
     flashProg *priv = (flashProg*)prec->dpvt;
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
+        return S_dev_noDevice;
     }
     try {
         std::vector<char> buf(prec->nord);
@@ -318,6 +319,7 @@ long startstop_lo(longoutRecord *prec)
     flashProg *priv = (flashProg*)prec->dpvt;
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
+        return S_dev_noDevice;
     }
     try {
 
@@ -350,6 +352,7 @@ long status_mbbi(mbbiRecord *prec)
     flashProg *priv = (flashProg*)prec->dpvt;
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
+        return S_dev_noDevice;
     }
     try {
 
