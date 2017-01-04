@@ -109,6 +109,11 @@ static int check_args(int dmod, int offset, int count)
       printf("Invalid data width %d\n",dmod);
       return 1;
     }
+
+    if(offset>=diaglen || offset+count>diaglen) {
+        printf("Invalid offset and/or count\n");
+        return 1;
+    }
     return 0;
 }
 
