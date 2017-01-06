@@ -119,6 +119,21 @@ struct flashProg : public epicsThreadRunable {
         return ret;
     }
 
+    void wait_for_ready() {
+        bool ready;
+        do{
+            ready = read32(REG_CMDADDR)&1;
+        } while(!ready && !abort);
+    }
+
+    void wait_for_ready(double sleep) {
+        bool ready;
+        do{
+            evt.wait(sleep);
+            ready = read32(REG_CMDADDR)&1;
+        } while(!ready && !abort);
+    }
+
     virtual void run()
     {
         epicsUInt32 lastaddr = 0;
@@ -164,14 +179,11 @@ struct flashProg : public epicsThreadRunable {
                 for(lastaddr = fstart; lastaddr<fend && !abort; lastaddr+=0x10000) {
 
                     write32(REG_CMDADDR, 0x06000000); // write enable
+                    wait_for_ready();
                     write32(REG_CMDADDR, 0xD8000000|lastaddr); // block erase (64k)
 
                     // 64k block erase time is spec'd at 150ms typical, 2000ms max
-                    bool ready;
-                    do{
-                        evt.wait(0.05);
-                        ready = read32(REG_CMDADDR)&1;
-                    } while(!ready && !abort);
+                    wait_for_ready(0.05);
                 }
             }
 
@@ -194,15 +206,13 @@ struct flashProg : public epicsThreadRunable {
                     write32(REG_WDATA, ntohl(data[2]));
                     write32(REG_WDATA, ntohl(data[1]));
                     write32(REG_WDATA, ntohl(data[0]));
+                    wait_for_ready();
 
                     write32(REG_CMDADDR, 0x02000000|lastaddr);
 
                     // page program time is speced at 0.7ms typical, 3ms max
                     // however, this is for the whole page
-                    bool ready;
-                    do{
-                        ready = read32(REG_CMDADDR)&1;
-                    } while(!ready && !abort);
+                    wait_for_ready();
                 }
             }
 
@@ -220,11 +230,7 @@ struct flashProg : public epicsThreadRunable {
                     const epicsUInt32 expect = ntohl(*(const epicsUInt32*)&file[ioffset]);
 
                     write32(REG_CMDADDR, 0x03000000|lastaddr);
-
-                    bool ready;
-                    do{
-                        ready = read32(REG_CMDADDR)&1;
-                    } while(!ready && !abort);
+                    wait_for_ready();
 
                     epicsUInt32 actual = read32(REG_RDATA);
 
