@@ -1,0 +1,35 @@
+record(waveform, "$(P)bitfile") {
+    field(DTYP, "Explore FRIB Flash")
+    field(INP , "@$(DEV) pci_offset=$(offset=0x2004) flash_size=$(size=16777216) flash_offset=$(location=0)")
+    field(FTVL, "UCHAR")
+    field(NELM, "$(NELM=4194304)")
+}
+
+record(mbbi, "$(P)sts") {
+    field(DTYP, "Explore FRIB Flash")
+    field(INP , "@$(DEV) pci_offset=$(offset=0x2004)")
+    field(SCAN, "I/O Intr")
+    field(PINI, "YES")
+    field(ZRVL, "0")
+    field(ONVL, "1")
+    field(TWVL, "2")
+    field(THVL, "3")
+    field(FRVL, "4")
+    field(FVVL, "5")
+    field(ZRST, "Idle")
+    field(ONST, "Erase")
+    field(TWST, "Program")
+    field(THST, "Verify")
+    field(FRST, "Success")
+    field(FVST, "Failure")
+    field(FVSV, "MAJOR")
+}
+
+# Write 1 to start sequence
+# Write 0 to abort sequence
+record(longout, "$(P)ctrl") {
+    field(DTYP, "Explore FRIB Flash")
+    field(OUT , "@$(DEV) pci_offset=$(offset=0x2004)")
+    # set TPRO to 2 or 3 to enable debugging prints
+    # field(TPRO, "2")
+}
