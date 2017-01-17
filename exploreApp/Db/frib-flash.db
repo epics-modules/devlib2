@@ -1,13 +1,13 @@
 record(waveform, "$(P)bitfile") {
     field(DTYP, "Explore FRIB Flash")
-    field(INP , "@$(DEV) pci_offset=$(offset=0x2004) flash_size=$(size=16777216) flash_offset=$(location=0)")
+    field(INP , "@$(DEV) pci_offset=$(offset=0x2004) flash_offset=$(location=0) flash_size=$(size=16777216)")
     field(FTVL, "UCHAR")
     field(NELM, "$(NELM=4194304)")
 }
 
 record(mbbi, "$(P)sts") {
     field(DTYP, "Explore FRIB Flash")
-    field(INP , "@$(DEV) pci_offset=$(offset=0x2004)")
+    field(INP , "@$(DEV) pci_offset=$(offset=0x2004) flash_offset=$(location=0)")
     field(SCAN, "I/O Intr")
     field(PINI, "YES")
     field(ZRVL, "0")
@@ -29,7 +29,7 @@ record(mbbi, "$(P)sts") {
 # Write 0 to abort sequence
 record(longout, "$(P)ctrl") {
     field(DTYP, "Explore FRIB Flash")
-    field(OUT , "@$(DEV) pci_offset=$(offset=0x2004)")
+    field(OUT , "@$(DEV) pci_offset=$(offset=0x2004) flash_offset=$(location=0)")
     # set TPRO to 2 or 3 to enable debugging prints
     # field(TPRO, "2")
 }

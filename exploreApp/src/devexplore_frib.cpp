@@ -81,9 +81,9 @@ struct flashProg : public epicsThreadRunable {
 
     std::auto_ptr<epicsThread> worker;
 
-    flashProg(const std::string& pname, unsigned bar, epicsUInt32 poffset)
+    flashProg(const std::string& pname, unsigned bar, epicsUInt32 poffset, epicsUInt32 foffset)
         :pciname(pname), bar(bar), pdev(NULL), pci_offset(poffset)
-        ,flash_offset(0), flash_size(0), flash_last(0)
+        ,flash_offset(foffset), flash_size(0), flash_last(0)
         ,abort(0)
         ,state(Idle)
     {
@@ -284,7 +284,7 @@ long init_record_common(dbCommon *prec)
 
         // required
         std::string pciname(lstr.substr(0, sep));
-        epicsUInt32 pci_offset;
+        epicsUInt32 pci_offset, flash_offset;
         unsigned bar = 0;
 
         strmap_t args;
@@ -296,6 +296,11 @@ long init_record_common(dbCommon *prec)
             pci_offset = parseU32(it->second);
         } else {
             throw std::runtime_error(SB()<<"Missing required 'pci_offset' in \""<<lstr<<"\"");
+        }
+        if((it=args.find("flash_offset"))!=args.end()) {
+            flash_offset = parseU32(it->second);
+        } else {
+            throw std::runtime_error(SB()<<"Missing required 'flash_offset' in \""<<lstr<<"\"");
         }
 
         if((it=args.find("bar"))!=args.end()) {
@@ -311,20 +316,17 @@ long init_record_common(dbCommon *prec)
             it != end; ++it)
         {
             flashProg *F = *it;
-            if(F->pciname==pciname && F->bar==bar && F->pci_offset==pci_offset) {
+            if(F->pciname==pciname && F->bar==bar && F->pci_offset==pci_offset && F->flash_offset==flash_offset) {
                 priv = F;
                 break;
             }
         }
         if(!priv) {
-            priv = new flashProg(pciname, bar, pci_offset);
+            priv = new flashProg(pciname, bar, pci_offset, flash_offset);
             progs.push_back(priv);
         }
         prec->dpvt = priv;
 
-        if((it=args.find("flash_offset"))!=args.end()) {
-            priv->flash_offset = parseU32(it->second);
-        }
         if((it=args.find("flash_size"))!=args.end()) {
             priv->flash_size = parseU32(it->second);
         }
