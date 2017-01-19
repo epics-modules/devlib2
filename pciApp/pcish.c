@@ -52,7 +52,7 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
     diagdev = NULL;
     diaglen = 0;
 
-    printf("Looking for %u:%u.%u\n", b, d, f);
+    printf("Looking for %x:%x.%x\n", b, d, f);
 
     if(vendor==0 && !exact)
         ids[0].vendor=DEVPCI_ANY_VENDOR;
@@ -74,7 +74,7 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
         return;
     }
 
-    printf("Mapping %u:%u.%u\n", loc.dev->bus, loc.dev->device, loc.dev->function);
+    printf("Mapping %x:%x.%x\n", loc.dev->bus, loc.dev->device, loc.dev->function);
 
 #if defined(linux)
     if(devPCIBarLen(loc.dev, bar, &len)) {
