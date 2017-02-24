@@ -44,7 +44,8 @@ static int showbridge(void* ptr,const epicsPCIDevice* dev)
 }
 
 static void findRootBridge(void) {
-    const epicsPCIDevice *dev = NULL;
+    const epicsPCIDevice *dev = NULL,
+                         *dev2 = NULL;
     epicsUInt16 val;
 
     testDiag("Find host bridges");
@@ -65,10 +66,41 @@ static void findRootBridge(void) {
     testOk1(dev->id.vendor==val);
     testOk1(devPCIConfigRead16(dev, 2, &val)==0);
     testOk1(dev->id.device==val);
+
+    dev2 = NULL;
+    testOk1(devPCIFindSpec(hostbridge, "", &dev2, 0)==0);
+    testOk(dev==dev2, "%x:%x.%x == %x:%x.%x",
+           dev->bus, dev->device, dev->function,
+           dev2->bus, dev2->device, dev2->function);
+
+    dev2 = NULL;
+    testOk1(devPCIFindSpec(hostbridge, "instance=1", &dev2, 0)==0);
+    testOk(dev==dev2, "%x:%x.%x == %x:%x.%x",
+           dev->bus, dev->device, dev->function,
+           dev2->bus, dev2->device, dev2->function);
+
+    dev2 = NULL;
+    testOk1(devPCIFindSpec(hostbridge, "0:0.0", &dev2, 0)==0);
+    testOk(dev==dev2, "%x:%x.%x == %x:%x.%x",
+           dev->bus, dev->device, dev->function,
+           dev2->bus, dev2->device, dev2->function);
+
+    testDiag("Unknown qualifiers are ignored");
+    dev2 = NULL;
+    testOk1(devPCIFindSpec(hostbridge, "foo=bar", &dev2, 0)==0);
+    testOk(dev==dev2, "%x:%x.%x == %x:%x.%x",
+           dev->bus, dev->device, dev->function,
+           dev2->bus, dev2->device, dev2->function);
+
+    testOk1(devPCIFindSpec(hostbridge, "instance=2", &dev2, 0)!=0);
+
+    testOk1(devPCIFindSpec(hostbridge, "slot=42", &dev2, 0)!=0);
+
+    testOk1(devPCIFindSpec(hostbridge, "foo", &dev2, 0)!=0);
 }
 
 MAIN(pcitest) {
-    testPlan(0);
+    testPlan(24);
     devLibPCIRegisterBaseDefault();
     devLibPCIUse(NULL);
     testDiag("Using driver: %s", devLibPCIDriverName());

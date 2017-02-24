@@ -16,7 +16,7 @@
  */
 
 #ifndef PCIUINT32
-  typedef uint32_t PCIUINT32;
+  typedef UINT32 PCIUINT32;
 #endif
 
 #define pci_find_device pciFindDevice
