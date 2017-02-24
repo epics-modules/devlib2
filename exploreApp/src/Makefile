@@ -11,6 +11,7 @@ include $(TOP)/configure/CONFIG
 PROD_IOC = explore
 # explore.dbd will be created and installed
 DBD += explore.dbd
+DBD += exploreSupport.dbd
 
 # explore.dbd will be made up from these files:
 explore_DBD += base.dbd
