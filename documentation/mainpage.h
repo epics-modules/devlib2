@@ -75,6 +75,8 @@ the width and order of accesses.
 
 @subsection ver28 2.9 (UNRELEASED)
 
+@li pci: change devPCIFindSpec() to parse B:D.F as hex.
+
 @subsection ver28 2.8 (Sept. 2016)
 
 @li Fixes an bug with epicsMMIO.h for some targets where a single read
