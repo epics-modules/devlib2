@@ -22,8 +22,7 @@ explore_DBD += exploreSupport.dbd
 explore_SRCS += explore_registerRecordDeviceDriver.cpp
 
 explore_SRCS += exploreMain.cpp
-explore_SRCS += devexplore.c
-explore_SRCS += devexplore2.cpp
+explore_SRCS += devexplore.cpp
 explore_SRCS += devexplore_irq.cpp
 explore_SRCS += devexplore_frib.cpp
 explore_SRCS += devexplore_util.cpp
@@ -53,8 +52,7 @@ testexplore_DBD += exploreSupport.dbd
 
 testexplore_SRCS += testexplore.cpp
 testexplore_SRCS += testexplore_registerRecordDeviceDriver.cpp
-testexplore_SRCS += devexplore.c
-testexplore_SRCS += devexplore2.cpp
+testexplore_SRCS += devexplore.cpp
 testexplore_SRCS += devexplore_irq.cpp
 testexplore_SRCS += devexplore_frib.cpp
 testexplore_SRCS += devexplore_util.cpp
