@@ -235,7 +235,7 @@ int devPCIFindSpec(
         unsigned int opt
 )
 {
-    int err;
+    int err = 0;
     struct bdfmatch find;
     memset(&find, 0, sizeof(find));
 
@@ -289,13 +289,20 @@ int devPCIFindSpec(
             } else if(sscanf(tok, "inst=%u", &dom)==1) {
                 find.stopat = dom==0 ? 0 : dom-1;
 
-            } else {
+            } else if(strchr(tok, '=')!=NULL) {
                 fprintf(stderr, "Ignoring unknown spec '%s'\n", tok);
+
+            } else {
+                fprintf(stderr, "Error: invalid spec '%s'\n", tok);
+                err = S_dev_badArgument;
             }
         }
 
         free(alloc);
     }
+
+    if(err)
+        return err;
 
     if(devPCIDebug>4) {
         if(find.matchaddr)
