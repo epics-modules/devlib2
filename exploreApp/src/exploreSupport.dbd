@@ -1,3 +1,5 @@
+include "epicspci.dbd"
+
 # devexplore.cpp
 device(longin, INST_IO, devExploreLiReadU8,     "Explore Read8")
 device(longin, INST_IO, devExploreLiReadU16NAT, "Explore Read16 NAT")
