@@ -551,7 +551,7 @@ The following can be added to some @b xyzApp/src/Makefile to include exploreApp.
 PROD_IOC += myioc
 DBD += myioc.dbd
 myioc_DBD += exploreSupport.dbd
-myioc_LIBS += explore
+myioc_LIBS += explorepci
 @endcode
 
 @section exploreopts Options
