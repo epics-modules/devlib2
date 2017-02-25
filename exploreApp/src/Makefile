@@ -13,6 +13,7 @@ explorepci_SRCS += devexplore_frib.cpp
 explorepci_SRCS += devexplore_util.cpp
 
 explorepci_LIBS += epicspci
+explorepci_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 #=============================
 # Build the IOC application
