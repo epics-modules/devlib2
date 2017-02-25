@@ -5,6 +5,15 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
+LIBRARY_IOC += explorepci
+
+explorepci_SRCS += devexplore.cpp
+explorepci_SRCS += devexplore_irq.cpp
+explorepci_SRCS += devexplore_frib.cpp
+explorepci_SRCS += devexplore_util.cpp
+
+explorepci_LIBS += epicspci
+
 #=============================
 # Build the IOC application
 
@@ -23,20 +32,17 @@ explore_DBD += exploreSupport.dbd
 explore_SRCS += explore_registerRecordDeviceDriver.cpp
 
 explore_SRCS += exploreMain.cpp
-explore_SRCS += devexplore.cpp
-explore_SRCS += devexplore_irq.cpp
-explore_SRCS += devexplore_frib.cpp
-explore_SRCS += devexplore_util.cpp
 
-explore_LIBS += epicspci
+explore_LIBS += explorepci epicspci
 
 # Finally link to the EPICS Base libraries
 explore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 TESTPROD_HOST += testutil
 testutil_SRCS += testutil.cpp
-testutil_SRCS += devexplore_util.cpp
-testutil_LIBS += Com
+
+testutil_LIBS += explorepci epicspci
+testutil_LIBS += $(EPICS_BASE_IOC_LIBS)
 TESTS += testutil
 
 # if VER >= 3.15.3
@@ -53,11 +59,8 @@ testexplore_DBD += exploreSupport.dbd
 
 testexplore_SRCS += testexplore.cpp
 testexplore_SRCS += testexplore_registerRecordDeviceDriver.cpp
-testexplore_SRCS += devexplore.cpp
-testexplore_SRCS += devexplore_irq.cpp
-testexplore_SRCS += devexplore_frib.cpp
-testexplore_SRCS += devexplore_util.cpp
-testexplore_LIBS += epicspci
+
+testexplore_LIBS += explorepci epicspci
 testexplore_LIBS += $(EPICS_BASE_IOC_LIBS)
 
 endif
