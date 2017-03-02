@@ -596,7 +596,7 @@ int linuxDevPCIInit(void)
                 if(fscanf(fp, "%x:%x:%x", &dom, &B, &D)==3) {
                     ELLNODE *cur;
                     if(devPCIDebug>2)
-                        fprintf(stderr, "found slot %s with %04u:%02u:%02u.*\n", dir->d_name, dom, B, D);
+                        fprintf(stderr, "found slot %s with %04x:%02x:%02x.*\n", dir->d_name, dom, B, D);
 
                     for(cur=ellFirst(&devices); cur; cur=ellNext(cur)) {
                         osdPCIDevice *osd = CONTAINER(cur, osdPCIDevice, node);
@@ -695,7 +695,7 @@ linuxDevPCIFindCB(
         epicsMutexMustLock(curdev->devLock);
 
         if(devPCIDebug>1)
-            printf("Consider %d:%d.%d\n", curdev->dev.bus, curdev->dev.device, curdev->dev.function);
+            printf("Consider %x:%x.%x\n", curdev->dev.bus, curdev->dev.device, curdev->dev.function);
 
         for(search=idlist, i=0; search->device!=DEVPCI_LAST_DEVICE; search++, i++){
 
