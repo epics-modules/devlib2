@@ -13,6 +13,7 @@
 #include <alarm.h>
 #include <errlog.h>
 #include <devSup.h>
+#include <osiSock.h>
 #include <epicsEvent.h>
 #include <dbScan.h>
 #include <epicsThread.h>
