@@ -463,8 +463,11 @@ long explore_read_wf(waveformRecord *prec)
     TRY {
         Guard G(pvt->lock);
         switch(prec->ftvl) {
+        case menuFtypeCHAR  :
         case menuFtypeUCHAR : prec->nord = pvt->readArray((epicsUInt8*)  prec->bptr, prec->nelm); break;
+        case menuFtypeSHORT :
         case menuFtypeUSHORT: prec->nord = pvt->readArray((epicsUInt16*) prec->bptr, prec->nelm); break;
+        case menuFtypeLONG  :
         case menuFtypeULONG : prec->nord = pvt->readArray((epicsUInt32*) prec->bptr, prec->nelm); break;
         case menuFtypeFLOAT : prec->nord = pvt->readArray((epicsFloat32*)prec->bptr, prec->nelm); break;
         default:
@@ -481,8 +484,11 @@ long explore_write_wf(waveformRecord *prec)
         Guard G(pvt->lock);
         unsigned nwritten = -1;
         switch(prec->ftvl) {
+        case menuFtypeCHAR  :
         case menuFtypeUCHAR : nwritten = pvt->writeArray((epicsUInt8*)  prec->bptr, prec->nord);
+        case menuFtypeSHORT :
         case menuFtypeUSHORT: nwritten = pvt->writeArray((epicsUInt16*) prec->bptr, prec->nord);
+        case menuFtypeLONG  :
         case menuFtypeULONG : nwritten = pvt->writeArray((epicsUInt32*) prec->bptr, prec->nord);
         case menuFtypeFLOAT : nwritten = pvt->writeArray((epicsFloat32*)prec->bptr, prec->nord);
         default:
