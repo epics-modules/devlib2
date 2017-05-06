@@ -91,9 +91,9 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
     diaglen=len;
 
 #if defined(linux)
-    printf("BAR %u from 0x%08lx for %u bytes\n",bar, (unsigned long)diagbase, diaglen);
+    printf("BAR %u from %p for %u bytes\n",bar, (void*)diagbase, diaglen);
 #else
-    printf("BAR %u from 0x%08lx\n",bar, (unsigned long)diagbase);
+    printf("BAR %u from %p\n",bar, (void*)diagbase);
 #endif
 
 }
