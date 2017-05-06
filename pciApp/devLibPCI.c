@@ -18,9 +18,8 @@
 #include <epicsMutex.h>
 #include <iocsh.h>
 
-#include "devLibPCIImpl.h"
-
 #define epicsExportSharedSymbols
+#include "devLibPCIImpl.h"
 #include "devLibPCI.h"
 
 #ifndef CONTAINER
