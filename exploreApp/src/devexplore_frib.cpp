@@ -25,6 +25,8 @@
 
 #include "devLibPCI.h"
 #include "epicsMMIO.h"
+
+#define epicsExportSharedSymbols
 #include "devexplore.h"
 
 namespace {

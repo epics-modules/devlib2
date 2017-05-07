@@ -39,6 +39,7 @@
 
 #include <epicsMMIO.h>
 
+#define epicsExportSharedSymbols
 #include "devLibPCI.h"
 
 #ifdef EPICS_VERSION_INT

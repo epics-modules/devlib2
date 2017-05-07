@@ -6,6 +6,7 @@
 #include <epicsVersion.h>
 #include <epicsStdlib.h>
 
+#define epicsExportSharedSymbols
 #include "devexplore.h"
 
 void parseToMap(const std::string& inp, strmap_t& ret)

@@ -48,6 +48,8 @@
 #include <epicsMMIO.h>
 
 #include "devLibPCI.h"
+
+#define epicsExportSharedSymbols
 #include "devexplore.h"
 
 extern
