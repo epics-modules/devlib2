@@ -24,7 +24,6 @@
 static
 int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile void** mptr)
 {
-  epicsUInt32 tval;
   epicsAddressType atype;
   short dbytes;
 
@@ -70,15 +69,6 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
 
   epicsPrintf("Mapped to 0x%08lx\n",(unsigned long)*mptr);
 
-  if( devReadProbe(
-    dbytes,
-    mptr,
-    &tval
-  ) ){
-    epicsPrintf("Test read failed\n");
-    return 1;
-  }
-
   return 0;
 }
 
@@ -95,11 +85,11 @@ void vmeread(int rawaddr, int amod, int dmod, int count)
   volatile void* mptr;
   volatile char* dptr;
   short dbytes;
-  int i;
+  int i, berr = 0;
 
   if(count<1) count=1;
 
-  epicsPrintf("Reading from 0x%08x A%d D%d\n",addr,amod,dmod);
+  printf("Reading from 0x%08x A%d D%d\n",addr,amod,dmod);
 
   if(validate_widths(addr, amod, dmod, count, &mptr))
     return;
@@ -107,19 +97,23 @@ void vmeread(int rawaddr, int amod, int dmod, int count)
   dbytes=dmod/8;
 
   for(i=0, dptr=mptr; i<count; i++, dptr+=dbytes) {
-      epicsUInt32 tval;
+      epicsUInt32 tval = -1;
       if ((i*dbytes)%16==0)
           printf("\n0x%08x ",i*dbytes);
       else if ((i*dbytes)%4==0)
           printf(" ");
 
+      berr |= devReadProbe(dbytes, dptr, &tval);
+
       switch(dmod){
-      case 8:  tval=ioread8(dptr); printf("%02x",tval);break;
-      case 16: tval=nat_ioread16(dptr);printf("%04x",tval);break;
-      case 32: tval=nat_ioread32(dptr);printf("%08x",tval);break;
+      case 8:  printf("%02x",(tval>>24)&0xff);break;
+      case 16: printf("%04x",(tval>>16)&0xffff);break;
+      case 32: printf("%08x",tval&0xffffffff);break;
       }
   }
   printf("\n");
+  if(berr)
+      printf("*** Bus errors occurred ***\n");
 }
 
 static const iocshArg vmereadArg0 = { "address",iocshArgInt};
@@ -147,17 +141,23 @@ void vmewrite(int rawaddr, int amod, int dmod, int rawvalue)
 {
   epicsUInt32 addr = rawaddr, value = rawvalue;
   volatile void* mptr;
+  long err;
 
-  epicsPrintf("Writing to 0x%08x A%d D%d value 0x%08x\n",addr,amod,dmod, (unsigned)value);
+  printf("Writing to 0x%08x A%d D%d value 0x%08x\n",addr,amod,dmod, (unsigned)value);
 
   if(validate_widths(addr, amod, dmod, 1, &mptr))
     return;
 
-  switch(dmod){
-    case 8: iowrite8(mptr, value); break;
-    case 16: nat_iowrite16(mptr, value); break;
-    case 32: nat_iowrite32(mptr, value); break;
+  switch (dmod) {
+  case 8: value<<=24; break;
+  case 16: value<<=16; break;
+  case 32: break;
   }
+
+  err = devWriteProbe(dmod/8, mptr, &value);
+
+  if(err)
+      printf("*** Bus Error detected ***\n");
 }
 
 static const iocshArg vmewriteArg0 = { "address",iocshArgInt};
