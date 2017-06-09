@@ -5,7 +5,10 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
-LIBRARY_IOC += explorepci
+# explore app doesn't build with older vxworks (eg. tornado22)
+# don't build at all until someone asks
+LIBRARY_IOC_DEFAULT = explorepci
+LIBRARY_IOC_vxWorks = -nil-
 
 explorepci_SRCS += devexplore.cpp
 explorepci_SRCS += devexplore_irq.cpp
@@ -18,7 +21,8 @@ explorepci_LIBS += $(EPICS_BASE_IOC_LIBS)
 #=============================
 # Build the IOC application
 
-PROD_IOC = explore
+PROD_IOC_DEFAULT = explore
+PROD_IOC_vxWorks = -nil-
 # explore.dbd will be created and installed
 DBD += explore.dbd
 DBD += exploreSupport.dbd
