@@ -14,6 +14,7 @@
 
 #include <epicsVersion.h>
 #include <epicsStdlib.h>
+#include <epicsTypes.h>
 #include <devSup.h>
 #include <drvSup.h>
 #include <recGbl.h>
