@@ -253,8 +253,6 @@ static long vxDevDisableInterruptLevelVME (unsigned level)
 static long vxDevMapAddr (epicsAddressType addrType, unsigned options,
             size_t logicalAddress, size_t size, volatile void **ppPhysicalAddress)
 {
-    long status;
-
     if (ppPhysicalAddress==NULL) {
         return S_dev_badArgument;
     }
@@ -265,6 +263,7 @@ static long vxDevMapAddr (epicsAddressType addrType, unsigned options,
     }
     else
     {
+        long status;
         status = sysBusToLocalAdrs (EPICStovxWorksAddrType[addrType],
                         (char *) logicalAddress, (char **)ppPhysicalAddress);
         if (status) {
@@ -315,7 +314,6 @@ static myISR *isrFetch(unsigned vectorNumber)
     myISR   *psub;
     myISR   *pCISR;
     void    *pParam;
-    int s;
 
     /*
      * fetch the handler or C stub attached at this vector
@@ -330,6 +328,7 @@ static myISR *isrFetch(unsigned vectorNumber)
          * and if so finds the function pointer and
          * the parameter passed
          */
+        int s;
         s = cISRTest(psub, &pCISR, &pParam);
         if(!s){
             psub = pCISR;

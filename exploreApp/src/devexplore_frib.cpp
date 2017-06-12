@@ -342,7 +342,7 @@ long init_record_common(dbCommon *prec)
 
 long load_bitfile_wf(waveformRecord *prec)
 {
-    flashProg *priv = (flashProg*)prec->dpvt;
+    flashProg *priv = static_cast<flashProg*>(prec->dpvt);
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
         return S_dev_noDevice;
@@ -367,7 +367,7 @@ long load_bitfile_wf(waveformRecord *prec)
 
 long startstop_lo(longoutRecord *prec)
 {
-    flashProg *priv = (flashProg*)prec->dpvt;
+    flashProg *priv = static_cast<flashProg*>(prec->dpvt);
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
         return S_dev_noDevice;
@@ -402,7 +402,7 @@ long startstop_lo(longoutRecord *prec)
 
 long status_mbbi(mbbiRecord *prec)
 {
-    flashProg *priv = (flashProg*)prec->dpvt;
+    flashProg *priv = static_cast<flashProg*>(prec->dpvt);
     if(!priv) {
         (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM);
         return S_dev_noDevice;
@@ -423,7 +423,7 @@ long status_mbbi(mbbiRecord *prec)
 
 long status_get_iointr_info(int dir, dbCommon* prec, IOSCANPVT* ppscan)
 {
-    flashProg *priv = (flashProg*)prec->dpvt;
+    flashProg *priv = static_cast<flashProg*>(prec->dpvt);
     if(priv) {
         *ppscan = priv->scan;
     }

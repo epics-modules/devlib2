@@ -110,7 +110,7 @@ struct priv {
 
     bool initread;
 
-    priv() :bar(0u), offset(0u), step(0), valsize(1), ord(NAT), vshift(0u), vmask(0u), initread(false) {}
+    priv() :bar(0u), offset(0u), step(0), valsize(1), ord(NAT), vshift(0u), vmask(0u), base(0), initread(false) {}
 
     template<typename VAL>
     VAL readraw(epicsUInt32 off=0) const
@@ -315,7 +315,7 @@ long explore_init_record(dbCommon *prec)
     }
 }
 
-#define TRY if(!prec->dpvt) return 0; priv *pvt = (priv*)prec->dpvt; (void)pvt; try
+#define TRY if(!prec->dpvt) return 0; priv *pvt = static_cast<priv*>(prec->dpvt); (void)pvt; try
 #define CATCH() catch(std::exception& e) { std::cerr<<prec->name<<" Error : "<<e.what()<<"\n"; (void)recGblSetSevr(prec, COMM_ALARM, INVALID_ALARM); return 0; }
 
 // integer to/from VAL
@@ -350,7 +350,7 @@ template<typename REC, int SIZE, priv::ORD ord>
 long explore_init_record_int_val(REC *prec)
 {
     long ret = explore_init_record<SIZE,ord>((dbCommon*)prec);
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if(ret==0 && pvt->initread)
         ret = explore_read_int_val(prec);
     return ret;
@@ -388,7 +388,7 @@ template<typename REC, int SIZE, priv::ORD ord>
 long explore_init_record_int_rval(REC *prec)
 {
     long ret = explore_init_record<SIZE,ord>((dbCommon*)prec);
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if(ret==0 && pvt->initread)
         ret = explore_read_int_rval(prec);
     return ret;
@@ -453,7 +453,7 @@ template<typename REC, int SIZE, priv::ORD ord>
 long explore_init_record_real_val(REC *prec)
 {
     long ret = explore_init_record<SIZE,ord>((dbCommon*)prec);
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if(ret==0 && pvt->initread)
         ret = explore_read_real_val(prec);
     return ret;
@@ -488,12 +488,12 @@ long explore_write_wf(waveformRecord *prec)
         unsigned nwritten = -1;
         switch(prec->ftvl) {
         case menuFtypeCHAR  :
-        case menuFtypeUCHAR : nwritten = pvt->writeArray((epicsUInt8*)  prec->bptr, prec->nord);
+        case menuFtypeUCHAR : nwritten = pvt->writeArray((epicsUInt8*)  prec->bptr, prec->nord); break;
         case menuFtypeSHORT :
-        case menuFtypeUSHORT: nwritten = pvt->writeArray((epicsUInt16*) prec->bptr, prec->nord);
+        case menuFtypeUSHORT: nwritten = pvt->writeArray((epicsUInt16*) prec->bptr, prec->nord); break;
         case menuFtypeLONG  :
-        case menuFtypeULONG : nwritten = pvt->writeArray((epicsUInt32*) prec->bptr, prec->nord);
-        case menuFtypeFLOAT : nwritten = pvt->writeArray((epicsFloat32*)prec->bptr, prec->nord);
+        case menuFtypeULONG : nwritten = pvt->writeArray((epicsUInt32*) prec->bptr, prec->nord); break;
+        case menuFtypeFLOAT : nwritten = pvt->writeArray((epicsFloat32*)prec->bptr, prec->nord); break;
         default:
             (void)recGblSetSevr(prec, WRITE_ALARM, INVALID_ALARM);
         }
@@ -507,7 +507,7 @@ template<int SIZE, priv::ORD ord>
 long explore_init_record_wf(waveformRecord *prec)
 {
     long ret = explore_init_record<SIZE,ord>((dbCommon*)prec);
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if(ret==0 && pvt->initread)
         ret = explore_read_wf(prec);
     return ret;

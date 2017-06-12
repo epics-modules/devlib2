@@ -122,8 +122,7 @@ void vmecsrprint(int N,int v)
 {
     volatile unsigned char* addr;
     char ctrlsts=0;
-    int i,j,space;
-    size_t ader;
+    int space;
 
     if( N<0 || N>=32 ){
         errlogPrintf("Slot number of of range (1-31)\n");
@@ -136,6 +135,7 @@ void vmecsrprint(int N,int v)
     if(!addr) return;
 
     if(v>=2){
+        unsigned i;
         for(i=0;i<512;i++){
             if(i%16==0) {
                 printf("%04x: ",i);
@@ -185,6 +185,7 @@ void vmecsrprint(int N,int v)
     }
 
     if(space>=2){
+        unsigned i;
         errlogPrintf("User CR      : %08x -> %08x\n",
                      CSRRead24(addr + CR_BEG_UCR),CSRRead24(addr + CR_END_UCR));
         errlogPrintf("User CSR     : %08x -> %08x\n",
@@ -204,6 +205,8 @@ void vmecsrprint(int N,int v)
             errlogPrintf("IRQ Src Cap. : 0x%02x\n",CSRRead8(addr + CR_IRQ_CAP));
             errlogPrintf("CRAM data width:0x%02x\n",CSRRead8(addr + CR_CRAM_WIDTH));
             for(i=0;i<8;i++){
+                unsigned j;
+                size_t ader;
                 errlogPrintf("Function %d\n",i);
                 errlogPrintf("  Data width: %02x\n",CSRRead8(addr + CR_FN_DAWPR(i)));
                 errlogPrintf("  Data AM   : ");

@@ -219,7 +219,7 @@ static
 unsigned long
 vread_sysfs(int *err, const char *fileformat, va_list args)
 {
-    unsigned long ret=0;
+    long ret=0;
     int size;
     char *scratch=NULL;
     FILE *fd=NULL;
@@ -323,12 +323,12 @@ static
 int
 find_uio_number(const struct osdPCIDevice* osd)
 {
-    int ret=-1;
-    char *devdir=NULL;
     const struct locations_t *curloc;
 
     for(curloc=locations; curloc->dir; ++curloc)
     {
+        int ret=-1;
+        char *devdir=NULL;
         devdir=allocPrintf(curloc->dir, osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!devdir)
             break;
@@ -777,22 +777,20 @@ linuxDevPCIToLocalAddr(
   unsigned int opt
 )
 {
-    int mapno;
-    unsigned int i;
-    int mapfd;
-
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     epicsMutexMustLock(osd->devLock);
 
     if (open_res(osd, bar) && open_uio(osd)) {
-        fprintf(stderr, "Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %i\n",
+        fprintf(stderr, "Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
         epicsMutexUnlock(osd->devLock);
         return S_dev_addrMapFail;
     }
 
     if (!osd->base[bar]) {
+        int mapno;
+        int mapfd;
 
         if ( osd->dev.bar[bar].ioport ) {
             fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
@@ -812,6 +810,7 @@ linuxDevPCIToLocalAddr(
                  * valid mappings are only PCI memory regions.
                  * Let's count them here
                  */
+                unsigned int i;
                 for ( i=0; i<=bar; i++ ) {
                     if ( osd->dev.bar[i].ioport ) {
                         mapno--;
@@ -934,7 +933,7 @@ void isrThread(void* arg)
 {
     osdISR *isr=arg;
     osdPCIDevice *osd=isr->osd;
-    int interrupted=0, ret;
+    int interrupted=0;
     epicsInt32 event, next=0;
     const char* name;
     int isrflag;
@@ -952,6 +951,7 @@ void isrThread(void* arg)
     isr->waiter_status = osdISRRunning;
 
     while (isr->waiter_status==osdISRRunning) {
+        int ret;
         epicsMutexUnlock(osd->devLock);
 
         /* The interrupted flag lets us check

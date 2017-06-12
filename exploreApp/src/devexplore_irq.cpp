@@ -96,7 +96,7 @@ static const epicsPCIID anypci[] = {
 static
 void isrfn(void *raw)
 {
-    priv *pvt = (priv*)raw;
+    priv *pvt = static_cast<priv*>(raw);
     try {
         Guard G(pvt->lock);
         if(pvt->wait_for) {
@@ -127,7 +127,7 @@ static
 #ifdef USE_COMPLETE
 void irq_scan_complete(void *usr, IOSCANPVT scan, int prio)
 {
-    priv *pvt = (priv*)usr;
+    priv *pvt = static_cast<priv*>(usr);
 #else
 void irq_scan_complete(CALLBACK* pcb)
 {
@@ -159,7 +159,7 @@ void irq_scan_complete(CALLBACK* pcb)
 static
 void isr_stop(void *raw)
 {
-    priv *pvt = (priv*)raw;
+    priv *pvt = static_cast<priv*>(raw);
     devPCIDisconnectInterrupt(pvt->dev, &isrfn, raw);
 }
 
@@ -222,7 +222,7 @@ long init_record_li_irq(longinRecord *prec)
 static
 long get_io_intr_irq(int dir, dbCommon* prec, IOSCANPVT* ppscan)
 {
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if (pvt)
         *ppscan = pvt->scan;
     return 0;
@@ -231,7 +231,7 @@ long get_io_intr_irq(int dir, dbCommon* prec, IOSCANPVT* ppscan)
 static
 long read_irq(longinRecord *prec)
 {
-    priv *pvt = (priv*)prec->dpvt;
+    priv *pvt = static_cast<priv*>(prec->dpvt);
     if (pvt) {
         Guard G(pvt->lock);
         prec->val = pvt->irqs;

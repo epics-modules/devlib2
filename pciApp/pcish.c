@@ -90,10 +90,10 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
     diagdev = loc.dev;
     diaglen=len;
 
-#if defined(linux)
-    printf("BAR %u from %p for %u bytes\n",bar, (void*)diagbase, diaglen);
+#if defined(__linux__)
+    printf("BAR %d from %p for %u bytes\n",bar, (void*)diagbase, (unsigned)diaglen);
 #else
-    printf("BAR %u from %p\n",bar, (void*)diagbase);
+    printf("BAR %d from %p\n",bar, (void*)diagbase);
 #endif
 
 }
@@ -120,7 +120,7 @@ static int check_args(int dmod, unsigned int offset, unsigned int count)
 void pciwrite(int dmod, int offset, int value)
 {
   epicsUInt32 tval = value;
-  volatile char* dptr = diagbase + offset;
+  volatile char* dptr = offset + (volatile char*)diagbase;
 
   if(!diagbase) {
       printf("Run pcidiagset first\n");
@@ -157,7 +157,7 @@ void pciread(int dmod, int offset, int count)
   count/=dbytes;
   if(count==0) count=1;
 
-  for(i=0, dptr=diagbase+offset; i<count; i++, dptr+=dbytes) {
+  for(i=0, dptr=offset+(volatile char*)diagbase; i<count; i++, dptr+=dbytes) {
       if ((i*dbytes)%16==0)
           printf("\n0x%08x ",i*dbytes);
       else if ((i*dbytes)%4==0)
