@@ -54,8 +54,8 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
     return 1;
   }
 
-  if( (addr > ((1<<amod)-1)) ||
-      (addr+count*dbytes >= ((1<<amod)-1))) {
+  if( (addr > ((1U<<amod)-1)) ||
+      (addr+count*dbytes >= ((1U<<amod)-1))) {
       epicsPrintf("Address/count out of range\n");
       return 1;
   }

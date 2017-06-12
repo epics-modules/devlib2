@@ -371,12 +371,12 @@ fail:
 }
 
 static int
-open_res(struct osdPCIDevice *osd, int bar)
+open_res(struct osdPCIDevice *osd, unsigned int bar)
 {
     int   ret  = 1;
     char *fname=NULL;
 
-    if ( bar < 0 || bar >= PCIBARCOUNT )
+    if ( bar >= PCIBARCOUNT )
         return ret;
 
     if ( osd->rfd[bar] >= 0 )
@@ -399,7 +399,7 @@ static
 void
 close_uio(struct osdPCIDevice* osd)
 {
-    int i;
+    unsigned int i;
 
     for(i=0; i<PCIBARCOUNT; i++) {
         if (!osd->base[i]) continue;
@@ -427,7 +427,6 @@ int linuxDevPCIInit(void)
 
     DIR* sysfsPci_dir=NULL;
     struct dirent* dir;
-    int i;
     osdPCIDevice *osd=NULL;
     pciLock = epicsMutexMustCreate();
     int host_is_first = 0;
@@ -451,6 +450,7 @@ int linuxDevPCIInit(void)
         int match;
         unsigned long long int start,stop,flags;
         char dname[80];
+        unsigned int i;
 
     	if (!dir->d_name || dir->d_name[0]=='.') continue; /* Skip invalid entries */
 
@@ -675,7 +675,7 @@ linuxDevPCIFindCB(
      const epicsPCIID *idlist,
      devPCISearchFn searchfn,
      void *arg,
-     unsigned int opt /* always 0 */
+     unsigned int opt
 )
 {
     int err=0, ret=0;
@@ -683,6 +683,7 @@ linuxDevPCIFindCB(
     osdPCIDevice *curdev=NULL;
     const epicsPCIID *search;
 
+    (void) opt;
     if(!searchfn || !idlist)
         return S_dev_badArgument;
 
@@ -776,7 +777,8 @@ linuxDevPCIToLocalAddr(
   unsigned int opt
 )
 {
-    int mapno,i;
+    int mapno;
+    unsigned int i;
     int mapfd;
 
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
@@ -872,6 +874,7 @@ int linuxDevPCIConnectInterrupt(
     osdISR *other, *isr=calloc(1,sizeof(osdISR));
     int     ret = S_dev_vecInstlFail;
 
+    (void) opt;
     if (!isr) return S_dev_noMemory;
 
     isr->fptr=pFunction;
@@ -1095,7 +1098,7 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
         st = pread( osd->cfd, pArg, CFG_ACC_WIDTH(mode), offset );
     }
 
-    if ( CFG_ACC_WIDTH(mode) != st ) {
+    if ( (ssize_t)CFG_ACC_WIDTH(mode) != st ) {
         if ( st < 0 )
             fprintf(stderr, "devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
                          CFG_ACC_WRITE(mode) ? "write" : "read",
@@ -1134,15 +1137,16 @@ linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
 }
 
 devLibPCI plinuxPCI = {
-  "native",
-  linuxDevPCIInit, linuxDevFinal,
-  linuxDevPCIFindCB,
-  linuxDevPCIToLocalAddr,
-  linuxDevPCIBarLen,
-  linuxDevPCIConnectInterrupt,
-  linuxDevPCIDisconnectInterrupt,
-  linuxDevPCIConfigAccess,
-  linuxDevPCISwitchInterrupt
+  .name = "native",
+  .pDevInit = linuxDevPCIInit,
+  .pDevFinal = linuxDevFinal,
+  .pDevPCIFind = linuxDevPCIFindCB,
+  .pDevPCIToLocalAddr = linuxDevPCIToLocalAddr,
+  .pDevPCIBarLen = linuxDevPCIBarLen,
+  .pDevPCIConnectInterrupt = linuxDevPCIConnectInterrupt,
+  .pDevPCIDisconnectInterrupt = linuxDevPCIDisconnectInterrupt,
+  .pDevPCIConfigAccess = linuxDevPCIConfigAccess,
+  .pDevPCISwitchInterrupt = linuxDevPCISwitchInterrupt,
 };
 #include <epicsExport.h>
 

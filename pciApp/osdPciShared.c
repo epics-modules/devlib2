@@ -35,7 +35,7 @@ static ELLLIST devices;
 int
 sharedDevPCIInit(void)
 {
-    int b, d, f, bar;
+    unsigned int b, d, f, bar;
     osdPCIDevice *next;
     uint8_t val8, header;
     PCIUINT32 val32;
@@ -155,6 +155,7 @@ sharedDevPCIFindCB(
   osdPCIDevice *curdev=NULL;
   const epicsPCIID *search;
 
+  (void)opt;
   if (devPCIDebug>=1)
     errlogPrintf("sharedDevPCIFindCB\n");
 
@@ -219,6 +220,7 @@ sharedDevPCIToLocalAddr(
 )
 {
   struct osdPCIDevice *osd=pcidev2osd(dev);
+  (void)opt;
 
   /* No locking since the base address is not changed
    * after the osdPCIDevice is created

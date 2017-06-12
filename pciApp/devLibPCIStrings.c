@@ -173,7 +173,7 @@ const char* devPCIDeviceClassToString(int classId)
     while (m>n)
     {
         i = (n+m)>>1;
-        assert(i>=0 && i<nument);
+        assert(i<nument);
         if (classes[i].classId == classId) return classes[i].name;
         if (classes[i].classId < classId) n=i+1;
         if (classes[i].classId > classId) m=i;
@@ -181,7 +181,7 @@ const char* devPCIDeviceClassToString(int classId)
     if(i<nument-1) {
         /* unknown device class linear search */
         classId |= 0xff;
-        assert(i>=0 && i<nument-1);
+        assert(i<nument-1);
         while (classes[++i].classId < classId);
         return classes[i].name;
     } else {

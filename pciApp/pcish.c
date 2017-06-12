@@ -24,7 +24,7 @@ static volatile void *diagbase;
 static epicsUInt32 diaglen;
 
 struct bdf {
-    int b,d,f;
+    unsigned int b,d,f;
     const epicsPCIDevice *dev;
 };
 
@@ -98,7 +98,7 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
 
 }
 
-static int check_args(int dmod, int offset, int count)
+static int check_args(int dmod, unsigned int offset, unsigned int count)
 {
     switch(dmod){
     case 8:

@@ -56,6 +56,7 @@ static int devPCIInit_result = 42;
 static
 void regInit(void* junk)
 {
+    (void)junk;
     pciDriversLock = epicsMutexMustCreate();
 }
 
@@ -148,6 +149,7 @@ const char* devLibPCIDriverName()
 static
 void devInit(void* junk)
 {
+  (void)junk;
   epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
   epicsMutexMustLock(pciDriversLock);
   if(!pdevLibPCI && devLibPCIUse(NULL)) {
@@ -504,7 +506,7 @@ devPCIShowMatch(int lvl, const char *spec, int vendor, int device)
 void
 devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
 {
-    int i;
+    unsigned int i;
 
     printf("PCI %04x:%02x:%02x.%x IRQ %u\n"
            "  vendor:device %04x:%04x rev %02x\n",

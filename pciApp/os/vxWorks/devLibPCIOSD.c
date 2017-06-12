@@ -65,6 +65,9 @@ int dummyPciIntConnect (
     VOIDFUNCPTR  routine,
     int          parameter)
 {
+    (void)vector;
+    (void)routine;
+    (void)parameter;
     return S_dev_vecInstlFail;
 }
 
@@ -76,6 +79,8 @@ int dummyPciIntDisconnect (
     VOIDFUNCPTR* vector,
     VOIDFUNCPTR  routine)
 {
+    (void)vector;
+    (void)routine;
     return S_dev_intDisconnect;
 }
 
@@ -88,6 +93,9 @@ int dummySysBusToLocalAdrs (
     char*   busAdrs,
     char**  pLocalAdrs)
 {
+    (void)adrsSpace;
+    (void)busAdrs;
+    (void)pLocalAdrs;
     return -1;
 }
 
@@ -158,6 +166,9 @@ int vxworksDevPCIConnectInterrupt(
     * is too small, just use the irq as the interrupt number.
     */
     unsigned char irq = osd->dev.irq;
+
+    (void)opt;
+
     if (inumTableSize && (irq < inumTableSize))
         irq = inumTable[(int)irq];
 
@@ -252,15 +263,16 @@ vxworksDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
 }
 
 devLibPCI pvxworksPCI = {
-  "native",
-  vxworksDevPCIInit, NULL,
-  sharedDevPCIFindCB,
-  vxworksPCIToLocalAddr,
-  sharedDevPCIBarLen,
-  vxworksDevPCIConnectInterrupt,
-  vxworksDevPCIDisconnectInterrupt,
-  sharedDevPCIConfigAccess,
-  vxworksDevPCISwitchInterrupt
+  .name = "native",
+  .pDevInit = vxworksDevPCIInit,
+  .pDevFinal = NULL,
+  .pDevPCIFind = sharedDevPCIFindCB,
+  .pDevPCIToLocalAddr = vxworksPCIToLocalAddr,
+  .pDevPCIBarLen = sharedDevPCIBarLen,
+  .pDevPCIConnectInterrupt = vxworksDevPCIConnectInterrupt,
+  .pDevPCIDisconnectInterrupt = vxworksDevPCIDisconnectInterrupt,
+  .pDevPCIConfigAccess = sharedDevPCIConfigAccess,
+  .pDevPCISwitchInterrupt = vxworksDevPCISwitchInterrupt,
 };
 #include <epicsExport.h>
 

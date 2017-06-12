@@ -81,7 +81,7 @@ static
 irqreturn_t
 handle_generic_msi(int irq, struct uio_info *info)
 {
-    //struct pci_generic_msi *priv = container_of(info, struct pci_generic_msi, uio);
+    /*struct pci_generic_msi *priv = container_of(info, struct pci_generic_msi, uio);*/
     /*TODO: automatically mask this IRQ when it occurs?
     if (priv->maskable) {
         mask_msi_irq();
@@ -93,7 +93,7 @@ handle_generic_msi(int irq, struct uio_info *info)
 static
 int control_generic_msi(struct uio_info *info, s32 onoff)
 {
-    //struct pci_generic_msi *priv = container_of(info, struct pci_generic_msi, uio);
+    /*struct pci_generic_msi *priv = container_of(info, struct pci_generic_msi, uio);*/
     /* (un)mask MSI */
     return 0;
 }
