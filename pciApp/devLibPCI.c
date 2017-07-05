@@ -243,13 +243,17 @@ int devPCIFindSpec(
     if(!found || !spec)
       return S_dev_badArgument;
 
-    /* When originally introduced in 2.7, devPCIFindSpec() parsed as decimal,
+    /* When originally introduced in 2.8, devPCIFindSpec() parsed as decimal,
      * which is confusing as BDF are usually shown in hex.
-     * Changed in 2.8 to parse as hex.
-     * TODO: remove this notice after 2.8
+     * Changed in 2.9 to parse as hex.
+     * TODO: remove this notice after 2.9
      */
     if(devPCIDebug>=0) {
-        fprintf(stderr, "Notice: devPCIFindSpec() expect B:D.F in hex\n");
+        static int shown=0;
+        if(!shown) {
+            fprintf(stderr, "Notice: devPCIFindSpec() expect B:D.F in hex\n");
+            shown = 1;
+        }
     }
 
     /* parse the spec. string */
