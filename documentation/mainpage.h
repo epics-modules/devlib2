@@ -52,6 +52,15 @@ even those which lack an implementation.
 
 @li @ref exploreapp
 
+@li @ref iocshpci
+
+@subsubsection explorepci Generic PCI driver
+
+The exploreApp @ref exploreapp is a generic EPICS driver intended to support
+development of custom PCI/PCIe devices.
+It provides a set of records which read/write to individual registers.
+Basic support for interrupts is also available (Linux only).
+
 @subsection vmesec VME CSR
 
 The VME64x library provides several functions for accessing the CSR/CR
@@ -65,6 +74,8 @@ definitions of standard registers, and functions to access them.
 
 @li @ref vmecsrregs "CSR/CR Register Definitions"
 
+@li @ref iocshvme
+
 @subsection mmiosec MMIO
 
 The MMIO library provides an OS and CPU architecture independent way to
@@ -75,13 +86,15 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver29 2.9 (UNRELEASED)
+@subsection ver29 2.9 (July 2017)
 
 @li pci: change devPCIFindSpec() to parse B:D.F as hex.
          This is an incompatible change!
 @li pci: Fixups for vxWorks 5 (Dirk Zimoch)
 @li pci: Add missing offset bounds check to PCI iocsh functions
+@li vme: Various fixes for VME iocsh functions
 @li explore: Add exploreApp toolkit for PCI driver/hardware development (@ref exploreapp)
+@li linux: Add pci_generic_msi.c UIO driver to support devices with single vector MSI
 
 @subsection ver28 2.8 (Sept. 2016)
 
@@ -615,6 +628,31 @@ This requires that a UIO kernel module be installed.
 The DTYP="Explore FRIB Flash" support implements a FRIB specific protocol
 for accessing a SPI flash chip over PCI.
 The @b frib-flash.db file demonstrates use.
+
+*/
+
+/** @page iocsh IOC shell functions
+
+Several IOC shell functions are provided to access PCI and VME devices
+
+@section iocshpci IOCsh functions for PCI devices
+
+- devPCIShow() List PCI devices present
+- devLibPCIUse() Select PCI system access implementation
+- pcidiagset() Select device for read/write functions
+- pciwrite()
+- pciread()
+- pciconfread()
+
+To use, begin by calling pcidiagset() to select the device and BAR that subsequent
+read/write calls will operate on.
+
+@section iocshvme IOCsh functions for VME devices
+
+- vmeread()
+- vmewrite()
+- vmeirqattach()
+- vmeirq()
 
 */
 
