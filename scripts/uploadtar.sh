@@ -12,4 +12,4 @@ die() {
 
 [ -f documentation/mainpage.h ] || die "Run me in the top level"
 
-scp "$1" $USER,epics@frs.sourceforge.net:/home/frs/project/epics/devlib2/
+scp "$@" $USER,epics@frs.sourceforge.net:/home/frs/project/epics/devlib2/
