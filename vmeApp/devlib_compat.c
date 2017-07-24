@@ -13,6 +13,8 @@
 #include <epicsVersion.h>
 #include <devLib.h>
 
+#include "devlibversion.h"
+
 #define epicsExportSharedSymbols
 #include <shareLib.h>
 
@@ -29,7 +31,7 @@
 
 #ifdef NEED_IFACE
 
-#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<12
+#if EPICS_VERSION_INT<VERSION_INT(3,14,12,0)
 /*
  * Most devlib function go through an indirection table with a null
  * implimentation provided for systems which doen't impliment some
@@ -71,7 +73,7 @@ epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
 
 #ifdef NEED_PIMPL
 
-#if EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<12
+#if EPICS_VERSION_INT<VERSION_INT(3,14,12,0)
 devLibVirtualOS *pdevLibVirtualOS = NULL;
 #else
 devLibVME *pdevLibVirtualOS = NULL;
@@ -79,7 +81,6 @@ devLibVME *pdevLibVirtualOS = NULL;
 
 #endif /* NEED_PIMPL */
 
-#if !(EPICS_VERSION==3 && EPICS_REVISION==14 && EPICS_MODIFICATION<10)
 #include <epicsExport.h>
 
 void devReplaceVirtualOS(void)
@@ -88,4 +89,3 @@ void devReplaceVirtualOS(void)
 }
 
 epicsExportRegistrar(devReplaceVirtualOS);
-#endif

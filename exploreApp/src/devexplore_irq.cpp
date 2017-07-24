@@ -39,13 +39,13 @@
 
 #include <epicsMMIO.h>
 
+#include "devlibversion.h"
+
 #define epicsExportSharedSymbols
 #include "devLibPCI.h"
 
-#ifdef EPICS_VERSION_INT
 #if EPICS_VERSION_INT>=VERSION_INT(3,15,0,1)
 #  define USE_COMPLETE
-#endif
 #endif
 
 #ifndef __rtems__

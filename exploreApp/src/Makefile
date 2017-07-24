@@ -5,6 +5,8 @@ include $(TOP)/configure/CONFIG
 #  ADD MACRO DEFINITIONS AFTER THIS LINE
 #=============================
 
+USR_CPPFLAGS += -I$(TOP)/common
+
 # explore app doesn't build with older vxworks (eg. tornado22)
 # don't build at all until someone asks
 LIBRARY_IOC_DEFAULT = explorepci

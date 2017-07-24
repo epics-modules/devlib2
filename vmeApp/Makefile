@@ -4,6 +4,8 @@
 TOP=..
 include $(TOP)/configure/CONFIG
 
+USR_CPPFLAGS += -I$(TOP)/common
+
 #---------------------
 # Install include files
 #
