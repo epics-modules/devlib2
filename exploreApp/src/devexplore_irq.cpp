@@ -3,6 +3,10 @@
  * State University (c) Copyright 2016.
  */
 
+#ifdef __rtems__
+#include <rtems.h> /* for printk() */
+#endif
+
 #include <iostream>
 #include <string>
 #include <stdexcept>
