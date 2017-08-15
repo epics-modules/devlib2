@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
         }
 
         for(; i<end; i+=4) {
-            epicsUInt32 val = le_ioread32(base+i);
+            epicsUInt32 val = le_ioread32(((volatile char*)base)+i);
             fwrite(&val, 4, 1, io);
         }
 

@@ -522,7 +522,7 @@ int linuxDevPCIInit(void)
             match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
         
             if (match != 3) {
-                fprintf(stderr, "Could not parse line %i of %s\n", i+1, filename);
+                fprintf(stderr, "Could not parse line %u of %s\n", i+1, filename);
                 continue;
             }
 
@@ -539,7 +539,7 @@ int linuxDevPCIInit(void)
         /* rom */
         match = fscanf(file, "%llx %llx %llx\n", &start, &stop, &flags);
         if (match != 3) {
-            fprintf(stderr, "Could not parse line %i of %s\n", i+1, filename);
+            fprintf(stderr, "Could not parse line %u of %s\n", i+1, filename);
             start = 0;
             stop = 0;
         }
@@ -837,7 +837,7 @@ linuxDevPCIToLocalAddr(
         }
     }
 
-    *ppLocalAddr=osd->base[bar] + osd->offset[bar];
+    *ppLocalAddr=((volatile char*)osd->base[bar]) + osd->offset[bar];
 
     epicsMutexUnlock(osd->devLock);
     return 0;
@@ -1021,14 +1021,13 @@ int linuxDevPCIDisconnectInterrupt(
 {
     int ret=S_dev_intDisconnect;
     ELLNODE *cur;
-    osdISR *isr;
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
     epicsMutexMustLock(osd->devLock);
 
     for(cur=ellFirst(&osd->isrs); cur; cur=ellNext(cur))
     {
-        isr=CONTAINER(cur,osdISR,node);
+        osdISR *isr=CONTAINER(cur,osdISR,node);
 
         if (pFunction==isr->fptr && parameter==isr->param) {
 

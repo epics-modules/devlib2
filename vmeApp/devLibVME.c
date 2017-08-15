@@ -711,10 +711,9 @@ static long devListAddressMap(ELLLIST *pRangeList)
 {
     rangeItem *pri;
     int i;
-    long s;
 
     if (!devLibInitFlag) {
-        s = devLibInit ();
+        long s = devLibInit ();
         if (s) {
             return s;
         }

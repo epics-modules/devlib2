@@ -36,7 +36,7 @@ class DBEntry {
     DBENTRY entry;
 public:
     DBENTRY *pentry() const { return const_cast<DBENTRY*>(&entry); }
-    DBEntry(dbCommon *prec) {
+    explicit DBEntry(dbCommon *prec) {
         dbInitEntry(pdbbase, &entry);
         if(dbFindRecord(&entry, prec->name))
             throw std::logic_error(SB()<<"getLink can't find record "<<prec->name);

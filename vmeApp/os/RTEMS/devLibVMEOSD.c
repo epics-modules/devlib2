@@ -225,8 +225,6 @@ static long rtemsDevDisableInterruptLevelVME (unsigned level)
 static long rtemsDevMapAddr (epicsAddressType addrType, unsigned options,
             size_t logicalAddress, size_t size, volatile void **ppPhysicalAddress)
 {
-    long status;
-
     if (ppPhysicalAddress==NULL) {
         return S_dev_badArgument;
     }
@@ -237,8 +235,8 @@ static long rtemsDevMapAddr (epicsAddressType addrType, unsigned options,
     }
     else
     {
-        status = BSP_vme2local_adrs(EPICStovxWorksAddrType[addrType],
-                        logicalAddress, (unsigned long *)ppPhysicalAddress);
+        long status = BSP_vme2local_adrs(EPICStovxWorksAddrType[addrType],
+                                         logicalAddress, (unsigned long *)ppPhysicalAddress);
         if (status) {
             return S_dev_addrMapFail;
         }

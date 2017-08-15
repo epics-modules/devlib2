@@ -177,11 +177,11 @@ void vmecsrprint(int N,int v)
         errlogPrintf("CSR Bar      : 0x%02x\n",CSRRead8(addr + CSR_BAR));
         ctrlsts=CSRRead8(addr + CSR_BIT_SET);
         errlogPrintf("CSR CS       : 0x%02x\n",ctrlsts);
-        errlogPrintf("CSR Reset    : %s\n",ctrlsts&CSR_BITSET_RESET_MODE?"Yes":"No");
-        errlogPrintf("CSR Sysfail  : %s\n",ctrlsts&CSR_BITSET_SYSFAIL_ENA?"Yes":"No");
-        errlogPrintf("CSR Fail     : %s\n",ctrlsts&CSR_BITSET_MODULE_FAIL?"Yes":"No");
-        errlogPrintf("CSR Enabled  : %s\n",ctrlsts&CSR_BITSET_MODULE_ENA?"Yes":"No");
-        errlogPrintf("CSR Bus Err  : %s\n",ctrlsts&CSR_BITSET_BERR?"Yes":"No");
+        errlogPrintf("CSR Reset    : %s\n",(ctrlsts&CSR_BITSET_RESET_MODE)?"Yes":"No");
+        errlogPrintf("CSR Sysfail  : %s\n",(ctrlsts&CSR_BITSET_SYSFAIL_ENA)?"Yes":"No");
+        errlogPrintf("CSR Fail     : %s\n",(ctrlsts&CSR_BITSET_MODULE_FAIL)?"Yes":"No");
+        errlogPrintf("CSR Enabled  : %s\n",(ctrlsts&CSR_BITSET_MODULE_ENA)?"Yes":"No");
+        errlogPrintf("CSR Bus Err  : %s\n",(ctrlsts&CSR_BITSET_BERR)?"Yes":"No");
     }
 
     if(space>=2){
@@ -190,7 +190,7 @@ void vmecsrprint(int N,int v)
                      CSRRead24(addr + CR_BEG_UCR),CSRRead24(addr + CR_END_UCR));
         errlogPrintf("User CSR     : %08x -> %08x\n",
                      CSRRead24(addr + CR_BEG_UCSR),CSRRead24(addr + CR_END_UCSR));
-        errlogPrintf("CSR Owned    : %s\n",ctrlsts&CSR_BITSET_CRAM_OWNED?"Yes":"No");
+        errlogPrintf("CSR Owned    : %s\n",(ctrlsts&CSR_BITSET_CRAM_OWNED)?"Yes":"No");
         errlogPrintf("Owner        : 0x%02x\n",CSRRead8(addr + CSR_CRAM_OWNER));
         errlogPrintf("User bits    : 0x%02x\n",CSRRead8(addr + CSR_UD_BIT_SET));
         errlogPrintf("Serial Number: 0x");

@@ -135,7 +135,7 @@ void irq_scan_complete(void *usr, IOSCANPVT scan, int prio)
 #else
 void irq_scan_complete(CALLBACK* pcb)
 {
-    priv *pvt = (priv*)pcb->user;
+    priv *pvt = static_cast<priv*>(pcb->user);
     int prio = pcb->priority;
 #endif
     try {

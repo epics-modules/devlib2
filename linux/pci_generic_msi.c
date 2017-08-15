@@ -120,6 +120,7 @@ static int probe_generic_msi(struct pci_dev *pdev,
     priv = kzalloc(sizeof(*priv), GFP_KERNEL);
     if (!priv) {
         err = -ENOMEM;
+        return err;
     }
     priv->pdev = pdev;
 
