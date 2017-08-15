@@ -1,43 +1,67 @@
 #!/bin/sh
 set -e -x
 
-# Build base for use with https://travis-ci.org
-#
-# Set environment variables
-# BASE= 3.14 3.15 or 3.16  (VCS branch)
-# STATIC=  static or shared
+cat << EOF > configure/RELEASE
+EPICS_BASE=$HOME/epics-base
+EOF
 
-die() {
-  echo "$1" >&2
-  exit 1
-}
+git clone --depth 10 --branch $BASE https://github.com/epics-base/epics-base.git $HOME/epics-base
 
-[ "$BASE" ] || die "Set BASE"
+EPICS_HOST_ARCH=`sh $HOME/epics-base/startup/EpicsHostArch`
 
-CDIR="$HOME/.cache/base-$BASE-$STATIC"
-
-if [ ! -e "$CDIR/built" ]
-then
-  install -d "$CDIR"
-  ( cd "$CDIR" && git clone --depth 50 --branch $BASE https://github.com/epics-base/epics-base.git base )
-
-  EPICS_BASE="$CDIR/base"
-
-  case "$STATIC" in
-  static)
-    cat << EOF >> "$EPICS_BASE/configure/CONFIG_SITE"
+case "$STATIC" in
+static)
+    cat << EOF >> "$HOME/epics-base/configure/CONFIG_SITE"
 SHARED_LIBRARIES=NO
 STATIC_BUILD=YES
 EOF
     ;;
-  *) ;;
-  esac
+*) ;;
+esac
 
-  make -C "$EPICS_BASE" -j2
+case "$CMPLR" in
+clang)
+  echo "Host compiler is clang"
+  cat << EOF >> $HOME/epics-base/configure/os/CONFIG_SITE.Common.$EPICS_HOST_ARCH
+GNU         = NO
+CMPLR_CLASS = clang
+CC          = clang
+CCC         = clang++
+EOF
+  ;;
+*) echo "Host compiler is default";;
+esac
 
-  touch "$CDIR/built"
+# requires wine and g++-mingw-w64-i686
+if [ "$WINE" = "32" ]
+then
+  echo "Cross mingw32"
+  sed -i -e '/CMPLR_PREFIX/d' $HOME/epics-base/configure/os/CONFIG_SITE.linux-x86.win32-x86-mingw
+  cat << EOF >> $HOME/epics-base/configure/os/CONFIG_SITE.linux-x86.win32-x86-mingw
+CMPLR_PREFIX=i686-w64-mingw32-
+EOF
+  cat << EOF >> $HOME/epics-base/configure/CONFIG_SITE
+CROSS_COMPILER_TARGET_ARCHS+=win32-x86-mingw
+EOF
 fi
 
-EPICS_HOST_ARCH=`sh $EPICS_BASE/startup/EpicsHostArch`
+# set RTEMS to eg. "4.9" or "4.10"
+if [ -n "$RTEMS" ]
+then
+  echo "Cross RTEMS${RTEMS} for pc386"
+  install -d /home/travis/.cache
+  curl -L "https://github.com/mdavidsaver/rsb/releases/download/travis-20160306-2/rtems${RTEMS}-i386-trusty-20190306-2.tar.gz" \
+  | tar -C /home/travis/.cache -xj
 
-echo "EPICS_BASE=$EPICS_BASE" > configure/RELEASE.local
+  sed -i -e '/^RTEMS_VERSION/d' -e '/^RTEMS_BASE/d' $HOME/epics-base/configure/os/CONFIG_SITE.Common.RTEMS
+  cat << EOF >> $HOME/epics-base/configure/os/CONFIG_SITE.Common.RTEMS
+RTEMS_VERSION=$RTEMS
+RTEMS_BASE=/home/travis/.cache/rtems${RTEMS}-i386
+EOF
+  cat << EOF >> $HOME/epics-base/configure/CONFIG_SITE
+CROSS_COMPILER_TARGET_ARCHS+=RTEMS-pc386
+EOF
+
+fi
+
+make -C "$HOME/epics-base" -j2
