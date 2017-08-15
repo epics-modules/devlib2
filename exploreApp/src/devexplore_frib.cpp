@@ -435,7 +435,7 @@ struct dset6 {
     DEVSUPFUN read;
     DEVSUPFUN junk;
 };
-#define DSET(NAME, INITREC, IOINTR, RW) static dset6 NAME = {{6, NULL, NULL, (DEVSUPFUN)INITREC, (DEVSUPFUN)IOINTR}, (DEVSUPFUN)RW}; \
+#define DSET(NAME, INITREC, IOINTR, RW) static dset6 NAME = {{6, NULL, NULL, (DEVSUPFUN)INITREC, (DEVSUPFUN)IOINTR}, (DEVSUPFUN)RW, NULL}; \
     epicsExportAddress(dset, NAME)
 
 } // namespace

@@ -141,7 +141,9 @@ devLibPCI prtemsPCI = {
   sharedDevPCIBarLen,
   rtemsDevPCIConnectInterrupt,
   rtemsDevPCIDisconnectInterrupt,
-  rtemsDevPCIConfigAccess
+  rtemsDevPCIConfigAccess,
+  NULL,
+  {NULL,NULL}
 };
 
 #include <epicsExport.h>

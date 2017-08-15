@@ -150,7 +150,7 @@ struct priv {
         epicsUInt32 addr = 0,
                     end  = barsize-offset;
         unsigned i;
-        for(i=0; i<count && addr<end && addr>=0; i++, addr+=step)
+        for(i=0; i<count && addr<end; i++, addr+=step)
         {
             epicsUInt32 OV = read<VAL>(addr);
             *val++ = castval<VAL,epicsUInt32>::op(OV);
@@ -194,7 +194,7 @@ struct priv {
                     end  = barsize-offset;
 
         unsigned i;
-        for(i=0; i<count && addr<end && addr>=0; i++, addr+=step)
+        for(i=0; i<count && addr<end; i++, addr+=step)
         {
             write(*val++, addr);
         }
