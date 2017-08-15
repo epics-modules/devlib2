@@ -27,3 +27,15 @@
 # we don't actually use 'rset' directly,
 # but want to suppress deprecation warnings
 USR_CPPFLAGS += -DUSE_TYPED_RSET
+
+# A epicsMMIO.h is included in Base >=3.15.
+# By default we don't install our epicsMMIO.h when this is true.
+# Set to YES to always install our epicsMMIO.h
+#REPLACE_MMIO=NO
+
+# Uncomment the following to enable strict treatment of warnings
+#USR_CFLAGS += -Wall -Wextra -Werror -Wno-error=unused-parameter
+#USR_CXXFLAGS += -Wall -Wextra -Werror -Wno-error=unused-parameter -Wno-error=deprecated-declarations
+
+# Set to YES to link executable (mostly) statically
+#STATIC_BUILD=NO
