@@ -7,7 +7,7 @@ EOF
 
 git clone --depth 10 --recursive --branch $BASE https://github.com/epics-base/epics-base.git $HOME/epics-base
 
-EPICS_HOST_ARCH=`sh $HOME/epics-base/startup/EpicsHostArch`
+export EPICS_HOST_ARCH=`sh $HOME/epics-base/startup/EpicsHostArch`
 
 case "$STATIC" in
 static)

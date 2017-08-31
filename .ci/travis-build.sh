@@ -1,5 +1,9 @@
 #!/bin/sh
-set -e -x
+set -x -e
+
+export EPICS_HOST_ARCH=`sh $HOME/epics-base/startup/EpicsHostArch`
+
+make -j2
 
 [ "$TEST" = "YES" ] || exit 0
 
