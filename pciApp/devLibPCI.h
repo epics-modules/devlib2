@@ -351,7 +351,7 @@ devLibPCIUse(const char* name);
 epicsShareFunc
 const char* devLibPCIDriverName();
 
-extern int devPCIDebug;
+epicsShareExtern int devPCIDebug;
 
 /** @brief Read byte from configuration space
  *

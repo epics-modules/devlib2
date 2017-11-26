@@ -13,6 +13,8 @@
 #include <dbStaticLib.h>
 #include <dbAccess.h>
 
+#include <shareLib.h>
+
 typedef epicsGuard<epicsMutex> Guard;
 typedef epicsGuardRelease<epicsMutex> UnGuard;
 
@@ -28,6 +30,7 @@ struct SB {
 
 typedef std::map<std::string, std::string> strmap_t;
 
+epicsShareExtern
 void parseToMap(const std::string& inp, strmap_t& ret);
 
 epicsUInt32 parseU32(const std::string& s);

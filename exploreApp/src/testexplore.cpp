@@ -16,9 +16,11 @@
 #include <dbUnitTest.h>
 #include <testMain.h>
 
-extern
+#include <shareLib.h>
+
+epicsShareExtern
 volatile void * const exploreTestBase;
-extern
+epicsShareExtern
 const epicsUInt32 exploreTestSize;
 
 extern "C"

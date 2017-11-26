@@ -73,6 +73,7 @@ devLibPCIRegisterDriver2(devLibPCI*, size_t);
 
 /*! Register default implementation */
 /*! Not needed by IOCs */
+epicsShareFunc
 void devLibPCIRegisterBaseDefault(void);
 
 #ifdef __cplusplus

@@ -53,9 +53,9 @@
 #define epicsExportSharedSymbols
 #include "devexplore.h"
 
-extern
+epicsShareExtern
 volatile void * const exploreTestBase;
-extern
+epicsShareExtern
 const epicsUInt32 exploreTestSize;
 
 
