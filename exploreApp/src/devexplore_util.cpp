@@ -5,8 +5,10 @@
 
 #include <epicsVersion.h>
 #include <epicsStdlib.h>
+#include <errlog.h>
 
 #define epicsExportSharedSymbols
+#include "devlibversion.h"
 #include "devexplore.h"
 
 void parseToMap(const std::string& inp, strmap_t& ret)
@@ -32,7 +34,7 @@ void parseToMap(const std::string& inp, strmap_t& ret)
     }
 }
 
-#if EPICS_REVISION<=14
+#if EPICS_VERSION_INT < VERSION_INT(3,15,0,0)
 
 #define M_stdlib 4242
 #define S_stdlib_noConversion (M_stdlib | 1) /* No digits to convert */
