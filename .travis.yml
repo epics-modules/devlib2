@@ -11,6 +11,7 @@ addons:
     - perl
     - clang
 env:
+ - BASE=core/master STATIC=shared TEST=YES
  - BASE=3.16 STATIC=shared TEST=YES
  - BASE=3.16 STATIC=static RTEMS=4.9
  - BASE=3.16 STATIC=shared CMPLR=clang RTEMS=4.10
