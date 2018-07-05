@@ -110,10 +110,12 @@ static int check_args(int dmod, unsigned int offset, unsigned int count)
       return 1;
     }
 
+#if defined(__linux__)
     if(offset>=diaglen || offset+count>diaglen) {
         printf("Invalid offset and/or count\n");
         return 1;
     }
+#endif
     return 0;
 }
 
