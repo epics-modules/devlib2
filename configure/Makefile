@@ -13,5 +13,7 @@ CHECK_RELEASE = YES
 TARGETS = $(CONFIG_TARGETS)
 CONFIGS += $(subst ../,,$(wildcard $(CONFIG_INSTALLS)))
 
+CFG += CONFIG_DEVLIB2_VERSION
+
 include $(TOP)/configure/RULES
 

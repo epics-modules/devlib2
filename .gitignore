@@ -3,5 +3,6 @@
 /dbd/
 /include/
 /lib/
+/cfg/
 O.*/
 *.local
