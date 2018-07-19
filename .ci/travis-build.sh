@@ -7,6 +7,8 @@ make -j2
 
 [ "$TEST" = "YES" ] || exit 0
 
+lspci
+
 make tapfiles
 
 find . -name '*.tap' -print0 | xargs -0 -n1 prove -e cat -f
