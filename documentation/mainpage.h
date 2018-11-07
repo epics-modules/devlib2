@@ -86,6 +86,8 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver2b 2.11 (UNRELEASED)
+
 @subsection ver2a 2.10 (Nov 2018)
 
 @li Support Base 7.0.x

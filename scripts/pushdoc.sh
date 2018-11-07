@@ -12,4 +12,4 @@ die() {
 
 (cd documentation && doxygen)
 
-rsync -av --delete "$@" documentation/doc/html/ $USER,epics@frs.sourceforge.net:/home/project-web/epics/htdocs/devlib2/
+rsync -av --delete documentation/doc/html/ $USER,epics@frs.sourceforge.net:/home/project-web/epics/htdocs/devlib2/
