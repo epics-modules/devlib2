@@ -86,6 +86,12 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver2a 2.10 (Nov 2018)
+
+@li Support Base 7.0.x
+@li Publish module version to user makefiles
+@li Minor bug fixes
+
 @subsection ver29 2.9 (July 2017)
 
 @li pci: change devPCIFindSpec() to parse B:D.F as hex.
