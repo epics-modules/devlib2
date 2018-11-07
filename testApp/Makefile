@@ -33,6 +33,19 @@ pciio_LIBS += epicspci
 
 TESTSCRIPTS_HOST += $(TESTS:%=%.t)
 
+# RTEMS/QEMU testing infrastructure added in 7.0.2
+ifdef BASE_7_0
+ifneq ($(EPICS_MODIFICATION),1)
+PROD_SRCS_RTEMS += rtemsTestData.c
+
+ifneq ($(filter $(T_A),$(CROSS_COMPILER_RUNTEST_ARCHS)),)
+TESTPROD_RTEMS = $(TESTPROD_HOST)
+TESTSCRIPTS_RTEMS += $(TESTS:%=%.t)
+endif
+
+endif
+endif # ifdef BASE_7_0
+
 #===========================
 
 include $(TOP)/configure/RULES

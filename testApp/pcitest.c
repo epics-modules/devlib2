@@ -111,10 +111,3 @@ MAIN(pcitest) {
     findRootBridge();
     return testDone();
 }
-
-#ifdef __rtems__
-int main(int argc, char *argv[]) {
-    pcitest();
-    return 0;
-}
-#endif
