@@ -5,7 +5,7 @@ cat << EOF > configure/RELEASE
 EPICS_BASE=$HOME/epics-base
 EOF
 
-git clone --depth 10 --recursive --branch $BASE https://github.com/epics-base/epics-base.git $HOME/epics-base
+git clone --depth 10 --branch $BASE https://github.com/epics-base/epics-base.git $HOME/epics-base
 
 export EPICS_HOST_ARCH=`sh $HOME/epics-base/startup/EpicsHostArch`
 
@@ -49,17 +49,16 @@ fi
 if [ -n "$RTEMS" ]
 then
   echo "Cross RTEMS${RTEMS} for pc386"
-  install -d /home/travis/.cache
-  curl -L "https://github.com/mdavidsaver/rsb/releases/download/travis-20160306-2/rtems${RTEMS}-i386-trusty-20190306-2.tar.gz" \
-  | tar -C /home/travis/.cache -xj
+  curl -L "https://github.com/mdavidsaver/rsb/releases/download/20171203-${RTEMS}/i386-rtems${RTEMS}-trusty-20171203-${RTEMS}.tar.bz2" \
+  | tar -C / -xmj
 
   sed -i -e '/^RTEMS_VERSION/d' -e '/^RTEMS_BASE/d' $HOME/epics-base/configure/os/CONFIG_SITE.Common.RTEMS
   cat << EOF >> $HOME/epics-base/configure/os/CONFIG_SITE.Common.RTEMS
 RTEMS_VERSION=$RTEMS
-RTEMS_BASE=/home/travis/.cache/rtems${RTEMS}-i386
+RTEMS_BASE=$HOME/.rtems
 EOF
   cat << EOF >> $HOME/epics-base/configure/CONFIG_SITE
-CROSS_COMPILER_TARGET_ARCHS+=RTEMS-pc386
+CROSS_COMPILER_TARGET_ARCHS += RTEMS-pc386-qemu
 EOF
 
 fi

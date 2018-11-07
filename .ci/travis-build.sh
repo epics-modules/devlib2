@@ -11,4 +11,4 @@ lspci
 
 make tapfiles
 
-find . -name '*.tap' -print0 | xargs -0 -n1 prove -e cat -f
+make -s test-results || find . -name '*.tap' -print0 | xargs -0 -n1 prove -e cat -f

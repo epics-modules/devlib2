@@ -10,8 +10,9 @@ addons:
     - libncurses5-dev
     - perl
     - clang
+    - qemu-system-x86
 env:
- - BASE=core/master STATIC=shared TEST=YES
+ - BASE=7.0  STATIC=shared RTEMS=4.9 TEST=YES
  - BASE=3.16 STATIC=shared TEST=YES
  - BASE=3.16 STATIC=static RTEMS=4.9
  - BASE=3.16 STATIC=shared CMPLR=clang RTEMS=4.10
