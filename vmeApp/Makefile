@@ -22,6 +22,8 @@ DBD += epicsvme.dbd
 #
 LIBRARY_IOC += epicsvme
 
+SHRLIB_VERSION ?= $(DEVLIB2_MAJOR_VERSION).$(DEVLIB2_MINOR_VERSION)
+
 epicsvme_SRCS += devcsr.c
 epicsvme_SRCS += iocreg.c
 epicsvme_SRCS += vmesh.c

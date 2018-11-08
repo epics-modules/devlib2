@@ -12,6 +12,8 @@ USR_CPPFLAGS += -I$(TOP)/common
 
 LIBRARY_IOC = epicspci
 
+SHRLIB_VERSION ?= $(DEVLIB2_MAJOR_VERSION).$(DEVLIB2_MINOR_VERSION)
+
 USR_INCLUDES += -I../os/$(OS_CLASS)
 
 DBD += epicspci.dbd

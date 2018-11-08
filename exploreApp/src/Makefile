@@ -14,6 +14,8 @@ PROD_SYS_LIBS_WIN32 += ws2_32 advapi32 user32
 LIBRARY_IOC_DEFAULT = explorepci
 LIBRARY_IOC_vxWorks = -nil-
 
+SHRLIB_VERSION ?= $(DEVLIB2_MAJOR_VERSION).$(DEVLIB2_MINOR_VERSION)
+
 explorepci_SRCS += devexplore.cpp
 explorepci_SRCS += devexplore_irq.cpp
 explorepci_SRCS += devexplore_frib.cpp
