@@ -856,20 +856,22 @@ linuxDevPCIToLocalAddr(
 {
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
-    epicsMutexMustLock(osd->devLock);
-
-    if (open_res(osd, bar)!=0 || map_bar(osd, bar, opt)!=0) {
-        if (open_uio(osd)!=0 || map_bar(osd, bar, opt)!=0) {
-            fprintf(stderr, "Can neither mmap resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
-                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
+    if (!osd->base[bar]) {
+        epicsMutexMustLock(osd->devLock);
+        if (!osd->base[bar]) {
+            if (open_res(osd, bar)!=0 || map_bar(osd, bar, opt)!=0) {
+                if (open_uio(osd)!=0 || map_bar(osd, bar, opt)!=0) {
+                    fprintf(stderr, "Can neither mmap resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
+                        osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
+                    epicsMutexUnlock(osd->devLock);
+                    return S_dev_addrMapFail;
+                }
+            }
             epicsMutexUnlock(osd->devLock);
-            return S_dev_addrMapFail;
         }
     }
-
     *ppLocalAddr=((volatile char*)osd->base[bar]) + osd->offset[bar];
 
-    epicsMutexUnlock(osd->devLock);
     return 0;
 }
 
