@@ -386,6 +386,8 @@ open_res(struct osdPCIDevice *osd, unsigned int bar)
         goto fail;
 
     if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
+        fprintf(stderr, "Failed to open resource file for PCI device %04x:%02x:%02x.%x: %s\n",
+            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
         goto fail;
     }
 
@@ -767,6 +769,81 @@ done:
     return ret;
 }
 
+static const char* fd2filename(int fd, char* buffer, size_t buffersize)
+{
+    char procfile[32];
+    size_t n;
+
+    sprintf(procfile, "/proc/self/fd/%d", fd);
+    n = readlink(procfile, buffer, buffersize-1);
+    if (n>=0) buffer[n]=0;
+    else snprintf(buffer, buffersize, "<unknown>");
+    return buffer;
+}
+
+static
+int
+map_bar(
+  osdPCIDevice *osd,
+  unsigned int bar,
+  unsigned int opt
+)
+{
+    int mapno;
+    int mapfd;
+
+    if ( osd->dev.bar[bar].ioport ) {
+        fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
+                     osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+        return S_dev_addrMapFail;
+    }
+
+    if ( (mapfd = osd->rfd[bar]) >= 0 ) {
+        mapno = 0;
+    } else {
+
+        mapno = bar;
+
+        if (opt&DEVLIB_MAP_UIOCOMPACT) {
+            /* mmap requires the number of *mappings* times pagesize;
+             * valid mappings are only PCI memory regions.
+             * Let's count them here
+             */
+            unsigned int i;
+            for ( i=0; i<=bar; i++ ) {
+                if ( osd->dev.bar[i].ioport ) {
+                    mapno--;
+                }
+            }
+        }
+
+        if ( mapno < 0 ) {
+            return S_dev_addrMapFail;
+        }
+        mapfd = osd->fd;
+    }
+
+    osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
+                          PROT_READ|PROT_WRITE, MAP_SHARED,
+                          mapfd, mapno*pagesize);
+    if(devPCIDebug>0)
+    {
+        char mapfilename[128];
+
+        fprintf(stderr, "mmap fd=%d %s, size=%#lx, offset=%#lx returned %p\n",
+            mapfd, fd2filename(mapfd, mapfilename, sizeof(mapfilename)),
+            (long)(osd->offset[bar]+osd->len[bar]), mapno*pagesize, osd->base[bar]);
+    }
+
+    if (osd->base[bar]==MAP_FAILED) {
+        if (osd->rfd[bar]) {
+            close(osd->rfd[bar]);
+            osd->rfd[bar] = -1;
+        }
+        return S_dev_addrMapFail;
+    }
+    return 0;
+}
 
 static
 int
@@ -781,57 +858,10 @@ linuxDevPCIToLocalAddr(
 
     epicsMutexMustLock(osd->devLock);
 
-    if (open_res(osd, bar) && open_uio(osd)) {
-        fprintf(stderr, "Can neither open resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
-            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
-        epicsMutexUnlock(osd->devLock);
-        return S_dev_addrMapFail;
-    }
-
-    if (!osd->base[bar]) {
-        int mapno;
-        int mapfd;
-
-        if ( osd->dev.bar[bar].ioport ) {
-            fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
-            epicsMutexUnlock(osd->devLock);
-            return S_dev_addrMapFail;
-        }
-
-        if ( (mapfd = osd->rfd[bar]) >= 0 ) {
-            mapno = 0;
-        } else {
-
-            mapno = bar;
-
-            if (opt&DEVLIB_MAP_UIOCOMPACT) {
-                /* mmap requires the number of *mappings* times pagesize;
-                 * valid mappings are only PCI memory regions.
-                 * Let's count them here
-                 */
-                unsigned int i;
-                for ( i=0; i<=bar; i++ ) {
-                    if ( osd->dev.bar[i].ioport ) {
-                        mapno--;
-                    }
-                }
-            }
-
-            if ( mapno < 0 ) {
-                epicsMutexUnlock(osd->devLock);
-                return S_dev_addrMapFail;
-            }
-            mapfd = osd->fd;
-        }
-
-        osd->base[bar] = mmap(NULL, osd->offset[bar]+osd->len[bar],
-                              PROT_READ|PROT_WRITE, MAP_SHARED,
-                              mapfd, mapno*pagesize);
-        if (osd->base[bar]==MAP_FAILED) {
-            fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x: %s\n", bar,
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function,
-                         strerror(errno));
+    if (open_res(osd, bar)!=0 || map_bar(osd, bar, opt)!=0) {
+        if (open_uio(osd)!=0 || map_bar(osd, bar, opt)!=0) {
+            fprintf(stderr, "Can neither mmap resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
+                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
             epicsMutexUnlock(osd->devLock);
             return S_dev_addrMapFail;
         }
