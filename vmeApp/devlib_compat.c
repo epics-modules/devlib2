@@ -81,6 +81,7 @@ devLibVME *pdevLibVirtualOS = NULL;
 
 #endif /* NEED_PIMPL */
 
+#if EPICS_VERSION_INT>=VERSION_INT(3,14,10,0)
 #include <epicsExport.h>
 
 void devReplaceVirtualOS(void)
@@ -89,3 +90,4 @@ void devReplaceVirtualOS(void)
 }
 
 epicsExportRegistrar(devReplaceVirtualOS);
+#endif
