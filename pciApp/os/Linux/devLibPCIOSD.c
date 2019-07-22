@@ -829,13 +829,15 @@ map_bar(
     if(devPCIDebug>0)
     {
         char mapfilename[128];
+        int err = errno;
 
-        fprintf(stderr, "mmap fd=%d %s, size=%#lx, offset=%#lx returned %p\n",
+        fprintf(stderr, "mmap fd=%d %s, size=%#lx, offset=%#lx returned %p (errno=%d)\n",
             mapfd, fd2filename(mapfd, mapfilename, sizeof(mapfilename)),
-            (long)(osd->offset[bar]+osd->len[bar]), mapno*pagesize, osd->base[bar]);
+            (long)(osd->offset[bar]+osd->len[bar]), mapno*pagesize, osd->base[bar], err);
     }
 
     if (osd->base[bar]==MAP_FAILED) {
+        osd->base[bar] = NULL;
         if (osd->rfd[bar]) {
             close(osd->rfd[bar]);
             osd->rfd[bar] = -1;
