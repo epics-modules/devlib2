@@ -86,7 +86,10 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver2b 2.11 (UNRELEASED)
+@subsection ver2b 2.11 (Apr 2020)
+
+@li Set SHRLIB_VERSION
+@li Fix handling of PCI mmap() on Linux (Dirk Zimoch)
 
 @subsection ver2a 2.10 (Nov 2018)
 
