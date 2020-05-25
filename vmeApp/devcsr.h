@@ -37,6 +37,8 @@
 #include "epicsMMIO.h"
 #include "vmedefs.h"
 
+#include <shareLib.h>
+
 #ifdef __cplusplus
 extern "C" {
 
