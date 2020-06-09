@@ -26,6 +26,7 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
 {
   epicsAddressType atype;
   short dbytes;
+  epicsUInt32 alim;
 
   switch(dmod){
   case 8:
@@ -38,9 +39,9 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
   }
 
   switch(amod){
-  case 16: atype=atVMEA16; break;
-  case 24: atype=atVMEA24; break;
-  case 32: atype=atVMEA32; break;
+  case 16: atype=atVMEA16; alim = 0xffff; break;
+  case 24: atype=atVMEA24; alim = 0xffffff; break;
+  case 32: atype=atVMEA32; alim = 0xffffffff; break;
   default:
     epicsPrintf("Invalid address width %d\n",amod);
     return 1;
@@ -54,8 +55,8 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
     return 1;
   }
 
-  if( (addr > ((1U<<amod)-1)) ||
-      (addr+count*dbytes >= ((1U<<amod)-1))) {
+  if( (addr > alim) ||
+      (addr+count*dbytes >= alim)) {
       epicsPrintf("Address/count out of range\n");
       return 1;
   }
@@ -67,7 +68,7 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
     return 1;
   }
 
-  epicsPrintf("Mapped to 0x%08lx\n",(unsigned long)*mptr);
+  epicsPrintf("Mapped to %p\n",*mptr);
 
   return 0;
 }
@@ -109,6 +110,7 @@ void vmeread(int rawaddr, int amod, int dmod, int count)
       case 8:  printf("%02x",(tval>>24)&0xff);break;
       case 16: printf("%04x",(tval>>16)&0xffff);break;
       case 32: printf("%08x",tval&0xffffffff);break;
+      default: break; /* excluded by validate_widths() */
       }
   }
   printf("\n");
@@ -152,6 +154,7 @@ void vmewrite(int rawaddr, int amod, int dmod, int rawvalue)
   case 8: value<<=24; break;
   case 16: value<<=16; break;
   case 32: break;
+  default: break; /* excluded by validate_widths() */
   }
 
   err = devWriteProbe(dmod/8, mptr, &value);
