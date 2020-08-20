@@ -138,7 +138,7 @@ struct priv {
     template<typename VAL>
     VAL read(epicsUInt32 off=0) const
     {
-        epicsUInt32 OV(readraw<VAL>(off));
+        epicsUInt32 OV(readraw<epicsUInt32>(off));
         if(vmask) OV &= vmask;
         OV >>= vshift;
         return OV;
@@ -152,7 +152,7 @@ struct priv {
         unsigned i;
         for(i=0; i<count && addr<end; i++, addr+=step)
         {
-            epicsUInt32 OV = read<VAL>(addr);
+            epicsUInt32 OV = read<epicsUInt32>(addr);
             *val++ = castval<VAL,epicsUInt32>::op(OV);
         }
         return i;
