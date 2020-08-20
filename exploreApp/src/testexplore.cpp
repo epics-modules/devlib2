@@ -50,7 +50,7 @@ struct Channel {
         val.resize(nReq);
     }
     void put_int32(const std::vector<epicsUInt32>& val) {
-        if(dbChannelPutField(chan, DBF_ULONG, &val[0], val.size()))
+        if(dbChannelPutField(chan, DBF_ULONG, &val[0], (long)val.size()))
             testAbort("get %s fails", dbChannelName(chan));
     }
 };

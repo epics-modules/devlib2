@@ -164,7 +164,7 @@ struct flashProg : public epicsThreadRunable {
             assert((file.size()%16u==0));
 
             const epicsUInt32 fstart = flash_offset,
-                              fend  = flash_offset + std::min(file.size(), (size_t)flash_size);
+                              fend  = flash_offset + std::min((epicsUInt32)file.size(), flash_size);
 
             epicsUInt32 id = read32(REG_LOCKOUT);
             if(id!=0xF1A54001)
