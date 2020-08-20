@@ -20,7 +20,7 @@
 #include <dbScan.h>
 #include <epicsThread.h>
 #include <recGbl.h>
-#include <dbAccessDefs.h>
+#include <dbAccess.h>
 #include <waveformRecord.h>
 #include <longoutRecord.h>
 #include <mbbiRecord.h>
