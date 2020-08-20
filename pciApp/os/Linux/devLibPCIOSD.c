@@ -772,7 +772,7 @@ done:
 static const char* fd2filename(int fd, char* buffer, size_t buffersize)
 {
     char procfile[32];
-    size_t n;
+    ssize_t n;
 
     sprintf(procfile, "/proc/self/fd/%d", fd);
     n = readlink(procfile, buffer, buffersize-1);
