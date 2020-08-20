@@ -443,6 +443,9 @@ struct dset6 {
 
 } // namespace
 
+extern "C" {
 DSET(devExploreFRIBFlashWf,   &init_record_common, NULL, &load_bitfile_wf);
 DSET(devExploreFRIBFlashLo,   &init_record_common, NULL, &startstop_lo);
 DSET(devExploreFRIBFlashMbbi, &init_record_common, &status_get_iointr_info, &status_mbbi);
+} // extern "C"
+
