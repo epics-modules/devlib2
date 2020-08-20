@@ -67,7 +67,7 @@ int validate_widths(epicsUInt32 addr, int amod, int dmod, int count, volatile vo
     return 1;
   }
 
-  epicsPrintf("Mapped to 0x%08lx\n",(unsigned long)*mptr);
+  epicsPrintf("Mapped to 0x%p\n",*mptr);
 
   return 0;
 }
