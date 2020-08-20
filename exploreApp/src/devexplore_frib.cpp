@@ -4,6 +4,8 @@
  */
 // FRIB specific operations
 
+#define NOMINMAX
+#include <algorithm>
 #include <list>
 #include <vector>
 #include <memory>
