@@ -408,14 +408,14 @@ long explore_read_real_val(REC *prec)
             Guard G(pvt->lock);
             ival = pun.ival = pvt->read<epicsUInt32>();
         }
+        epicsFloat64 dval = pun.fval;
+        dval += prec->roff;
+        if(prec->aslo) dval *= prec->aslo;
+        dval += prec->aoff;
+        if(prec->eslo) dval *= prec->eslo;
+        dval += prec->eoff;
 
-        pun.fval += prec->roff;
-        if(prec->aslo) pun.fval *= prec->aslo;
-        pun.fval += prec->aoff;
-        if(prec->eslo) pun.fval *= prec->eslo;
-        pun.fval += prec->eoff;
-
-        prec->val = pun.fval;
+        prec->val = dval;
 
         if(prec->tpro>1) {
             errlogPrintf("%s: read %08x -> %08x -> VAL=%g\n", prec->name, (unsigned)pvt->offset, (unsigned)ival, prec->val);
@@ -430,13 +430,14 @@ long explore_write_real_val(REC *prec)
 {
     TRY {
         punny32 pun;
-        pun.fval = prec->val;
+        epicsFloat64 dval = prec->val;
 
-        pun.fval -= prec->eoff;
-        if(prec->eslo) pun.fval /= prec->eslo;
-        pun.fval -= prec->aoff;
-        if(prec->aslo) pun.fval /= prec->aslo;
-        pun.fval -= prec->roff;
+        dval -= prec->eoff;
+        if(prec->eslo) dval /= prec->eslo;
+        dval -= prec->aoff;
+        if(prec->aslo) dval /= prec->aslo;
+        dval -= prec->roff;
+        pun.fval = (epicsFloat32)dval;
 
         if(prec->tpro>1) {
             errlogPrintf("%s: write %08x <- %08x <- VAL=%g\n", prec->name, (unsigned)pvt->offset, (unsigned)pun.ival, prec->val);
