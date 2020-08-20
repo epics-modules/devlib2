@@ -39,6 +39,11 @@
 #define strdup(x) ({char*s=malloc(strlen(x)+1);s?strcpy(s,x):s;})
 #endif
 
+#ifdef _WIN32
+/* Windows uses different name for strtok_r */
+ #define strtok_r strtok_s
+#endif
+
 int devPCIDebug = 0;
 
 static ELLLIST pciDrivers;
