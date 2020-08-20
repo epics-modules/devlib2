@@ -528,6 +528,8 @@ struct dset6 {
 
 } // namespace
 
+extern "C" {
+
 #define SUP(NAME, REC, OP, DIR, SIZE, END) static dset6<REC##Record> NAME = \
   {6, NULL, NULL, &explore_init_record_##OP<REC##Record,SIZE,END>, NULL, &explore_##DIR##_##OP<REC##Record>, NULL}; \
     epicsExportAddress(dset, NAME)
@@ -638,3 +640,4 @@ SUP(devExploreWfWriteU16MSB, write, 2, priv::BE);
 SUP(devExploreWfWriteU32NAT, write, 4, priv::NAT);
 SUP(devExploreWfWriteU32LSB, write, 4, priv::LE);
 SUP(devExploreWfWriteU32MSB, write, 4, priv::BE);
+} // extern "C"
