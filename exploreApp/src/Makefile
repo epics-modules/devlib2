@@ -7,7 +7,7 @@ include $(TOP)/configure/CONFIG
 
 USR_CPPFLAGS += -I$(TOP)/common
 
-PROD_SYS_LIBS_WIN32 += ws2_32 advapi32 user32
+USR_SYS_LIBS_WIN32 += ws2_32 advapi32 user32
 
 # explore app doesn't build with older vxworks (eg. tornado22)
 # don't build at all until someone asks
