@@ -182,7 +182,7 @@ static
 void vmesh_handler(void *raw)
 {
   volatile epicsUInt8 *ent = raw;
-  unsigned vect = ent-vmeautodisable;
+  unsigned char vect = (unsigned char)(ent-vmeautodisable);
   char msg[] = "VME IRQ on vector 0xXY\n";
   unsigned I = sizeof(msg)-3;
 
