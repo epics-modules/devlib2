@@ -485,7 +485,7 @@ long explore_write_wf(waveformRecord *prec)
 {
     TRY {
         Guard G(pvt->lock);
-        unsigned nwritten = -1;
+        unsigned nwritten = 0;
         switch(prec->ftvl) {
         case menuFtypeCHAR  :
         case menuFtypeUCHAR : nwritten = pvt->writeArray((epicsUInt8*)  prec->bptr, prec->nord); break;
