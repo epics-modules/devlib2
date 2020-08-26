@@ -112,8 +112,7 @@ struct priv {
 
     priv() :bar(0u), offset(0u), step(0), valsize(1), ord(NAT), vshift(0u), vmask(0u), base(0), initread(false) {}
 
-    template<typename VAL>
-    VAL readraw(epicsUInt32 off=0) const
+    epicsUInt32 readraw(epicsUInt32 off=0) const
     {
         volatile char *addr = (volatile char*)base+offset+off;
         epicsUInt32 OV = -1;
@@ -138,7 +137,7 @@ struct priv {
     template<typename VAL>
     VAL read(epicsUInt32 off=0) const
     {
-        epicsUInt32 OV(readraw<VAL>(off));
+        epicsUInt32 OV(readraw(off));
         if(vmask) OV &= vmask;
         OV >>= vshift;
         return OV;
@@ -167,7 +166,7 @@ struct priv {
         if(vmask) {
             // Do RMW
             V &= vmask;
-            V |= readraw<epicsUInt32>(off)&(~vmask);
+            V |= readraw(off)&(~vmask);
         }
 
         switch(valsize) {
