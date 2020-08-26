@@ -56,7 +56,7 @@ static void findRootBridge(void) {
     testOk1(devPCIFindDBDF(hostbridge, 0, 0, 0, 0, &dev, 0)==0);
     if(!dev) {
         testFail("Didn't find root bridge");
-        testSkip(0, "No bridge");
+        testSkip(15, "No bridge");
         return;
     } else {
         testPass("Found root bridge %04x:%04x", dev->id.vendor, dev->id.device);
@@ -108,6 +108,10 @@ MAIN(pcitest) {
     devPCIShow(1,0,0,0);
     errlogFlush();*/
     classStrings();
+#ifdef _WIN32
+    testTodoBegin("PCI Not implemented");
+#endif
     findRootBridge();
+    testTodoEnd();
     return testDone();
 }
