@@ -17,6 +17,7 @@
 #include <epicsThread.h>
 #include <epicsMutex.h>
 #include <iocsh.h>
+#include <epicsStdio.h>
 
 #define epicsExportSharedSymbols
 #include "devLibPCIImpl.h"

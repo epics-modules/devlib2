@@ -14,6 +14,7 @@
 #include <epicsAssert.h>
 #include <epicsTypes.h>
 #include <epicsExport.h>
+#include <epicsStdio.h>
 #include <errlog.h>
 #include <iocsh.h>
 #include <epicsMMIO.h>
@@ -65,12 +66,12 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
     loc.dev=0;
 
     if(devPCIFindCB(ids, &matchbdf, (void*)&loc, 0)) {
-        printf("Error searching\n");
+        fprintf(stderr, "Error searching\n");
         return;
     }
 
     if(!loc.dev) {
-        printf("No such device\n");
+        fprintf(stderr, "No such device\n");
         return;
     }
 
@@ -78,13 +79,13 @@ void pcidiagset(int b, int d, int f, int bar, int vendor, int device, int exact)
 
 #if defined(linux)
     if(devPCIBarLen(loc.dev, bar, &len)) {
-        printf("Failed to get BAR length\n");
+        fprintf(stderr, "Failed to get BAR length\n");
         len=0;
     }
 #endif
 
     if(devPCIToLocalAddr(loc.dev, bar, &diagbase, 0)) {
-        printf("Failed to map BAR\n");
+        fprintf(stderr, "Failed to map BAR\n");
         return;
     }
     diagdev = loc.dev;
@@ -106,13 +107,13 @@ static int check_args(int dmod, unsigned int offset, unsigned int count)
     case 32:
         break;
     default:
-      printf("Invalid data width %d\n",dmod);
+      fprintf(stderr, "Invalid data width %d\n",dmod);
       return 1;
     }
 
 #if defined(__linux__)
     if(offset>=diaglen || offset+count>diaglen) {
-        printf("Invalid offset and/or count\n");
+        fprintf(stderr, "Invalid offset and/or count\n");
         return 1;
     }
 #endif
@@ -125,7 +126,7 @@ void pciwrite(int dmod, int offset, int value)
   volatile char* dptr = offset + (volatile char*)diagbase;
 
   if(!diagbase) {
-      printf("Run pcidiagset first\n");
+      fprintf(stderr, "Run pcidiagset first\n");
       return;
   }
 
@@ -147,7 +148,7 @@ void pciread(int dmod, int offset, int count)
   int i;
 
   if(!diagbase) {
-      printf("Run pcidiagset first\n");
+      fprintf(stderr, "Run pcidiagset first\n");
       return;
   }
 
@@ -180,7 +181,7 @@ void pciconfread(int dmod, int offset, int count)
     short dbytes;
 
     if(!diagdev) {
-        printf("Run pcidiagset first\n");
+        fprintf(stderr, "Run pcidiagset first\n");
         return;
     }
 
@@ -202,12 +203,12 @@ void pciconfread(int dmod, int offset, int count)
         case 16: err = devPCIConfigRead16(diagdev, offset, &u16); printf("%04x\n", u16); break;
         case 32: err = devPCIConfigRead32(diagdev, offset, &u32); printf("%08x\n", u32); break;
         default:
-            printf("Invalid dmod %d, must be 8, 16, or 32\n", dmod);
+            fprintf(stderr, "Invalid dmod %d, must be 8, 16, or 32\n", dmod);
             break;
         }
     }
     if(err)
-        printf("read error %d\n", err);
+        fprintf(stderr, "read error %d\n", err);
 }
 
 static const iocshArg pcidiagsetArg0 = { "Bus",iocshArgInt};
