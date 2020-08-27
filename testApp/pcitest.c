@@ -27,6 +27,7 @@ static void classStrings(void) {
     testEQString(devPCIDeviceClassToString(0xffff00), "unknown device class");
     testEQString(devPCIDeviceClassToString(0x0b8000), "generic processor");
     testEQString(devPCIDeviceClassToString(0x0d0000), "IRDA controller");
+    testEQString(devPCIDeviceClassToString(0x060000), "PCI host bridge");
 }
 
 static const epicsPCIID hostbridge[] = {
@@ -100,7 +101,7 @@ static void findRootBridge(void) {
 }
 
 MAIN(pcitest) {
-    testPlan(24);
+    testPlan(25);
     devLibPCIRegisterBaseDefault();
     devLibPCIUse(NULL);
     testDiag("Using driver: %s", devLibPCIDriverName());
