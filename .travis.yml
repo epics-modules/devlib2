@@ -23,14 +23,16 @@ addons:
     - qemu-system-x86
 
 install:
-  - ./.ci/travis/prepare.sh
+  - python .ci/cue.py prepare
 
 script:
-  - ./.ci/travis/build.sh
+  - python .ci/cue.py build
+  - python .ci/cue.py test
+  - python .ci/cue.py test-results
 
 jobs:
   include:
-  - env: BASE=7.0 STATIC=YES
+  - env: BASE=7.0 BCFG=static
 
   - env: BASE=7.0
 
