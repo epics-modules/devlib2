@@ -1,0 +1,62 @@
+record(longin, "in_u8") {
+    field(DTYP, "Explore Read8")
+    field(INP , "@0:1.0 bar=0 offset=4")
+    field(PINI, "YES")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(longin, "in_u16") {
+    field(DTYP, "Explore Read16 MSB")
+    field(INP , "@0:1.0 bar=0 offset=4")
+    field(PINI, "YES")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(longin, "in_u32") {
+    field(DTYP, "Explore Read32 MSB")
+    field(INP , "@0:1.0 bar=0 offset=4")
+    field(PINI, "YES")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(ai, "in_f32") {
+    field(DTYP, "Explore ReadF32 MSB")
+    field(INP , "@0:1.0 bar=0 offset=0")
+    field(PINI, "YES")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(waveform, "in_vec_u16") {
+    field(DTYP, "Explore Read16 MSB")
+    field(INP , "@0:1.0 bar=0 offset=4")
+    field(FTVL, "USHORT")
+    field(NELM, "128")
+    field(PINI, "YES")
+    field(TPRO, "$(TPRO=0)")
+}
+
+
+
+record(longout, "out_u8") {
+    field(DTYP, "Explore Write8")
+    field(OUT , "@0:1.0 bar=0 offset=4")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(longout, "out_u16") {
+    field(DTYP, "Explore Write16 MSB")
+    field(OUT , "@0:1.0 bar=0 offset=4")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(longout, "out_u32") {
+    field(DTYP, "Explore Write32 MSB")
+    field(OUT , "@0:1.0 bar=0 offset=4")
+    field(TPRO, "$(TPRO=0)")
+}
+
+record(ao, "out_f32") {
+    field(DTYP, "Explore WriteF32 MSB")
+    field(OUT , "@0:1.0 bar=0 offset=0")
+    field(TPRO, "$(TPRO=0)")
+}

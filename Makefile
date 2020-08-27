@@ -20,8 +20,8 @@ iocBoot_DEPEND_DIRS += $(filter %App,$(DIRS))
 
 pciApp_DEPEND_DIRS += common
 vmeApp_DEPEND_DIRS += common
-testApp_DEPEND_DIRS += pciApp
 exploreApp_DEPEND_DIRS += pciApp
+testApp_DEPEND_DIRS += pciApp exploreApp
 
 include $(TOP)/configure/RULES_TOP
 
