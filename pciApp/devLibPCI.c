@@ -66,7 +66,6 @@ void regInit(void* junk)
     pciDriversLock = epicsMutexMustCreate();
 }
 
-epicsShareFunc
 int
 devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
 {
@@ -104,7 +103,6 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
     return ret;
 }
 
-epicsShareFunc
 int
 devLibPCIUse(const char* use)
 {
@@ -137,7 +135,6 @@ devLibPCIUse(const char* use)
     return 1;
 }
 
-epicsShareFunc
 const char* devLibPCIDriverName()
 {
     const char* ret=NULL;
@@ -214,7 +211,6 @@ do { \
 
 /**************** API functions *****************/
 
-epicsShareFunc
 int devPCIFindCB(
      const epicsPCIID *idlist,
      devPCISearchFn searchfn,
@@ -268,7 +264,6 @@ int devmatch(void* ptr, const epicsPCIDevice* cur)
   return 0;
 }
 
-epicsShareFunc
 int devPCIFindSpec(
         const epicsPCIID *idlist,
         const char *spec,
@@ -378,7 +373,6 @@ int devPCIFindSpec(
 /*
  * The most common PCI search using only id fields and BDF.
  */
-epicsShareFunc
 int devPCIFindDBDF(
      const epicsPCIID *idlist,
      unsigned int      domain,
@@ -421,7 +415,6 @@ const epicsPCIDevice **found,
 }
 
 /* for backward compatilility: b=domain*0x100+bus */
-epicsShareFunc
 int devPCIFindBDF(
      const epicsPCIID *idlist,
      unsigned int      b,
@@ -452,7 +445,6 @@ devPCIToLocalAddr(
 
 
 
-epicsShareFunc
 int
 devPCIBarLen(
   const epicsPCIDevice *curdev,
@@ -468,7 +460,6 @@ devPCIBarLen(
   return (*pdevLibPCI->pDevPCIBarLen)(curdev,bar,len);
 }
 
-epicsShareFunc
 int devPCIConnectInterrupt(
   const epicsPCIDevice *curdev,
   void (*pFunction)(void *),
@@ -482,7 +473,6 @@ int devPCIConnectInterrupt(
                 (curdev,pFunction,parameter,opt);
 }
 
-epicsShareFunc
 int devPCIDisconnectInterrupt(
   const epicsPCIDevice *curdev,
   void (*pFunction)(void *),

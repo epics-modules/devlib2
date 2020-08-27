@@ -15,7 +15,6 @@
 #define epicsExportSharedSymbols
 #include "devcsr.h"
 
-epicsShareFunc
 volatile unsigned char* devCSRProbeSlot(int slot)
 {
     volatile unsigned char* addr;
@@ -81,7 +80,6 @@ int csrMatch(const struct VMECSRID* A, const struct VMECSRID* B)
     return 1;
 }
 
-epicsShareFunc
 volatile unsigned char* devCSRTestSlot(
         const struct VMECSRID* devs,
         int slot,

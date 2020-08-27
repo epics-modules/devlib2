@@ -43,7 +43,8 @@ void parseToMap(const std::string& inp, strmap_t& ret)
 #define S_stdlib_overflow     (M_stdlib | 4) /* Too large to represent */
 #define S_stdlib_badBase      (M_stdlib | 5) /* Number base not supported */
 
-epicsShareFunc int
+static
+int
 epicsParseULong(const char *str, unsigned long *to, int base, char **units)
 {
     int c;

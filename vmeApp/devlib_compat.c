@@ -42,12 +42,12 @@
  * that one
  */
 
-epicsShareFunc long devEnableInterruptLevelVME (unsigned vectorNumber)
+long devEnableInterruptLevelVME (unsigned vectorNumber)
 {
     return devEnableInterruptLevel(intVME, vectorNumber);
 }
 
-epicsShareFunc long devConnectInterruptVME (
+long devConnectInterruptVME (
                         unsigned vectorNumber,
                         void (*pFunction)(void *),
                         void  *parameter)
@@ -55,14 +55,14 @@ epicsShareFunc long devConnectInterruptVME (
     return devConnectInterrupt(intVME,vectorNumber, pFunction, parameter);
 }
 
-epicsShareFunc long devDisconnectInterruptVME (
+long devDisconnectInterruptVME (
 			unsigned vectorNumber,
 			void (*pFunction)(void *))
 {
   return devDisconnectInterrupt(intVME, vectorNumber, pFunction);
 }
 
-epicsShareFunc int  devInterruptInUseVME (unsigned vectorNumber)
+int  devInterruptInUseVME (unsigned vectorNumber)
 {
    return -1; /* Not implemented in Base <= 3.14.11 */
 }
