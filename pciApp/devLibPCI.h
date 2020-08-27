@@ -53,10 +53,10 @@ extern "C" {
  @endcode
  */
 typedef struct {
-  epicsUInt32 device, vendor;
-  epicsUInt32 sub_device, sub_vendor;
-  epicsUInt32 pci_class;
-  epicsUInt16 revision;
+    epicsUInt32 device, vendor;
+    epicsUInt32 sub_device, sub_vendor;
+    epicsUInt32 pci_class;
+    epicsUInt16 revision;
 } epicsPCIID;
 
 #define DEVPCI_ANY_DEVICE 0x10000
@@ -73,31 +73,31 @@ typedef struct {
 
 #define DEVPCI_DEVICE_ANY() \
 { DEVPCI_ANY_DEVICE, DEVPCI_ANY_VENDOR, \
-  DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
-DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
+    DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
+    DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 
 #define DEVPCI_DEVICE_VENDOR(dev,vend) \
 { dev, vend, DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
-DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
+    DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 
 #define DEVPCI_DEVICE_VENDOR_CLASS(dev,vend,pclass) \
 { dev, vend, DEVPCI_ANY_SUBDEVICE, DEVPCI_ANY_SUBVENDOR, \
-pclass, DEVPCI_ANY_REVISION }
+    pclass, DEVPCI_ANY_REVISION }
 
 #define DEVPCI_SUBDEVICE_SUBVENDOR(dev,vend,sdev,svend) \
 { dev, vend, sdev, svend, \
-DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
+    DEVPCI_ANY_CLASS, DEVPCI_ANY_REVISION }
 
 #define DEVPCI_SUBDEVICE_SUBVENDOR_CLASS(dev,vend,sdev,svend,revision,pclass) \
 { dev, vend, sdev, svend, \
-pclass, revision }
+    pclass, revision }
 
 #define DEVPCI_NO_SLOT NULL
 
 struct PCIBar {
-  unsigned int ioport:1; /**< 0 memory, 1 I/O */
-  unsigned int addr64:1; /**< 0 32 bit, 1 64 bit */
-  unsigned int below1M:1; /**< 0 Normal, 1 Must be mapped below 1M */
+    unsigned int ioport:1; /**< 0 memory, 1 I/O */
+    unsigned int addr64:1; /**< 0 32 bit, 1 64 bit */
+    unsigned int below1M:1; /**< 0 Normal, 1 Must be mapped below 1M */
 };
 
 /** @brief Device token
@@ -110,16 +110,16 @@ struct PCIBar {
  */
 
 typedef struct {
-  epicsPCIID   id; /**< @brief Exact ID of device */
-  unsigned int bus;
-  unsigned int device;
-  unsigned int function;
-  /*!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported*/
-  const char* slot;
-  struct PCIBar bar[6];
-  epicsUInt8 irq;
-  unsigned int domain;
-  const char* driver;
+    epicsPCIID   id; /**< @brief Exact ID of device */
+    unsigned int bus;
+    unsigned int device;
+    unsigned int function;
+    /*!< Chassis slot "number" identifier (may not be a simple number) or DEVPCI_NO_SLOT if not supported*/
+    const char* slot;
+    struct PCIBar bar[6];
+    epicsUInt8 irq;
+    unsigned int domain;
+    const char* driver;
 } epicsPCIDevice;
 
 /** @brief The maximum number of base address registers (BARs). */
@@ -153,11 +153,11 @@ typedef int (*devPCISearchFn)(void* ptr,const epicsPCIDevice* dev);
  */
 epicsShareFunc
 int devPCIFindCB(
-     const epicsPCIID *idlist,
-     devPCISearchFn searchfn,
-     void *arg,
-     unsigned int opt /* always 0 */
-);
+        const epicsPCIID *idlist,
+        devPCISearchFn searchfn,
+        void *arg,
+        unsigned int opt /* always 0 */
+        );
 
 /** @brief PCI bus search by specification string
  *
@@ -183,7 +183,7 @@ int devPCIFindSpec(
         const char *spec,
         const epicsPCIDevice **found,
         unsigned int opt /* always 0 */
-);
+        );
 
 /** @brief PCI bus probe
  *
@@ -205,24 +205,24 @@ int devPCIFindSpec(
  */
 epicsShareFunc
 int devPCIFindDBDF(
-     const epicsPCIID *idlist,
-     unsigned int      domain,
-     unsigned int      b,
-     unsigned int      d,
-     unsigned int      f,
-const epicsPCIDevice **found,
-     unsigned int opt /* always 0 */
-);
+        const epicsPCIID *idlist,
+        unsigned int      domain,
+        unsigned int      b,
+        unsigned int      d,
+        unsigned int      f,
+        const epicsPCIDevice **found,
+        unsigned int opt /* always 0 */
+        );
 
 epicsShareFunc
 int devPCIFindBDF(
-     const epicsPCIID *idlist,
-     unsigned int      b,
-     unsigned int      d,
-     unsigned int      f,
-const epicsPCIDevice **found,
-     unsigned int opt /* always 0 */
-);
+        const epicsPCIID *idlist,
+        unsigned int      b,
+        unsigned int      d,
+        unsigned int      f,
+        const epicsPCIDevice **found,
+        unsigned int opt /* always 0 */
+        );
 
 #ifdef __linux__
 #define DEVLIB_MAP_UIO1TO1 0
@@ -256,11 +256,11 @@ const epicsPCIDevice **found,
 epicsShareFunc
 int
 devPCIToLocalAddr(
-  const epicsPCIDevice *id,
-          unsigned int  bar,
+        const epicsPCIDevice *id,
+        unsigned int  bar,
         volatile void **ppLocalAddr,
-           unsigned int opt /* always 0 */
-);
+        unsigned int opt /* always 0 */
+        );
 
 /** @brief Find the size of a BAR
  *
@@ -279,10 +279,10 @@ devPCIToLocalAddr(
 epicsShareFunc
 int
 devPCIBarLen(
-  const epicsPCIDevice *id,
-          unsigned int  bar,
-           epicsUInt32 *len
-);
+        const epicsPCIDevice *id,
+        unsigned int  bar,
+        epicsUInt32 *len
+        );
 
 /** @brief Request interrupts for device
  *
@@ -304,11 +304,11 @@ devPCIBarLen(
  */
 epicsShareFunc
 int devPCIConnectInterrupt(
-  const epicsPCIDevice *id,
-  void (*pFunction)(void *),
-  void  *parameter,
-  unsigned int opt /* always 0 */
-);
+        const epicsPCIDevice *id,
+        void (*pFunction)(void *),
+        void  *parameter,
+        unsigned int opt /* always 0 */
+        );
 
 /** @brief Stop receiving interrupts
  *
@@ -320,10 +320,10 @@ int devPCIConnectInterrupt(
  */
 epicsShareFunc
 int devPCIDisconnectInterrupt(
-  const epicsPCIDevice *id,
-  void (*pFunction)(void *),
-  void  *parameter
-);
+        const epicsPCIDevice *id,
+        void (*pFunction)(void *),
+        void  *parameter
+        );
 
 epicsShareFunc
 void

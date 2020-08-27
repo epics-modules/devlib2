@@ -24,7 +24,7 @@
 #    define NEED_PIMPL
 #  endif
 #elif defined(vxWorks)
- /* nothing needed */
+/* nothing needed */
 #else
 #  define NEED_IFACE
 #endif
@@ -48,23 +48,23 @@ long devEnableInterruptLevelVME (unsigned vectorNumber)
 }
 
 long devConnectInterruptVME (
-                        unsigned vectorNumber,
-                        void (*pFunction)(void *),
-                        void  *parameter)
+        unsigned vectorNumber,
+        void (*pFunction)(void *),
+        void  *parameter)
 {
     return devConnectInterrupt(intVME,vectorNumber, pFunction, parameter);
 }
 
 long devDisconnectInterruptVME (
-			unsigned vectorNumber,
-			void (*pFunction)(void *))
+        unsigned vectorNumber,
+        void (*pFunction)(void *))
 {
-  return devDisconnectInterrupt(intVME, vectorNumber, pFunction);
+    return devDisconnectInterrupt(intVME, vectorNumber, pFunction);
 }
 
 int  devInterruptInUseVME (unsigned vectorNumber)
 {
-   return -1; /* Not implemented in Base <= 3.14.11 */
+    return -1; /* Not implemented in Base <= 3.14.11 */
 }
 #endif /* EPICS < 3.14.12 */
 

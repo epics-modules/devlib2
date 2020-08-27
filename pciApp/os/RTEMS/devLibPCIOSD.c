@@ -40,11 +40,11 @@ extern rtems_pci_config_t BSP_pci_configuration __attribute__((weak));
 
 static
 int rtemsDevPCIConnectInterrupt(
-  const epicsPCIDevice *dev,
-  void (*pFunction)(void *),
-  void  *parameter,
-  unsigned int opt
-)
+        const epicsPCIDevice *dev,
+        void (*pFunction)(void *),
+        void  *parameter,
+        unsigned int opt
+        )
 {
     struct osdPCIDevice *id=pcidev2osd(dev);
 
@@ -73,10 +73,10 @@ int rtemsDevPCIConnectInterrupt(
 
 static
 int rtemsDevPCIDisconnectInterrupt(
-  const epicsPCIDevice *dev,
-  void (*pFunction)(void *),
-  void  *parameter
-)
+        const epicsPCIDevice *dev,
+        void (*pFunction)(void *),
+        void  *parameter
+        )
 {
     struct osdPCIDevice *id=pcidev2osd(dev);
 
@@ -134,16 +134,16 @@ rtemsDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
 }
 
 devLibPCI prtemsPCI = {
-  "native",
-  sharedDevPCIInit, NULL,
-  sharedDevPCIFindCB,
-  sharedDevPCIToLocalAddr,
-  sharedDevPCIBarLen,
-  rtemsDevPCIConnectInterrupt,
-  rtemsDevPCIDisconnectInterrupt,
-  rtemsDevPCIConfigAccess,
-  NULL,
-  {NULL,NULL}
+    "native",
+    sharedDevPCIInit, NULL,
+    sharedDevPCIFindCB,
+    sharedDevPCIToLocalAddr,
+    sharedDevPCIBarLen,
+    rtemsDevPCIConnectInterrupt,
+    rtemsDevPCIDisconnectInterrupt,
+    rtemsDevPCIConfigAccess,
+    NULL,
+    {NULL,NULL}
 };
 
 #include <epicsExport.h>

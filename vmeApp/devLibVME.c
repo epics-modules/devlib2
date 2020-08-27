@@ -13,8 +13,8 @@
 
 /*
  *  Original Author: Marty Kraimer
- *      Author:          Jeff Hill 
- *      Date:        03-10-93   
+ *      Author:          Jeff Hill
+ *      Date:        03-10-93
  *
  * NOTES:
  * .01  06-14-93    joh needs devAllocInterruptVector() routine
@@ -96,7 +96,7 @@ typedef struct{
 static long devLibInit(void);
 
 static long addrVerify(
-            epicsAddressType addrType, 
+            epicsAddressType addrType,
             size_t base,
             size_t size);
 
@@ -117,7 +117,7 @@ static void report_conflict(
             const char *pOwnerName);
 
 static void report_conflict_device(
-            epicsAddressType addrType, 
+            epicsAddressType addrType,
             const rangeItem *pRange);
 
 static void devInsertAddress(
@@ -220,7 +220,7 @@ long devRegisterAddress2(
     if (size == 0) {
         return S_dev_lowValue;
     }
- 
+
 #ifdef DEBUG
     errlogPrintf ("Req Addr 0X%X Size 0X%X\n", base, size);
 #endif
@@ -401,7 +401,7 @@ static void report_conflict (
 
     pRange = (rangeItem *) ellFirst(&addrAlloc[addrType]);
     while (pRange) {
-    
+
         if (pRange->begin <= base + (size-1) && pRange->end >= base) {
             report_conflict_device (addrType, pRange);
         }
@@ -470,7 +470,7 @@ long devUnregisterAddress2(
     if (strcmp(pOwnerName,pRange->pOwnerName)) {
         s = S_dev_addressOverlap;
         errPrintf (
-            s, 
+            s,
             __FILE__,
             __LINE__,
     "unregister address for %s at 0X%X failed because %s owns it",
@@ -478,7 +478,7 @@ long devUnregisterAddress2(
             (unsigned int)baseAddress,
             pRange->pOwnerName);
         return s;
-    }   
+    }
 
     epicsMutexMustLock(addrListLock);
     ellDelete (&addrAlloc[addrType], &pRange->node);
@@ -784,7 +784,7 @@ static long blockFind (
      * align size of block
      */
     newSize = requestSize;
-    if (mask & newSize) { 
+    if (mask & newSize) {
         newSize |= mask;
         newSize++;
     }

@@ -26,12 +26,12 @@
 #ifndef CONTAINER
 # ifdef __GNUC__
 #   define CONTAINER(ptr, structure, member) ({                     \
-        const __typeof(((structure*)0)->member) *_ptr = (ptr);      \
-        (structure*)((char*)_ptr - offsetof(structure, member));    \
+    const __typeof(((structure*)0)->member) *_ptr = (ptr);      \
+    (structure*)((char*)_ptr - offsetof(structure, member));    \
     })
 # else
 #   define CONTAINER(ptr, structure, member) \
-        ((structure*)((char*)(ptr) - offsetof(structure, member)))
+    ((structure*)((char*)(ptr) - offsetof(structure, member)))
 # endif
 #endif
 
@@ -42,7 +42,7 @@
 
 #ifdef _WIN32
 /* Windows uses different name for strtok_r */
- #define strtok_r strtok_s
+#define strtok_r strtok_s
 #endif
 
 int devPCIDebug = 0;
@@ -76,10 +76,10 @@ devLibPCIRegisterDriver2(devLibPCI* drv, size_t drvsize)
 
     if(drvsize!=sizeof(*drv)) {
         fprintf(stderr, "devLibPCIRegisterDriver() fails with inconsistent PCI OS struct sizes.\n"
-                     "expect %lu but given %lu\n"
-                     "Please do a clean rebuild of devLib2 and any code with custom PCI OS structs\n",
-                     (unsigned long)sizeof(*drv),
-                     (unsigned long)drvsize);
+                        "expect %lu but given %lu\n"
+                        "Please do a clean rebuild of devLib2 and any code with custom PCI OS structs\n",
+                (unsigned long)sizeof(*drv),
+                (unsigned long)drvsize);
         return S_dev_internal;
     }
 
@@ -186,82 +186,82 @@ devLibPCIMatch(const epicsPCIID *match, const epicsPCIID *dev)
 static
 void devInit(void* junk)
 {
-  (void)junk;
-  epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
-  epicsMutexMustLock(pciDriversLock);
-  if(!pdevLibPCI && devLibPCIUse(NULL)) {
-      epicsMutexUnlock(pciDriversLock);
-      devPCIInit_result = S_dev_internal;
-      return;
+    (void)junk;
+    epicsThreadOnce(&devPCIReg_once, &regInit, NULL);
+    epicsMutexMustLock(pciDriversLock);
+    if(!pdevLibPCI && devLibPCIUse(NULL)) {
+        epicsMutexUnlock(pciDriversLock);
+        devPCIInit_result = S_dev_internal;
+        return;
     }
-  epicsMutexUnlock(pciDriversLock);
+    epicsMutexUnlock(pciDriversLock);
 
-  if(!!pdevLibPCI->pDevInit)
-    devPCIInit_result = (*pdevLibPCI->pDevInit)();
-  else
-    devPCIInit_result = 0;
+    if(!!pdevLibPCI->pDevInit)
+        devPCIInit_result = (*pdevLibPCI->pDevInit)();
+    else
+        devPCIInit_result = 0;
 }
 
 #define PCIINIT \
-do { \
-     epicsThreadOnce(&devPCIInit_once, &devInit, NULL); \
-     if (devPCIInit_result) return devPCIInit_result; \
-} while(0)
+    do { \
+    epicsThreadOnce(&devPCIInit_once, &devInit, NULL); \
+    if (devPCIInit_result) return devPCIInit_result; \
+    } while(0)
 
 
 /**************** API functions *****************/
 
 int devPCIFindCB(
-     const epicsPCIID *idlist,
-     devPCISearchFn searchfn,
-     void *arg,
-     unsigned int opt /* always 0 */
-)
+        const epicsPCIID *idlist,
+        devPCISearchFn searchfn,
+        void *arg,
+        unsigned int opt /* always 0 */
+        )
 {
-  if(!idlist || !searchfn)
-    return S_dev_badArgument;
+    if(!idlist || !searchfn)
+        return S_dev_badArgument;
 
-  PCIINIT;
+    PCIINIT;
 
-  return (*pdevLibPCI->pDevPCIFind)(idlist,searchfn,arg,opt);
+    return (*pdevLibPCI->pDevPCIFind)(idlist,searchfn,arg,opt);
 }
 
 
 struct bdfmatch
 {
-  unsigned int matchaddr:1;
-  unsigned int matchslot:1;
+    unsigned int matchaddr:1;
+    unsigned int matchslot:1;
 
-  unsigned int domain,b,d,f;
-  char slot[11];
-  unsigned int sofar, stopat;
+    unsigned int domain,b,d,f;
+    char slot[11];
+    unsigned int sofar, stopat;
 
-  const epicsPCIDevice* found;
+    const epicsPCIDevice* found;
 };
 
 static
 int devmatch(void* ptr, const epicsPCIDevice* cur)
 {
-  struct bdfmatch *mt=ptr;
+    struct bdfmatch *mt=ptr;
 
-  unsigned match = 1;
+    unsigned match = 1;
 
-  if(mt->matchaddr)
-      match &= cur->domain==mt->domain &&
-               cur->bus==mt->b &&
-               cur->device==mt->d &&
-               cur->function==mt->f;
+    if(mt->matchaddr)
+        match &= cur->domain==mt->domain &&
+                cur->bus==mt->b &&
+                cur->device==mt->d &&
+                cur->function==mt->f;
 
-  if(mt->matchslot)
-      match &= cur->slot==DEVPCI_NO_SLOT ? 0 : strcmp(cur->slot, mt->slot)==0;
+    if(mt->matchslot)
+        match &= cur->slot==DEVPCI_NO_SLOT ? 0 : strcmp(cur->slot, mt->slot)==0;
 
-  if(match && mt->sofar++==mt->stopat)
-  {
-    mt->found=cur;
-    return 1;
-  }
+    if(match && mt->sofar++==mt->stopat)
+    {
+        mt->found=cur;
+        return 1;
+    }
 
-  return 0;
+    return 0;
 }
 
 int devPCIFindSpec(
@@ -269,14 +269,14 @@ int devPCIFindSpec(
         const char *spec,
         const epicsPCIDevice **found,
         unsigned int opt
-)
+        )
 {
     int err = 0;
     struct bdfmatch find;
     memset(&find, 0, sizeof(find));
 
     if(!found || !spec)
-      return S_dev_badArgument;
+        return S_dev_badArgument;
 
     /* When originally introduced in 2.8, devPCIFindSpec() parsed as decimal,
      * which is confusing as BDF are usually shown in hex.
@@ -357,13 +357,13 @@ int devPCIFindSpec(
 
     err=devPCIFindCB(idlist,&devmatch,&find, opt);
     if(err!=0){
-      /* Search failed? */
-      return err;
+        /* Search failed? */
+        return err;
     }
 
     if(!find.found){
-      /* Not found */
-      return S_dev_noDevice;
+        /* Not found */
+        return S_dev_noDevice;
     }
 
     *found=find.found;
@@ -374,115 +374,115 @@ int devPCIFindSpec(
  * The most common PCI search using only id fields and BDF.
  */
 int devPCIFindDBDF(
-     const epicsPCIID *idlist,
-     unsigned int      domain,
-     unsigned int      b,
-     unsigned int      d,
-     unsigned int      f,
-const epicsPCIDevice **found,
-     unsigned int      opt
-)
+        const epicsPCIID *idlist,
+        unsigned int      domain,
+        unsigned int      b,
+        unsigned int      d,
+        unsigned int      f,
+        const epicsPCIDevice **found,
+        unsigned int      opt
+        )
 {
-  int err;
-  struct bdfmatch find;
+    int err;
+    struct bdfmatch find;
 
-  if(!found)
-    return S_dev_badArgument;
+    if(!found)
+        return S_dev_badArgument;
 
-  memset(&find, 0, sizeof(find));
-  find.matchaddr = 1;
-  find.domain=domain;
-  find.b=b;
-  find.d=d;
-  find.f=f;
-  find.found=NULL;
+    memset(&find, 0, sizeof(find));
+    find.matchaddr = 1;
+    find.domain=domain;
+    find.b=b;
+    find.d=d;
+    find.f=f;
+    find.found=NULL;
 
-  /* PCIINIT is called by devPCIFindCB()  */
+    /* PCIINIT is called by devPCIFindCB()  */
 
-  err=devPCIFindCB(idlist,&devmatch,&find, opt);
-  if(err!=0){
-    /* Search failed? */
-    return err;
-  }
+    err=devPCIFindCB(idlist,&devmatch,&find, opt);
+    if(err!=0){
+        /* Search failed? */
+        return err;
+    }
 
-  if(!find.found){
-    /* Not found */
-    return S_dev_noDevice;
-  }
+    if(!find.found){
+        /* Not found */
+        return S_dev_noDevice;
+    }
 
-  *found=find.found;
-  return 0;
+    *found=find.found;
+    return 0;
 }
 
 /* for backward compatilility: b=domain*0x100+bus */
 int devPCIFindBDF(
-     const epicsPCIID *idlist,
-     unsigned int      b,
-     unsigned int      d,
-     unsigned int      f,
-const epicsPCIDevice **found,
-     unsigned int      opt
-)
+        const epicsPCIID *idlist,
+        unsigned int      b,
+        unsigned int      d,
+        unsigned int      f,
+        const epicsPCIDevice **found,
+        unsigned int      opt
+        )
 {
     return devPCIFindDBDF(idlist, b>>8, b&0xff, d, f, found, opt);
 }
 
 int
 devPCIToLocalAddr(
-  const epicsPCIDevice *curdev,
-  unsigned int bar,
-  volatile void **ppLocalAddr,
-  unsigned int opt
-)
+        const epicsPCIDevice *curdev,
+        unsigned int bar,
+        volatile void **ppLocalAddr,
+        unsigned int opt
+        )
 {
-  PCIINIT;
+    PCIINIT;
 
-  if(bar>=PCIBARCOUNT)
-    return S_dev_badArgument;
+    if(bar>=PCIBARCOUNT)
+        return S_dev_badArgument;
 
-  return (*pdevLibPCI->pDevPCIToLocalAddr)(curdev,bar,ppLocalAddr,opt);
+    return (*pdevLibPCI->pDevPCIToLocalAddr)(curdev,bar,ppLocalAddr,opt);
 }
 
 
 
 int
 devPCIBarLen(
-  const epicsPCIDevice *curdev,
-          unsigned int  bar,
-          epicsUInt32 *len
-)
+        const epicsPCIDevice *curdev,
+        unsigned int  bar,
+        epicsUInt32 *len
+        )
 {
-  PCIINIT;
+    PCIINIT;
 
-  if(bar>=PCIBARCOUNT)
-    return S_dev_badArgument;
+    if(bar>=PCIBARCOUNT)
+        return S_dev_badArgument;
 
-  return (*pdevLibPCI->pDevPCIBarLen)(curdev,bar,len);
+    return (*pdevLibPCI->pDevPCIBarLen)(curdev,bar,len);
 }
 
 int devPCIConnectInterrupt(
-  const epicsPCIDevice *curdev,
-  void (*pFunction)(void *),
-  void  *parameter,
-  unsigned int opt
-)
+        const epicsPCIDevice *curdev,
+        void (*pFunction)(void *),
+        void  *parameter,
+        unsigned int opt
+        )
 {
-  PCIINIT;
+    PCIINIT;
 
-  return (*pdevLibPCI->pDevPCIConnectInterrupt)
-                (curdev,pFunction,parameter,opt);
+    return (*pdevLibPCI->pDevPCIConnectInterrupt)
+            (curdev,pFunction,parameter,opt);
 }
 
 int devPCIDisconnectInterrupt(
-  const epicsPCIDevice *curdev,
-  void (*pFunction)(void *),
-  void  *parameter
-)
+        const epicsPCIDevice *curdev,
+        void (*pFunction)(void *),
+        void  *parameter
+        )
 {
-  PCIINIT;
+    PCIINIT;
 
-  return (*pdevLibPCI->pDevPCIDisconnectInterrupt)
-                (curdev,pFunction,parameter);
+    return (*pdevLibPCI->pDevPCIDisconnectInterrupt)
+            (curdev,pFunction,parameter);
 }
 
 typedef struct {
@@ -556,7 +556,7 @@ devPCIShowDevice(int lvl, const epicsPCIDevice *dev)
     if(dev->slot!=DEVPCI_NO_SLOT)
         printf("  slot: %s\n", dev->slot);
     if (dev->driver) printf("  driver %s\n",
-           dev->driver);
+                            dev->driver);
     if(lvl<2)
         return;
     for(i=0; i<PCIBARCOUNT; i++)
@@ -662,7 +662,7 @@ static const iocshArg devPCIShowArg3 = { "exact (1=treat 0 as 0)",iocshArgInt};
 static const iocshArg * const devPCIShowArgs[4] =
 {&devPCIShowArg0,&devPCIShowArg1,&devPCIShowArg2,&devPCIShowArg3};
 static const iocshFuncDef devPCIShowFuncDef =
-    {"devPCIShow",4,devPCIShowArgs};
+{"devPCIShow",4,devPCIShowArgs};
 static void devPCIShowCallFunc(const iocshArgBuf *args)
 {
     devPCIShow(args[0].ival,args[1].ival,args[2].ival,args[3].ival);
@@ -672,7 +672,7 @@ static const iocshArg devLibPCIUseArg0 = { "verbosity level",iocshArgString};
 static const iocshArg * const devLibPCIUseArgs[1] =
 {&devLibPCIUseArg0};
 static const iocshFuncDef devLibPCIUseFuncDef =
-    {"devLibPCIUse",1,devLibPCIUseArgs};
+{"devLibPCIUse",1,devLibPCIUseArgs};
 static void devLibPCIUseCallFunc(const iocshArgBuf *args)
 {
     devLibPCIUse(args[0].sval);
@@ -683,8 +683,8 @@ static void devLibPCIUseCallFunc(const iocshArgBuf *args)
 static
 void devLibPCIIOCSH()
 {
-  iocshRegister(&devPCIShowFuncDef,devPCIShowCallFunc);
-  iocshRegister(&devLibPCIUseFuncDef,devLibPCIUseCallFunc);
+    iocshRegister(&devPCIShowFuncDef,devPCIShowCallFunc);
+    iocshRegister(&devLibPCIUseFuncDef,devLibPCIUseCallFunc);
 }
 
 epicsExportRegistrar(devLibPCIIOCSH);

@@ -49,12 +49,12 @@
 #ifndef CONTAINER
 # ifdef __GNUC__
 #   define CONTAINER(ptr, structure, member) ({                     \
-        const __typeof(((structure*)0)->member) *_ptr = (ptr);      \
-        (structure*)((char*)_ptr - offsetof(structure, member));    \
+    const __typeof(((structure*)0)->member) *_ptr = (ptr);      \
+    (structure*)((char*)_ptr - offsetof(structure, member));    \
     })
 # else
 #   define CONTAINER(ptr, structure, member) \
-        ((structure*)((char*)(ptr) - offsetof(structure, member)))
+    ((structure*)((char*)(ptr) - offsetof(structure, member)))
 # endif
 #endif
 
@@ -75,7 +75,7 @@
 #define CMODE_RDWR 3
 #define CMODE_RONL 0x11
 #define CMODE_NONE 0x10
- 
+
 /**@brief Info of a single PCI device
  *
  * Lifetime: Created in linuxDevPCIInit and free'd in linuxDevFinal
@@ -166,8 +166,8 @@ vallocPrintf(const char *format, va_list args)
     int size, size2;
 
     /* May use a va_list only *once* (on some implementations it may
-	 * be a reference to something that holds internal state information
-	 */
+     * be a reference to something that holds internal state information
+     */
     __va_copy(nargs, args);
 
     /* Take advantage of the fact that sprintf will tell us how much space to allocate */
@@ -191,7 +191,7 @@ vallocPrintf(const char *format, va_list args)
     }
 
     return ret;
-    fail:
+fail:
     free(ret);
     return NULL;
 }
@@ -339,7 +339,7 @@ find_uio_number(const struct osdPCIDevice* osd)
             return ret;
     }
     fprintf(stderr, "Failed to open uio device for PCI device %04x:%02x:%02x.%x: %s\n",
-                 osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
+            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
     return -1;
 }
 
@@ -387,7 +387,7 @@ open_res(struct osdPCIDevice *osd, unsigned int bar)
 
     if ( (osd->rfd[bar] = open(fname, O_RDWR)) < 0 ) {
         fprintf(stderr, "Failed to open resource file for PCI device %04x:%02x:%02x.%x: %s\n",
-            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
+                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, strerror(errno));
         goto fail;
     }
 
@@ -442,7 +442,7 @@ int linuxDevPCIInit(void)
     sysfsPci_dir = opendir("/sys/bus/pci/devices");
     if (!sysfsPci_dir){
         fprintf(stderr, "Could not open /sys/bus/pci/devices!\n");
-    	goto fail;
+        goto fail;
     }
 
     while ((dir=readdir(sysfsPci_dir))) {
@@ -454,7 +454,7 @@ int linuxDevPCIInit(void)
         char dname[80];
         unsigned int i;
 
-    	if (!dir->d_name || dir->d_name[0]=='.') continue; /* Skip invalid entries */
+        if (!dir->d_name || dir->d_name[0]=='.') continue; /* Skip invalid entries */
 
         osd=calloc(1, sizeof(osdPCIDevice));
         if (!osd) {
@@ -473,35 +473,35 @@ int linuxDevPCIInit(void)
         if (match != 4){
             fprintf(stderr, "Could not decode PCI device directory %s\n", dir->d_name);
         }
- 
+
         osd->dev.id.vendor=read_sysfs(&fail, BUSBASE "vendor",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                      osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.device=read_sysfs(&fail, BUSBASE "device",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                      osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_vendor=read_sysfs(&fail, BUSBASE "subsystem_vendor",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.sub_device=read_sysfs(&fail, BUSBASE "subsystem_device",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                          osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.pci_class=read_sysfs(&fail, BUSBASE "class",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.irq=read_sysfs(&fail, BUSBASE "irq",
-                             osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         osd->dev.id.revision=0;
 
         if (fail) {
             fprintf(stderr, "Warning: Failed to read some attributes of PCI device %04x:%02x:%02x.%x\n"
-                         "         This may cause some searches to fail\n",
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                            "         This may cause some searches to fail\n",
+                    osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             fail=0;
         }
 
         if(devPCIDebug>=1) {
             fprintf(stderr, "linuxDevPCIInit found %04x:%02x:%02x.%x\n",
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                    osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
             fprintf(stderr, " as pri %04x:%04x sub %04x:%04x cls %06x\n",
-                         osd->dev.id.vendor, osd->dev.id.device,
-                         osd->dev.id.sub_vendor, osd->dev.id.sub_device,
-                         osd->dev.id.pci_class);
+                    osd->dev.id.vendor, osd->dev.id.device,
+                    osd->dev.id.sub_vendor, osd->dev.id.sub_device,
+                    osd->dev.id.pci_class);
         }
 
         /* Read BAR info */
@@ -509,7 +509,7 @@ int linuxDevPCIInit(void)
         /* Base address */
         
         filename = allocPrintf(BUSBASE "resource",
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                               osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!filename) {
             errMessage(S_dev_noMemory, "Out of memory");
             goto fail;
@@ -522,7 +522,7 @@ int linuxDevPCIInit(void)
         }
         for (i=0; i<PCIBARCOUNT; i++) { /* read 6 BARs */
             match = fscanf(file, "0x%16llx 0x%16llx 0x%16llx\n", &start, &stop, &flags);
-        
+
             if (match != 3) {
                 fprintf(stderr, "Could not parse line %u of %s\n", i+1, filename);
                 continue;
@@ -554,7 +554,7 @@ int linuxDevPCIInit(void)
         
         /* driver name */
         filename = allocPrintf(BUSBASE "driver",
-                         osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                               osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!filename) {
             errMessage(S_dev_noMemory, "Out of memory");
             goto fail;
@@ -674,11 +674,11 @@ int linuxDevFinal(void)
 static
 int
 linuxDevPCIFindCB(
-     const epicsPCIID *idlist,
-     devPCISearchFn searchfn,
-     void *arg,
-     unsigned int opt
-)
+        const epicsPCIID *idlist,
+        devPCISearchFn searchfn,
+        void *arg,
+        unsigned int opt
+        )
 {
     int err=0, ret=0;
     ELLNODE *cur;
@@ -703,7 +703,7 @@ linuxDevPCIFindCB(
         for(search=idlist, i=0; search->device!=DEVPCI_LAST_DEVICE; search++, i++){
 
             if(!devLibPCIMatch(search, &curdev->dev.id))
-              continue;
+                continue;
 
             /* Match found */
 
@@ -744,17 +744,17 @@ static const char* fd2filename(int fd, char* buffer, size_t buffersize)
 static
 int
 map_bar(
-  osdPCIDevice *osd,
-  unsigned int bar,
-  unsigned int opt
-)
+        osdPCIDevice *osd,
+        unsigned int bar,
+        unsigned int opt
+        )
 {
     int mapno;
     int mapfd;
 
     if ( osd->dev.bar[bar].ioport ) {
         fprintf(stderr, "Failed to MMAP BAR %u of PCI device %04x:%02x:%02x.%x -- mapping of IOPORTS is not possible\n", bar,
-                     osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
+                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         return S_dev_addrMapFail;
     }
 
@@ -792,8 +792,8 @@ map_bar(
         int err = errno;
 
         fprintf(stderr, "mmap fd=%d %s, size=%#lx, offset=%#lx returned %p (errno=%d)\n",
-            mapfd, fd2filename(mapfd, mapfilename, sizeof(mapfilename)),
-            (long)(osd->offset[bar]+osd->len[bar]), mapno*pagesize, osd->base[bar], err);
+                mapfd, fd2filename(mapfd, mapfilename, sizeof(mapfilename)),
+                (long)(osd->offset[bar]+osd->len[bar]), mapno*pagesize, osd->base[bar], err);
     }
 
     if (osd->base[bar]==MAP_FAILED) {
@@ -810,11 +810,11 @@ map_bar(
 static
 int
 linuxDevPCIToLocalAddr(
-  const epicsPCIDevice* dev,
-  unsigned int bar,
-  volatile void **ppLocalAddr,
-  unsigned int opt
-)
+        const epicsPCIDevice* dev,
+        unsigned int bar,
+        volatile void **ppLocalAddr,
+        unsigned int opt
+        )
 {
     osdPCIDevice *osd=CONTAINER((epicsPCIDevice*)dev,osdPCIDevice,dev);
 
@@ -824,7 +824,7 @@ linuxDevPCIToLocalAddr(
             if (open_res(osd, bar)!=0 || map_bar(osd, bar, opt)!=0) {
                 if (open_uio(osd)!=0 || map_bar(osd, bar, opt)!=0) {
                     fprintf(stderr, "Can neither mmap resource file nor uio file of PCI device %04x:%02x:%02x.%x BAR %u\n",
-                        osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
+                            osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function, bar);
                     epicsMutexUnlock(osd->devLock);
                     return S_dev_addrMapFail;
                 }
@@ -840,10 +840,10 @@ linuxDevPCIToLocalAddr(
 static
 int
 linuxDevPCIBarLen(
-  const epicsPCIDevice* dev,
-  unsigned int bar,
-  epicsUInt32 *len
-)
+        const epicsPCIDevice* dev,
+        unsigned int bar,
+        epicsUInt32 *len
+        )
 {
     osdPCIDevice *osd=CONTAINER(dev,osdPCIDevice,dev);
 
@@ -855,11 +855,11 @@ linuxDevPCIBarLen(
 
 static
 int linuxDevPCIConnectInterrupt(
-  const epicsPCIDevice *dev,
-  void (*pFunction)(void *),
-  void  *parameter,
-  unsigned int opt
-)
+        const epicsPCIDevice *dev,
+        void (*pFunction)(void *),
+        void  *parameter,
+        unsigned int opt
+        )
 {
     char name[20];
     ELLNODE *cur;
@@ -1008,10 +1008,10 @@ stopIsrThread(osdISR *isr)
 
 static
 int linuxDevPCIDisconnectInterrupt(
-  const epicsPCIDevice *dev,
-  void (*pFunction)(void *),
-  void  *parameter
-)
+        const epicsPCIDevice *dev,
+        void (*pFunction)(void *),
+        void  *parameter
+        )
 {
     int ret=S_dev_intDisconnect;
     ELLNODE *cur;
@@ -1059,7 +1059,7 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
 
     if ( -1 == osd->cfd ) {
         if ( ! (scratch = allocPrintf(BUSBASE"config",
-                    osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
+                                      osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function)) ) {
             rval = S_dev_noMemory;
             goto bail;
         }
@@ -1094,10 +1094,10 @@ linuxDevPCIConfigAccess(const epicsPCIDevice *dev, unsigned offset, void *pArg, 
     if ( (ssize_t)CFG_ACC_WIDTH(mode) != st ) {
         if ( st < 0 )
             fprintf(stderr, "devLibPCIOSD: Unable to %s %u bytes %s configuration space: %s\n",
-                         CFG_ACC_WRITE(mode) ? "write" : "read",
-                         CFG_ACC_WIDTH(mode),
-                         CFG_ACC_WRITE(mode) ? "to" : "from",
-                         strerror(errno));
+                    CFG_ACC_WRITE(mode) ? "write" : "read",
+                    CFG_ACC_WIDTH(mode),
+                    CFG_ACC_WRITE(mode) ? "to" : "from",
+                    strerror(errno));
 
         rval = S_dev_internal;
         goto bail;
@@ -1130,16 +1130,16 @@ linuxDevPCISwitchInterrupt(const epicsPCIDevice *dev, int level)
 }
 
 devLibPCI plinuxPCI = {
-  .name = "native",
-  .pDevInit = linuxDevPCIInit,
-  .pDevFinal = linuxDevFinal,
-  .pDevPCIFind = linuxDevPCIFindCB,
-  .pDevPCIToLocalAddr = linuxDevPCIToLocalAddr,
-  .pDevPCIBarLen = linuxDevPCIBarLen,
-  .pDevPCIConnectInterrupt = linuxDevPCIConnectInterrupt,
-  .pDevPCIDisconnectInterrupt = linuxDevPCIDisconnectInterrupt,
-  .pDevPCIConfigAccess = linuxDevPCIConfigAccess,
-  .pDevPCISwitchInterrupt = linuxDevPCISwitchInterrupt,
+    .name = "native",
+    .pDevInit = linuxDevPCIInit,
+    .pDevFinal = linuxDevFinal,
+    .pDevPCIFind = linuxDevPCIFindCB,
+    .pDevPCIToLocalAddr = linuxDevPCIToLocalAddr,
+    .pDevPCIBarLen = linuxDevPCIBarLen,
+    .pDevPCIConnectInterrupt = linuxDevPCIConnectInterrupt,
+    .pDevPCIDisconnectInterrupt = linuxDevPCIDisconnectInterrupt,
+    .pDevPCIConfigAccess = linuxDevPCIConfigAccess,
+    .pDevPCISwitchInterrupt = linuxDevPCISwitchInterrupt,
 };
 #include <epicsExport.h>
 
