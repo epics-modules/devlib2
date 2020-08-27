@@ -134,8 +134,7 @@ struct priv {
         return OV;
     }
 
-    template<typename VAL>
-    VAL read(epicsUInt32 off=0) const
+    epicsUInt32 read(epicsUInt32 off=0) const
     {
         epicsUInt32 OV(readraw(off));
         if(vmask) OV &= vmask;
@@ -151,7 +150,7 @@ struct priv {
         unsigned i;
         for(i=0; i<count && addr<end; i++, addr+=step)
         {
-            epicsUInt32 OV = read<VAL>(addr);
+            epicsUInt32 OV = read(addr);
             *val++ = castval<VAL,epicsUInt32>::op(OV);
         }
         return i;
@@ -324,7 +323,7 @@ long explore_read_int_val(REC *prec)
 {
     TRY {
         Guard G(pvt->lock);
-        prec->val = pvt->read<epicsUInt32>();
+        prec->val = pvt->read();
         if(prec->tpro>1) {
             errlogPrintf("%s: read %08x -> VAL=%08x\n", prec->name, (unsigned)pvt->offset, (unsigned)prec->val);
         }
@@ -362,7 +361,7 @@ long explore_read_int_rval(REC *prec)
 {
     TRY {
         Guard G(pvt->lock);
-        prec->rval = pvt->read<epicsUInt32>();
+        prec->rval = pvt->read();
         if(prec->tpro>1) {
             errlogPrintf("%s: read %08x -> RVAL=%08x\n", prec->name, (unsigned)pvt->offset, (unsigned)prec->rval);
         }
@@ -405,7 +404,7 @@ long explore_read_real_val(REC *prec)
         epicsUInt32 ival;
         {
             Guard G(pvt->lock);
-            ival = pun.ival = pvt->read<epicsUInt32>();
+            ival = pun.ival = pvt->read();
         }
         epicsFloat64 dval = pun.fval;
         dval += prec->roff;
