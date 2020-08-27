@@ -225,7 +225,7 @@ Work by Michael Davidsaver
 
 @li Initial release.
 
-@author Michael Davidsaver <mdavidsaver@bnl.gov>
+@author Michael Davidsaver <mdavidsaver@gmail.com>
 @author Till Straumann <strauman@slac.stanford.edu>
 @author Dirk Zimoch <dirk.zimoch@psi.ch>
 
