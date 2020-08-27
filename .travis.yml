@@ -19,7 +19,8 @@ addons:
     - perl
     # for clang compiler
     - clang
-    # for mingw builds (32bit and 64bit)
+    # for RTEMS cross builds
+    - qemu-system-x86
 
 install:
   - ./.ci/travis/prepare.sh
@@ -45,9 +46,9 @@ jobs:
   - env: BASE=7.0
     dist: trusty
 
-  - env: BASE=7.0 RTEMS=4.10 TEST=NO
+  - env: BASE=7.0 RTEMS=4.10
 
-  - env: BASE=7.0 RTEMS=4.9 TEST=NO
+  - env: BASE=7.0 RTEMS=4.9
 
   - env: BASE=7.0
     compiler: gcc-6
