@@ -702,48 +702,8 @@ linuxDevPCIFindCB(
 
         for(search=idlist, i=0; search->device!=DEVPCI_LAST_DEVICE; search++, i++){
 
-            if(search->device!=DEVPCI_ANY_DEVICE &&
-               search->device!=curdev->dev.id.device) {
-                if(devPCIDebug>1) printf(" %u mismatch device %x %x\n", i,
-                                         (unsigned)search->device, (unsigned)curdev->dev.id.device);
-                continue;
-            } else
-                if(search->vendor!=DEVPCI_ANY_VENDOR &&
-                   search->vendor!=curdev->dev.id.vendor) {
-                    if(devPCIDebug>1) printf(" %u mismatch vendor %x %x\n", i,
-                                             (unsigned)search->vendor, (unsigned)curdev->dev.id.vendor);
-                    continue;
-            } else
-                if( search->sub_device!=DEVPCI_ANY_SUBDEVICE &&
-                    search->sub_device!=curdev->dev.id.sub_device
-                    ) {
-                    if(devPCIDebug>1) printf(" %u mismatch subdevice %x %x\n", i,
-                                             (unsigned)search->sub_device, (unsigned)curdev->dev.id.sub_device);
-                    continue;
-            } else
-                if( search->sub_vendor!=DEVPCI_ANY_SUBVENDOR &&
-                    search->sub_vendor!=curdev->dev.id.sub_vendor
-                    ) {
-                    if(devPCIDebug>1) printf(" %u mismatch subvendor %x %x\n", i,
-                                             (unsigned)search->sub_vendor, (unsigned)curdev->dev.id.sub_vendor);
-                    continue;
-            } else
-                if( search->pci_class!=DEVPCI_ANY_CLASS &&
-                    search->pci_class!=curdev->dev.id.pci_class
-                    ) {
-                    if(devPCIDebug>1) printf(" %u mismatch class %x %x\n", i,
-                                             (unsigned)search->pci_class, (unsigned)curdev->dev.id.pci_class);
-                    continue;
-            } else
-                if( search->revision!=DEVPCI_ANY_REVISION &&
-                    search->revision!=curdev->dev.id.revision
-                    ) {
-                    if(devPCIDebug>1) printf(" %u mismatch revision %x %x\n", i,
-                                             search->revision, curdev->dev.id.revision);
-                    continue;
-            }
-            if(devPCIDebug>1)
-                printf(" %u Match\n", i);
+            if(!devLibPCIMatch(search, &curdev->dev.id))
+              continue;
 
             /* Match found */
 

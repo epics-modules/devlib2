@@ -152,6 +152,40 @@ const char* devLibPCIDriverName()
     return ret;
 }
 
+int
+devLibPCIMatch(const epicsPCIID *match, const epicsPCIID *dev)
+{
+    if (match->device!=DEVPCI_ANY_DEVICE && match->device!=dev->device) {
+        if(devPCIDebug>1) printf(" mismatch device %x %x\n",
+                                 (unsigned)match->device, (unsigned)dev->device);
+        return 0;
+    } else if (match->vendor!=DEVPCI_ANY_VENDOR && match->vendor!=dev->vendor) {
+        if(devPCIDebug>1) printf(" mismatch vendor %x %x\n",
+                                 (unsigned)match->vendor, (unsigned)dev->vendor);
+        return 0;
+    } else if (match->sub_device!=DEVPCI_ANY_SUBDEVICE && match->sub_device!=dev->sub_device) {
+        if(devPCIDebug>1) printf(" mismatch subdevice %x %x\n",
+                                 (unsigned)match->sub_device, (unsigned)dev->sub_device);
+        return 0;
+    } else if (match->sub_vendor!=DEVPCI_ANY_SUBVENDOR && match->sub_vendor!=dev->sub_vendor) {
+        if(devPCIDebug>1) printf(" mismatch subvendor %x %x\n",
+                                 (unsigned)match->sub_vendor, (unsigned)dev->sub_vendor);
+        return 0;
+    } else if (match->pci_class!=DEVPCI_ANY_CLASS && match->pci_class!=dev->pci_class) {
+        if(devPCIDebug>1) printf(" mismatch class %x %x\n",
+                                 (unsigned)match->pci_class, (unsigned)dev->pci_class);
+        return 0;
+    } else if (match->revision!=DEVPCI_ANY_REVISION && match->revision!=dev->revision) {
+        if(devPCIDebug>1) printf(" mismatch revision %x %x\n",
+                                 match->revision, dev->revision);
+        return 0;
+    } else {
+        if(devPCIDebug>1)
+            printf(" Match\n");
+        return 1;
+    }
+}
+
 static
 void devInit(void* junk)
 {

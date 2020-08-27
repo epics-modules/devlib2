@@ -168,28 +168,7 @@ sharedDevPCIFindCB(
 
     for(search=idlist; search && !!search->device; search++){
 
-      if (search->device!=DEVPCI_ANY_DEVICE &&
-          search->device!=curdev->dev.id.device)
-        continue;
-      else
-      if (search->vendor!=DEVPCI_ANY_VENDOR &&
-          search->vendor!=curdev->dev.id.vendor)
-        continue;
-      else
-      if (search->sub_device!=DEVPCI_ANY_SUBDEVICE &&
-          search->sub_device!=curdev->dev.id.sub_device)
-        continue;
-      else
-      if (search->sub_vendor!=DEVPCI_ANY_SUBVENDOR &&
-          search->sub_vendor!=curdev->dev.id.sub_vendor)
-        continue;
-      else
-      if (search->pci_class!=DEVPCI_ANY_CLASS &&
-          search->pci_class!=curdev->dev.id.pci_class)
-        continue;
-      else
-      if (search->revision!=DEVPCI_ANY_REVISION &&
-          search->revision!=curdev->dev.id.revision)
+      if(!devLibPCIMatch(search, &curdev->dev.id))
         continue;
 
       /* Match found */

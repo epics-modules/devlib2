@@ -76,6 +76,15 @@ devLibPCIRegisterDriver2(devLibPCI*, size_t);
 epicsShareFunc
 void devLibPCIRegisterBaseDefault(void);
 
+/** Helper for implementing devLibPCI::pDevPCIFind()
+ *
+ * Returns true if the given match (which may include DEVPCI_ANY_* wildcards)
+ * matches the given device (which may not).
+ */
+epicsShareFunc
+int
+devLibPCIMatch(const epicsPCIID *match, const epicsPCIID *dev);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
