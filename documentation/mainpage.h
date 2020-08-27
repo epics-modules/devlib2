@@ -86,6 +86,11 @@ the width and order of accesses.
 
 @section changelog Changelog
 
+@subsection ver2c 2.12 (UNRELEASED)
+
+@li Various fixes for Linux, and preparation for Windows support (Dirk Zimoch)
+@li Fix redirection of iocsh functions
+
 @subsection ver2b 2.11 (Apr 2020)
 
 @li Set SHRLIB_VERSION
