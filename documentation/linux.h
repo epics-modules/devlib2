@@ -6,7 +6,7 @@ The PCI bus implementation for Linux uses the Userspace IO kernel API to access 
 Devices needing only memory mapped I/O access do not require a kernel driver.
 To support PCI style interrupts a minimal kernel module using the Linux UIO framework is required.
 Devices which implement generic interrupt enable/disable via the PCI control register
-may user the generic 'uio_pci_generic' kernel module.
+may use the generic 'uio_pci_generic' kernel module.
 Otherwise this must either be written for each device to be supported.
 
 @section shouldi When to Use
