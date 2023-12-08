@@ -8,7 +8,16 @@
 name: devlib2
 
 # Trigger on pushes and PRs to any branch
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
+  pull_request:
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
+  workflow_dispatch:
 
 env:
   SETUP_PATH: .ci-local:.ci

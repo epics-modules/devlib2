@@ -1,22 +1,7 @@
-devLib2 - Library for direct MMIO access to PCI and VME64x
-==========================================================
+[![devlib2](https://github.com/epics-modules/devlib2/actions/workflows/ci-scripts-build.yml/badge.svg)](https://github.com/epics-modules/devlib2/actions/workflows/ci-scripts-build.yml)
 
-Michael Davidsaver <mdavidsaver@gmail.com>
+---
 
-[Documentation and example](http://epics.sourceforge.net/devlib2/)
-
-Releases are found at:
-
-[http://sourceforge.net/projects/epics/files/](http://sourceforge.net/projects/epics/files/)
-
-Requires: [EPICS Base](http://www.aps.anl.gov/epics/) >= 3.14.8.2
-
-VCS sources
-
-```shell
-git clone https://github.com/epics-modules/devlib2.git
-```
-
-This is file is generated from git revision $Format:%H$
-
-<a href="https://travis-ci.org/epics-modules/devlib2"><img src="https://travis-ci.org/epics-modules/devlib2.svg">CI Build Status</img></a>
+# devLib2 - Library for direct MMIO access to PCI and VME64x
+* [Documentation and example](http://epics.sourceforge.net/devlib2/)
+* Requires: [EPICS Base](http://www.aps.anl.gov/epics/) >= 3.14.8.2
