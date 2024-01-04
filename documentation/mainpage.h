@@ -86,8 +86,9 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver2c 2.12 (UNRELEASED)
+@subsection ver2c 2.12 (January 2023)
 
+@li Fix missing include (shareLib.h)
 @li Various fixes for Linux, and preparation for Windows support (Dirk Zimoch)
 @li Fix redirection of iocsh functions
 
@@ -228,6 +229,7 @@ Work by Michael Davidsaver
 @author Michael Davidsaver <mdavidsaver@gmail.com>
 @author Till Straumann <strauman@slac.stanford.edu>
 @author Dirk Zimoch <dirk.zimoch@psi.ch>
+@author Gabriel Fedel <gabriel.fedel@ess.eu>
 
 */
 
