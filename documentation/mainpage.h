@@ -13,7 +13,7 @@ The @ref mmio "MMIO API" is included in EPICS Base >=3.15.0.2
 
 @section whereis Source
 
-Releases can be found at @url http://sourceforge.net/projects/epics/files/devlib2/
+Releases can be found at @url https://github.com/epics-modules/devlib2/tags
 
 VCS source browser
 @url https://github.com/epics-modules/devlib2
@@ -22,7 +22,7 @@ Or checked out with
 
 git clone https://github.com/epics-modules/devlib2.git
 
-The canonical version of this page is @url http://epics.sourceforge.net/devlib2/
+The canonical version of this page is @url https://epics-modules.github.io/devlib2
 
 @subsection requires Requires
 
