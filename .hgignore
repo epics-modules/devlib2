@@ -1,9 +1,0 @@
-O.*
-^bin$
-^db$
-^dbd$
-^include$
-^lib$
-^envPaths$
-^html$
-^documentation/doc$
