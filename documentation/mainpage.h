@@ -86,7 +86,7 @@ the width and order of accesses.
 
 @section changelog Changelog
 
-@subsection ver2c 2.12 (January 2023)
+@subsection ver2c 2.12 (January 2024)
 
 @li Fix missing include (shareLib.h)
 @li Various fixes for Linux, and preparation for Windows support (Dirk Zimoch)
