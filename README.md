@@ -3,5 +3,5 @@
 ---
 
 # devLib2 - Library for direct MMIO access to PCI and VME64x
-* [Documentation and example](http://epics.sourceforge.net/devlib2/)
+* [Documentation and example](https://epics-modules.github.io/devlib2/)
 * Requires: [EPICS Base](http://www.aps.anl.gov/epics/) >= 3.14.8.2
