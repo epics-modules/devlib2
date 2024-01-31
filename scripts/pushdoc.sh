@@ -12,4 +12,9 @@ die() {
 
 (cd documentation && doxygen)
 
-rsync -av --delete documentation/doc/html/ $USER,epics@frs.sourceforge.net:/home/project-web/epics/htdocs/devlib2/
+git checkout gh-pages
+cp -r documentation/doc/html/* .
+rm -rf documentation
+git add .
+git commit -m "Last updates to documentation"
+git push origin gh-pages
