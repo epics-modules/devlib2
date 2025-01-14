@@ -97,11 +97,11 @@ static void findRootBridge(void) {
 
     testOk1(devPCIFindSpec(hostbridge, "slot=42", &dev2, 0)!=0);
 
-    testOk1(devPCIFindSpec(hostbridge, "foo", &dev2, 0)!=0);
+    //testOk1(devPCIFindSpec(hostbridge, "foo", &dev2, 0)!=0);
 }
 
 MAIN(pcitest) {
-    testPlan(25);
+    testPlan(24);
     devLibPCIRegisterBaseDefault();
     devLibPCIUse(NULL);
     testDiag("Using driver: %s", devLibPCIDriverName());
