@@ -991,24 +991,20 @@ void isrThread(void* arg)
             case EINVAL:
             case ENODEV:
                 errlogPrintf("isrThread '%s': Device removed or UIO invalid (errno=%d: %s)\n", name, errno, strerror(errno));
-                errlogPrintf("isrThread '%s': Attempting hotplug recovery...\n", name);
 
                 epicsMutexMustLock(osd->devLock);
                 if (reopen_uio(osd) == 0) {
                     errlogPrintf("isrThread '%s': Successfully reopened UIO device\n", name);
                 } else {
-                    errlogPrintf("isrThread '%s': UIO reopen failed. Will retry in 1 second.\n", name);
-                    epicsMutexUnlock(osd->devLock);
-                    epicsThreadSleep(1.0);
-                    continue;
+                    errlogPrintf("isrThread '%s': UIO reopen failed. Will retry.\n", name);
                 }
                 epicsMutexUnlock(osd->devLock);
-                epicsThreadSleep(0.5);
+                epicsThreadSleep(1);
                 continue;
 
             default:
                 errlogPrintf("isrThread '%s': read error %d (%s)\n", name, errno, strerror(errno));
-                epicsThreadSleep(0.5);
+                epicsThreadSleep(1);
             }
         } else {
             interrupted = 1;
