@@ -963,23 +963,30 @@ void isrThread(void* arg)
         if (ret == -1) {
             switch (errno) {
             case EINTR:
-                // benign, try again
                 break;
 
+            case EIO:
             case EINVAL:
             case ENODEV:
-            case EIO:
-                errlogPrintf("isrThread '%s': Detected device removal or invalid UIO descriptor (errno=%d: %s)\n",
-                             name, errno, strerror(errno));
-                errlogPrintf("isrThread '%s': Attempting to close and reopen /dev/uioX for recovery...\n", name);
+                errlogPrintf("isrThread '%s': Device removed or UIO invalid (errno=%d: %s)\n", name, errno, strerror(errno));
+                errlogPrintf("isrThread '%s': Attempting to reopen /dev/uioX after hot-unplug...\n", name);
 
                 epicsMutexMustLock(osd->devLock);
-                close_uio(osd);
 
-                if (open_uio(osd) == 0) {
-                    errlogPrintf("isrThread '%s': Successfully reopened UIO device. Waiting for next interrupt...\n", name);
+                // Only attempt reopen if device appears
+                int uio = find_uio_number(osd);
+                if (uio >= 0) {
+                    close_uio(osd);
+                    if (open_uio(osd) == 0) {
+                        errlogPrintf("isrThread '%s': Recovery successful — reopened /dev/uio%d\n", name, uio);
+                    } else {
+                        errlogPrintf("isrThread '%s': Failed to reopen /dev/uio%d\n", name, uio);
+                        epicsMutexUnlock(osd->devLock);
+                        epicsThreadSleep(1.0);
+                        continue;
+                    }
                 } else {
-                    errlogPrintf("isrThread '%s': Failed to reopen UIO device. Device might not be reinserted yet. Retrying in 1 second...\n", name);
+                    errlogPrintf("isrThread '%s': UIO node not present yet, retrying in 1s...\n", name);
                     epicsMutexUnlock(osd->devLock);
                     epicsThreadSleep(1.0);
                     continue;
@@ -990,8 +997,7 @@ void isrThread(void* arg)
                 continue;
 
             default:
-                errlogPrintf("isrThread '%s': Unexpected read() error (errno=%d: %s). Sleeping and retrying...\n",
-                             name, errno, strerror(errno));
+                errlogPrintf("isrThread '%s': Unexpected read error %d (%s), retrying...\n", name, errno, strerror(errno));
                 epicsThreadSleep(0.5);
             }
         } else {
