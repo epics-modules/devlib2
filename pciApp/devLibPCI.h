@@ -451,6 +451,16 @@ int devPCIDisableInterrupt(const epicsPCIDevice *dev);
 epicsShareFunc
 const char* devPCIDeviceClassToString(int classId);
 
+/**
+ * @brief Optional callback invoked on PCI device hot-swap.
+ *
+ * This function pointer may be set to a custom handler that will be called
+ * when a PCI device is successfully reopened (e.g. after hot-swap).
+ *
+ * @param name  Identifier or name of the reopened PCI device.
+ */
+epicsShareExtern void (*devPCIonHotSwapHook)(const char*);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
