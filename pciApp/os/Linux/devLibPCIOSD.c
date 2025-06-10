@@ -104,6 +104,9 @@ struct osdPCIDevice {
 
     epicsMutexId devLock; /* guard access to isrs list */
 
+    //Optional callback invoked on PCI device hot-swap.
+    void (*onHotSwapHook)(struct osdPCIDevice* dev);
+
     ELLNODE node;
 
     ELLLIST isrs; /* contains struct osdISR */
@@ -944,8 +947,6 @@ static int reopen_uio(struct osdPCIDevice *osd)
     return 0;
 }
 
-epicsShareDef void (*devPCIonHotSwapHook)(const char* name) = NULL;
-
 static
 void isrThread(void* arg)
 {
@@ -997,7 +998,7 @@ void isrThread(void* arg)
                 epicsMutexMustLock(osd->devLock);
                 if (reopen_uio(osd) == 0) {
                     errlogPrintf("isrThread '%s': Successfully reopened UIO device\n", name);
-                    if (devPCIonHotSwapHook) devPCIonHotSwapHook(name);
+                    if (osd->onHotSwapHook) osd->onHotSwapHook(osd);
                 } else {
                     errlogPrintf("isrThread '%s': UIO reopen failed. Will retry.\n", name);
                 }
