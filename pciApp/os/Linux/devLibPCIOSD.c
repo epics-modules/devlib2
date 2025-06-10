@@ -22,13 +22,13 @@
 #include <errlog.h>
 #include <epicsString.h>
 #include <epicsThread.h>
-#include <epicsMutex.h>
+//#include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <epicsInterrupt.h>
 #include <compilerDependencies.h>
 
-
-#include "devLibPCIImpl.h"
+//#include "devLibPCIImpl.h"
+#include "devLibPCIOSD.h"
 
 /**@file devLibPCIOSD.c
  * @brief Userspace PCI access in Linux
@@ -82,36 +82,6 @@
  *
  * Access after init is guarded by devLock
  */
-struct osdPCIDevice {
-    epicsPCIDevice dev; /* "public" data */
-
-    /* result of mmap(), add offset before passing to user */
-    volatile void *base[PCIBARCOUNT];
-    /* offset from start of page to start of BAR */
-    epicsUInt32    offset[PCIBARCOUNT];
-    /* BAR length (w/o offset) */
-    epicsUInt32    len[PCIBARCOUNT];
-    volatile void *erom;
-    epicsUInt32    eromlen;
-
-    epicsUInt32 displayBAR[PCIBARCOUNT]; /* Raw PCI address */
-    epicsUInt32 displayErom;
-
-    int fd; /* /dev/uio# */
-    int cfd; /* config-space descriptor */
-    int rfd[PCIBARCOUNT];
-    int cmode; /* config-space mode */
-
-    epicsMutexId devLock; /* guard access to isrs list */
-
-    //Optional callback invoked on PCI device hot-swap.
-    void (*onHotSwapHook)(struct osdPCIDevice* dev);
-
-    ELLNODE node;
-
-    ELLLIST isrs; /* contains struct osdISR */
-};
-typedef struct osdPCIDevice osdPCIDevice;
 
 #define dev2osd(dev) CONTAINER(dev, osdPCIDevice, dev)
 
