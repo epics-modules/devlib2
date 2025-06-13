@@ -957,7 +957,7 @@ void isrThread(void* arg)
         ret = read(osd->fd, &event, sizeof(event));
         if (ret == -1) {
             switch (errno) {
-            case EINTR:
+            case EINTR: /* interrupted by a signal */
                 break;
 
             case EIO:
