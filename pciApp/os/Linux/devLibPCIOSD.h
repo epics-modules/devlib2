@@ -1,3 +1,9 @@
+/*************************************************************************\
+* Copyright (c) 2010 Brookhaven Science Associates, as Operator of
+*     Brookhaven National Laboratory.
+* devLib2 is distributed subject to a Software License Agreement found
+* in file LICENSE that is included with this distribution.
+\*************************************************************************/
 
 #ifndef DEVLIBPCIOSD_H_INC
 #define DEVLIBPCIOSD_H_INC
