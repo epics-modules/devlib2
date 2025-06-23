@@ -22,12 +22,10 @@
 #include <errlog.h>
 #include <epicsString.h>
 #include <epicsThread.h>
-//#include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <epicsInterrupt.h>
 #include <compilerDependencies.h>
 
-//#include "devLibPCIImpl.h"
 #include "devLibPCIOSD.h"
 
 /**@file devLibPCIOSD.c
