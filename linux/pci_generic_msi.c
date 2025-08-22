@@ -67,7 +67,14 @@ int mmap_generic_msi(struct uio_info *info, struct vm_area_struct *vma)
         return -EINVAL;
     }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    vm_flags_set(vma, VM_IO | VM_RESERVED);
+#elif defined(RHEL_RELEASE_CODE) && (RHEL_RELEASE_CODE >= 0x905)
+    vm_flags_set(vma, VM_IO | VM_RESERVED);
+#else
     vma->vm_flags |= VM_IO | VM_RESERVED;
+#endif
+
     vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
     return remap_pfn_range(vma,
