@@ -6,7 +6,6 @@ on:
     paths:
       - ".github/workflows/module-codeql.yml"
       - "common/**"
-      - "linux/**"
       - "exploreApp/**"
       - "pciApp/**"
       - "vmeApp/**"
@@ -15,7 +14,6 @@ on:
     paths:
       - ".github/workflows/module-codeql.yml"
       - "common/**"
-      - "linux/**"
       - "exploreApp/**"
       - "pciApp/**"
       - "vmeApp/**"
