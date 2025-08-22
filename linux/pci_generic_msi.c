@@ -170,9 +170,15 @@ static int probe_generic_msi(struct pci_dev *pdev,
     }
 
     {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
         struct msi_desc *desc = irq_get_msi_desc(pdev->irq);
         priv->maskable = desc ? desc->msi_attrib.maskbit : 0;
         dev_info(&pdev->dev, "MSI is %smaskable\n", priv->maskable ? "" : "not ");
+#else
+        // Newer kernels: msi_desc not active
+        priv->maskable = 0;
+        dev_info(&pdev->dev, "MSI enabled (mask-bit introspection not available).\n");
+#endif
     }
 
     err = uio_register_device(&pdev->dev, &priv->uio);
