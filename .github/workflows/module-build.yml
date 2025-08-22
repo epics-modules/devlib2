@@ -10,13 +10,27 @@ name: devlib2
 # Trigger on pushes and PRs to any branch
 on:
   push:
-    paths-ignore:
-      - "documentation/**"
-      - "**/*.md"
+    paths:
+      - ".github/workflows/module-build.yml"
+      - "configure/**"
+      - "common/**"
+      - "linux/**"
+      - "exploreApp/**"
+      - "pciApp/**"
+      - "vmeApp/**"
+      - "testApp/**"
+      - "Makefile"
   pull_request:
-    paths-ignore:
-      - "documentation/**"
-      - "**/*.md"
+    paths:
+      - ".github/workflows/module-build.yml"
+      - "configure/**"
+      - "common/**"
+      - "linux/**"
+      - "exploreApp/**"
+      - "pciApp/**"
+      - "vmeApp/**"
+      - "testApp/**"
+      - "Makefile"
   workflow_dispatch:
 
 env:
