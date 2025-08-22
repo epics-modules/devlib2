@@ -14,7 +14,6 @@ on:
       - ".github/workflows/module-build.yml"
       - "configure/**"
       - "common/**"
-      - "linux/**"
       - "exploreApp/**"
       - "pciApp/**"
       - "vmeApp/**"
@@ -25,13 +24,18 @@ on:
       - ".github/workflows/module-build.yml"
       - "configure/**"
       - "common/**"
-      - "linux/**"
       - "exploreApp/**"
       - "pciApp/**"
       - "vmeApp/**"
       - "testApp/**"
       - "Makefile"
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
 
 env:
   SETUP_PATH: .ci-local:.ci
