@@ -67,7 +67,14 @@ int mmap_generic_msi(struct uio_info *info, struct vm_area_struct *vma)
         return -EINVAL;
     }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    vm_flags_set(vma, VM_IO | VM_RESERVED);
+#elif defined(RHEL_RELEASE_CODE) && (RHEL_RELEASE_CODE >= 0x905)
+    vm_flags_set(vma, VM_IO | VM_RESERVED);
+#else
     vma->vm_flags |= VM_IO | VM_RESERVED;
+#endif
+
     vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 
     return remap_pfn_range(vma,
@@ -163,9 +170,15 @@ static int probe_generic_msi(struct pci_dev *pdev,
     }
 
     {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
         struct msi_desc *desc = irq_get_msi_desc(pdev->irq);
         priv->maskable = desc ? desc->msi_attrib.maskbit : 0;
         dev_info(&pdev->dev, "MSI is %smaskable\n", priv->maskable ? "" : "not ");
+#else
+        // Newer kernels: msi_desc not active
+        priv->maskable = 0;
+        dev_info(&pdev->dev, "MSI enabled (mask-bit introspection not available).\n");
+#endif
     }
 
     err = uio_register_device(&pdev->dev, &priv->uio);

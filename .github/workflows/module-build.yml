@@ -5,19 +5,37 @@
 
 # Set the 'name:' properties to values that work for you (pvxs)
 
-name: devlib2
+name: Module Build and Test
 
 # Trigger on pushes and PRs to any branch
 on:
   push:
-    paths-ignore:
-      - "documentation/**"
-      - "**/*.md"
+    paths:
+      - ".github/workflows/module-build.yml"
+      - "configure/**"
+      - "common/**"
+      - "exploreApp/**"
+      - "pciApp/**"
+      - "vmeApp/**"
+      - "testApp/**"
+      - "Makefile"
   pull_request:
-    paths-ignore:
-      - "documentation/**"
-      - "**/*.md"
+    paths:
+      - ".github/workflows/module-build.yml"
+      - "configure/**"
+      - "common/**"
+      - "exploreApp/**"
+      - "pciApp/**"
+      - "vmeApp/**"
+      - "testApp/**"
+      - "Makefile"
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  statuses: write
 
 env:
   SETUP_PATH: .ci-local:.ci
