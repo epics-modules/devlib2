@@ -43,7 +43,7 @@ env:
 
 jobs:
   build-base:
-    name: ${{ matrix.base }}/${{ matrix.os }}/${{ matrix.cmp }}/${{ matrix.configuration }}${{ matrix.rtems }}/${{ matrix.extra }}
+    name: ${{ matrix.base }}/${{ matrix.os }}/${{ matrix.cmp }}/${{ matrix.configuration }}${{ matrix.rtems }}/${{ matrix.extra }}/${{ matrix.cross }}
     runs-on: ${{ matrix.os }}
     # Set environment variables from matrix parameters
     env:
@@ -53,6 +53,7 @@ jobs:
       RTEMS: ${{ matrix.rtems }}
       EXTRA: ${{ matrix.extra }}
       TEST: ${{ matrix.test }}
+      CI_CROSS_TARGETS: ${{ matrix.cross }}
     strategy:
       fail-fast: false
       matrix:
@@ -114,6 +115,12 @@ jobs:
             configuration: default
             base: "7.0"
 
+          - os: ubuntu-latest
+            cmp: gcc
+            configuration: default
+            base: "7.0"
+            cross: "windows-x64-mingw"
+
     steps:
       - uses: actions/checkout@v3
         with:
@@ -122,7 +129,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache
-          key: ${{ matrix.base }}/${{ matrix.os }}/${{ matrix.cmp }}/${{ matrix.configuration }}/${{ matrix.wine }}${{ matrix.rtems }}/${{ matrix.extra }}
+          key: ${{ matrix.base }}/${{ matrix.os }}/${{ matrix.cmp }}/${{ matrix.configuration }}/${{ matrix.wine }}${{ matrix.rtems }}/${{ matrix.extra }}/${{ matrix.cross }}
       - name: Automatic core dump analysis
         uses: mdavidsaver/ci-core-dumper@master
       - name: "apt-get install"
