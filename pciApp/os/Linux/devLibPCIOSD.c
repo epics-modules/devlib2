@@ -22,13 +22,11 @@
 #include <errlog.h>
 #include <epicsString.h>
 #include <epicsThread.h>
-#include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <epicsInterrupt.h>
 #include <compilerDependencies.h>
 
-
-#include "devLibPCIImpl.h"
+#include "devLibPCIOSD.h"
 
 /**@file devLibPCIOSD.c
  * @brief Userspace PCI access in Linux
@@ -82,33 +80,6 @@
  *
  * Access after init is guarded by devLock
  */
-struct osdPCIDevice {
-    epicsPCIDevice dev; /* "public" data */
-
-    /* result of mmap(), add offset before passing to user */
-    volatile void *base[PCIBARCOUNT];
-    /* offset from start of page to start of BAR */
-    epicsUInt32    offset[PCIBARCOUNT];
-    /* BAR length (w/o offset) */
-    epicsUInt32    len[PCIBARCOUNT];
-    volatile void *erom;
-    epicsUInt32    eromlen;
-
-    epicsUInt32 displayBAR[PCIBARCOUNT]; /* Raw PCI address */
-    epicsUInt32 displayErom;
-
-    int fd; /* /dev/uio# */
-    int cfd; /* config-space descriptor */
-    int rfd[PCIBARCOUNT];
-    int cmode; /* config-space mode */
-
-    epicsMutexId devLock; /* guard access to isrs list */
-
-    ELLNODE node;
-
-    ELLLIST isrs; /* contains struct osdISR */
-};
-typedef struct osdPCIDevice osdPCIDevice;
 
 #define dev2osd(dev) CONTAINER(dev, osdPCIDevice, dev)
 
@@ -507,7 +478,7 @@ int linuxDevPCIInit(void)
         /* Read BAR info */
 
         /* Base address */
-        
+
         filename = allocPrintf(BUSBASE "resource",
                                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
         if (!filename) {
@@ -548,10 +519,10 @@ int linuxDevPCIInit(void)
 
         osd->displayErom = start;
         osd->eromlen = (start || stop ) ? (stop - start + 1) : 0;
-        
+
         fclose(file);
         free(filename);
-        
+
         /* driver name */
         filename = allocPrintf(BUSBASE "driver",
                                osd->dev.domain, osd->dev.bus, osd->dev.device, osd->dev.function);
@@ -922,6 +893,28 @@ error:
     return ret;
 }
 
+static int reopen_uio(struct osdPCIDevice *osd)
+{
+    int uio = find_uio_number(osd);
+    if (uio < 0)
+        return -1;
+
+    char *devname = allocPrintf("/dev/uio%u", uio);
+    if (!devname)
+        return -1;
+
+    int newfd = open(devname, O_RDWR);
+    free(devname);
+    if (newfd < 0)
+        return -1;
+
+    if (osd->fd != -1)
+        close(osd->fd);
+
+    osd->fd = newfd;
+    return 0;
+}
+
 static
 void isrThread(void* arg)
 {
@@ -959,18 +952,36 @@ void isrThread(void* arg)
             epicsInterruptUnlock(isrflag);
         }
 
-        ret=read(osd->fd, &event, sizeof(event));
-        if (ret==-1) {
-            switch(errno) {
+        ret = read(osd->fd, &event, sizeof(event));
+        if (ret == -1) {
+            switch (errno) {
             case EINTR: /* interrupted by a signal */
                 break;
+
+            case EIO:
+            case EINVAL:
+            case ENODEV:
+                errlogPrintf("isrThread '%s': Device removed or UIO invalid (errno=%d: %s)\n", name, errno, strerror(errno));
+
+                epicsMutexMustLock(osd->devLock);
+                if (reopen_uio(osd) == 0) {
+                    errlogPrintf("isrThread '%s': Successfully reopened UIO device\n", name);
+                    if (osd->onHotSwapHook) osd->onHotSwapHook(osd);
+                } else {
+                    errlogPrintf("isrThread '%s': UIO reopen failed. Will retry.\n", name);
+                }
+                epicsMutexUnlock(osd->devLock);
+                epicsThreadSleep(1);
+                continue;
+
             default:
-                errlogPrintf("isrThread '%s' read error %d\n",
-                             name,errno);
-                epicsThreadSleep(0.5);
+                errlogPrintf("isrThread '%s': read error %d (%s)\n", name, errno, strerror(errno));
+                epicsThreadSleep(1);
             }
-        } else
-            interrupted=1;
+        } else {
+            interrupted = 1;
+        }
+
 
         if (next!=event && next!=0) {
             errlogPrintf("isrThread '%s' missed %d events\n",

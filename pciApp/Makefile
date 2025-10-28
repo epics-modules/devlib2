@@ -20,6 +20,7 @@ DBD += epicspci.dbd
 
 INC += devLibPCI.h
 INC += devLibPCIImpl.h
+INC += devLibPCIOSD.h
 
 epicspci_SRCS += devLibPCI.c
 epicspci_SRCS += devLibPCIStrings.c
@@ -37,4 +38,3 @@ epicspci_LIBS += Com
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
-
