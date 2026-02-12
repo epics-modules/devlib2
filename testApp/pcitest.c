@@ -51,6 +51,10 @@ static void findRootBridge(void) {
 
     testDiag("Find host bridges");
     testOk1(devPCIFindCB(hostbridge, &showbridge, NULL, 0)==0);
+    if(foundbridges<=0) {
+        testSkip(18, "No PCI host bridge visible.");
+        return;
+    }
     testOk1(foundbridges>0);
 
     testDiag("Get root bridge");
